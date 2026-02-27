@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>staryume Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-gray':   '#f2f2f2',
+            'tech-black':  '#0a0a0a',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .lang-tab { border-bottom: 2px solid transparent; cursor: pointer; }
+    .lang-tab.active { border-bottom-color: #0a0a0a; font-weight: 700; color: #0a0a0a; }
+    .lang-tab:not(.active) { color: #9ca3af; }
+    .lang-tab:not(.active):hover { color: #374151; }
+    /* Tighten up EasyMDE inside the card */
+    .EasyMDEContainer .CodeMirror { font-size: 13px; }
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen font-sans text-[#0a0a0a]">
+
+  <!-- Header -->
+  <header class="bg-[#0a0a0a] text-white px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg">
+    <h1 class="text-lg font-bold tracking-widest font-mono">staryume / admin</h1>
+    <div class="flex gap-3 items-center">
+      <button id="btnOpen" onclick="openFile()"
+        class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-mono transition">
+        📂 Open data.js
+      </button>
+      <button id="btnSave" onclick="saveFile()" disabled
+        class="px-4 py-2 bg-[#D8B4FE] text-black hover:bg-purple-300 rounded text-sm font-mono transition disabled:opacity-40 disabled:cursor-not-allowed">
+        💾 Save data.js
+      </button>
+    </div>
+  </header>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div id="toastInner" class="px-5 py-3 rounded-lg shadow-xl font-mono text-sm text-white"></div>
+  </div>
+
+  <main class="max-w-4xl mx-auto px-4 py-8">
+
+    <!-- Placeholder (before file is loaded) -->
+    <div id="placeholder" class="text-center py-32 text-gray-400">
+      <div class="text-6xl mb-4">📄</div>
+      <p class="text-lg font-mono mb-2">Open data.js to get started</p>
+      <p class="text-sm text-gray-300">Chrome only — uses File System Access API</p>
+    </div>
+
+    <!-- Post List View -->
+    <div id="listView" class="hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold font-mono">Blog Posts</h2>
+        <button onclick="newPost()"
+          class="px-4 py-2 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded font-mono text-sm transition">
+          + New Post
+        </button>
+      </div>
+      <div id="postList" class="flex flex-col gap-3"></div>
+    </div>
+
+    <!-- Edit / Create View -->
+    <div id="editView" class="hidden">
+      <div class="flex justify-between items-center mb-6">
+        <h2 id="editHeading" class="text-2xl font-bold font-mono">New Post</h2>
+        <button onclick="showList()"
+          class="px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded font-mono text-sm transition">
+          ← Cancel
+        </button>
+      </div>
+
+      <div class="bg-white rounded-xl shadow p-6 space-y-6">
+
+        <!-- Tag + Date -->
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Tag</label>
+            <select id="fTag"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+              <option>NEWS</option>
+              <option>NOTICE</option>
+              <option>DIARY</option>
+              <option>ACTIVITY</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Date</label>
+            <input id="fDate" type="date"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+          </div>
+        </div>
+
+        <!-- Thumbnail URL -->
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Thumbnail URL</label>
+          <input id="fImg" type="text" placeholder="./blog/YYYYMMDD/thumb.jpg"
+            oninput="updateThumb()"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+          <div id="thumbWrap" class="mt-2 hidden">
+            <img id="thumbImg" class="h-28 rounded-lg border object-cover" alt="thumbnail preview">
+          </div>
+        </div>
+
+        <!-- Language tabs -->
+        <div>
+          <div class="flex gap-0 mb-5 border-b border-gray-200">
+            <button class="lang-tab active px-5 py-2 text-sm font-mono" data-lang="jp" onclick="switchLang('jp')">JP</button>
+            <button class="lang-tab px-5 py-2 text-sm font-mono" data-lang="en" onclick="switchLang('en')">EN</button>
+            <button class="lang-tab px-5 py-2 text-sm font-mono" data-lang="zh" onclick="switchLang('zh')">ZH</button>
+          </div>
+
+          <div id="panel-jp" class="lang-panel space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Title (JP)</label>
+              <input id="fTitle-jp" type="text" placeholder="タイトル（空欄可）"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Content (JP)</label>
+              <textarea id="editor-jp"></textarea>
+            </div>
+          </div>
+
+          <div id="panel-en" class="lang-panel hidden space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Title (EN)</label>
+              <input id="fTitle-en" type="text" placeholder="Title (optional)"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Content (EN)</label>
+              <textarea id="editor-en"></textarea>
+            </div>
+          </div>
+
+          <div id="panel-zh" class="lang-panel hidden space-y-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Title (ZH)</label>
+              <input id="fTitle-zh" type="text" placeholder="標題（可留空）"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Content (ZH)</label>
+              <textarea id="editor-zh"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Form actions -->
+        <div class="flex gap-3 pt-2 border-t border-gray-100">
+          <button onclick="savePost()"
+            class="px-6 py-2.5 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded-lg font-mono text-sm transition">
+            ✓ Save Post
+          </button>
+          <button onclick="showList()"
+            class="px-6 py-2.5 border border-gray-200 hover:bg-gray-100 rounded-lg font-mono text-sm transition">
+            Cancel
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // ─── State ────────────────────────────────────────────────────────────────
+    let fileHandle = null;
+    let siteData   = null;
+    let editingId  = null;   // null = new post
+    let editors    = {};     // { jp, en, zh } EasyMDE instances
+
+    // ─── File System Access API ───────────────────────────────────────────────
+    async function openFile() {
+      try {
+        [fileHandle] = await window.showOpenFilePicker({
+          types: [{ description: 'JavaScript file', accept: { 'text/javascript': ['.js'] } }],
+          multiple: false
+        });
+        const file = await fileHandle.getFile();
+        const text = await file.text();
+        try {
+          const fn = new Function(text + '\nreturn siteData;');
+          siteData = fn();
+        } catch (parseErr) {
+          showToast('Failed to parse data.js: ' + parseErr.message, 'error');
+          fileHandle = null;
+          return;
+        }
+        document.getElementById('btnSave').disabled = false;
+        showList();
+      } catch (e) {
+        if (e.name !== 'AbortError') showToast('Error opening file: ' + e.message, 'error');
+      }
+    }
+
+    async function saveFile() {
+      if (!fileHandle || !siteData) return;
+      try {
+        // Serialize: preserve posts, gallery, and translations exactly as-is.
+        // JSON.stringify safely handles all markdown content (newlines, quotes, etc.)
+        const content = '// GLOBAL SITE DATA\nconst siteData = ' +
+          JSON.stringify(siteData, null, 4) + ';\n';
+        const writable = await fileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        showToast('✓ data.js saved successfully!');
+      } catch (e) {
+        showToast('Save failed: ' + e.message, 'error');
+      }
+    }
+
+    // ─── View switching ───────────────────────────────────────────────────────
+    function showList() {
+      document.getElementById('placeholder').classList.add('hidden');
+      document.getElementById('editView').classList.add('hidden');
+      document.getElementById('listView').classList.remove('hidden');
+      renderList();
+    }
+
+    function showEdit() {
+      document.getElementById('placeholder').classList.add('hidden');
+      document.getElementById('listView').classList.add('hidden');
+      document.getElementById('editView').classList.remove('hidden');
+    }
+
+    // ─── Post List ────────────────────────────────────────────────────────────
+    const TAG_BADGE = {
+      NEWS:     'bg-purple-100 text-purple-700',
+      NOTICE:   'bg-yellow-100 text-yellow-700',
+      DIARY:    'bg-green-100  text-green-700',
+      ACTIVITY: 'bg-blue-100   text-blue-700',
+    };
+
+    function renderList() {
+      const el = document.getElementById('postList');
+      const posts = [...siteData.posts].sort((a, b) => b.id - a.id);
+      if (posts.length === 0) {
+        el.innerHTML = '<p class="text-center text-gray-400 py-12 font-mono">No posts yet.</p>';
+        return;
+      }
+      el.innerHTML = posts.map(p => {
+        const title = p.title.jp || p.title.en || p.title.zh || '(untitled)';
+        const badge = TAG_BADGE[p.tag] || 'bg-gray-100 text-gray-600';
+        const imgHtml = p.img
+          ? `<img src="${p.img}" onerror="this.style.display='none'" class="w-16 h-16 object-cover rounded-lg flex-shrink-0">`
+          : `<div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 text-gray-300">🖼</div>`;
+        return `
+          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition group">
+            ${imgHtml}
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-bold px-2 py-0.5 rounded font-mono ${badge}">${p.tag}</span>
+                <span class="text-xs text-gray-400 font-mono">${p.date}</span>
+                <span class="text-xs text-gray-300 font-mono">#${p.id}</span>
+              </div>
+              <p class="font-semibold text-gray-800 truncate text-sm">${escHtml(title)}</p>
+            </div>
+            <div class="flex gap-2 flex-shrink-0 opacity-60 group-hover:opacity-100 transition">
+              <button onclick="editPost(${p.id})"
+                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-mono transition">Edit</button>
+              <button onclick="deletePost(${p.id})"
+                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-mono transition">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ─── EasyMDE editors ──────────────────────────────────────────────────────
+    function initEditors() {
+      // Show ALL panels so CodeMirror can measure dimensions correctly.
+      // switchLang() will hide the inactive ones after init.
+      document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('hidden'));
+
+      for (const lang of ['jp', 'en', 'zh']) {
+        if (editors[lang]) {
+          try { editors[lang].toTextArea(); } catch (e) { /* already cleaned up */ }
+          editors[lang] = null;
+        }
+      }
+      for (const lang of ['jp', 'en', 'zh']) {
+        editors[lang] = new EasyMDE({
+          element: document.getElementById('editor-' + lang),
+          spellChecker: false,
+          autofocus: false,
+          status: false,
+          minHeight: '220px',
+          toolbar: [
+            'bold', 'italic', 'heading-2', 'heading-3', '|',
+            'quote', 'unordered-list', 'ordered-list', '|',
+            'link', 'image', '|',
+            'preview', 'side-by-side', 'fullscreen'
+          ],
+        });
+      }
+    }
+
+    // ─── New Post ─────────────────────────────────────────────────────────────
+    function newPost() {
+      editingId = null;
+      document.getElementById('editHeading').textContent = 'New Post';
+      document.getElementById('fTag').value  = 'NEWS';
+      document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('fImg').value  = '';
+      updateThumb();
+      for (const lang of ['jp', 'en', 'zh']) {
+        document.getElementById('fTitle-' + lang).value = '';
+      }
+      showEdit();
+      initEditors();
+      for (const lang of ['jp', 'en', 'zh']) editors[lang].value('');
+      switchLang('jp');
+    }
+
+    // ─── Edit Post ────────────────────────────────────────────────────────────
+    function editPost(id) {
+      const post = siteData.posts.find(p => p.id === id);
+      if (!post) return;
+      editingId = id;
+      document.getElementById('editHeading').textContent = 'Edit Post #' + id;
+      document.getElementById('fTag').value  = post.tag;
+      document.getElementById('fDate').value = (post.date || '').replace(/\//g, '-');
+      document.getElementById('fImg').value  = post.img || '';
+      updateThumb();
+      for (const lang of ['jp', 'en', 'zh']) {
+        document.getElementById('fTitle-' + lang).value = post.title[lang] || '';
+      }
+      showEdit();
+      initEditors();
+      for (const lang of ['jp', 'en', 'zh']) {
+        editors[lang].value(post.content[lang] || '');
+      }
+      switchLang('jp');
+    }
+
+    // ─── Save Post (in-memory) ────────────────────────────────────────────────
+    function savePost() {
+      const dateRaw = document.getElementById('fDate').value;
+      if (!dateRaw) { showToast('Please pick a date.', 'error'); return; }
+
+      const maxId = siteData.posts.length > 0
+        ? Math.max(...siteData.posts.map(p => p.id))
+        : 0;
+
+      const post = {
+        id:   editingId !== null ? editingId : maxId + 1,
+        tag:  document.getElementById('fTag').value,
+        date: dateRaw.replace(/-/g, '/'),
+        img:  document.getElementById('fImg').value.trim() || null,
+        title: {
+          jp: document.getElementById('fTitle-jp').value.trim() || null,
+          en: document.getElementById('fTitle-en').value.trim() || null,
+          zh: document.getElementById('fTitle-zh').value.trim() || null,
+        },
+        content: {
+          jp: editors.jp ? (editors.jp.value().trim() || null) : null,
+          en: editors.en ? (editors.en.value().trim() || null) : null,
+          zh: editors.zh ? (editors.zh.value().trim() || null) : null,
+        }
+      };
+
+      if (editingId !== null) {
+        const idx = siteData.posts.findIndex(p => p.id === editingId);
+        if (idx !== -1) siteData.posts[idx] = post;
+        showToast('Post updated — click 💾 to write to disk.');
+      } else {
+        siteData.posts.push(post);
+        showToast(`Post #${post.id} created — click 💾 to write to disk.`);
+      }
+      showList();
+    }
+
+    // ─── Delete Post ──────────────────────────────────────────────────────────
+    function deletePost(id) {
+      const post = siteData.posts.find(p => p.id === id);
+      const name = post
+        ? (post.title.jp || post.title.en || post.title.zh || 'this post')
+        : 'this post';
+      if (!confirm(`Delete post #${id}: "${name}"?\n\nChange is in memory only until you Save data.js.`)) return;
+      siteData.posts = siteData.posts.filter(p => p.id !== id);
+      renderList();
+      showToast('Post deleted — click 💾 to write to disk.');
+    }
+
+    // ─── Language tab switching ───────────────────────────────────────────────
+    function switchLang(lang) {
+      document.querySelectorAll('.lang-tab').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === lang);
+      });
+      document.querySelectorAll('.lang-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById('panel-' + lang).classList.remove('hidden');
+      // Refresh CodeMirror after the panel becomes visible
+      if (editors[lang]) {
+        setTimeout(() => editors[lang].codemirror.refresh(), 20);
+      }
+    }
+
+    // ─── Thumbnail preview ────────────────────────────────────────────────────
+    function updateThumb() {
+      const url = document.getElementById('fImg').value.trim();
+      document.getElementById('thumbImg').src = url;
+      document.getElementById('thumbWrap').classList.toggle('hidden', !url);
+    }
+
+    // ─── Toast ────────────────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg, type = 'success') {
+      const inner = document.getElementById('toastInner');
+      inner.textContent = msg;
+      inner.className = 'px-5 py-3 rounded-lg shadow-xl font-mono text-sm text-white ' +
+        (type === 'error' ? 'bg-red-600' : 'bg-green-700');
+      document.getElementById('toast').classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3500);
+    }
+
+    // ─── Util ─────────────────────────────────────────────────────────────────
+    function escHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>
