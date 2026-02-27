@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POST | STARYUME WEB</title>
+    <meta name="author" content="staryume">
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-20978566');
+    </script>
+    
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js" integrity="sha384-H+hy9ULve6xfxRkWIh/YOtvDdpXgV2fmAGQkIDTxIgZwNoaoBal14Di2YTMR6MzR" crossorigin="anonymous"></script>
+
+    <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
+
+    <script src="data.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['"Inter"', '"Noto Sans JP"', '"Noto Sans TC"', 'sans-serif'],
+                        tech: ['"Rajdhani"', 'sans-serif'],
+                        nav: ['"Montserrat"', 'sans-serif'], 
+                    },
+                    colors: { 'tech-purple': '#D8B4FE', 'tech-black': '#0a0a0a', 'tech-gray': '#f2f2f2' },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: #D8B4FE; }
+        .lang-menu { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s ease; }
+        .lang-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    </style>
+</head>
+
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+   <aside class="fixed left-0 top-0 h-full w-20 bg-white/95 backdrop-blur-md border-r border-gray-200 z-50 flex flex-col items-center py-6 hidden md:flex">
+        <a href="./index.html" class="mb-10 hover:opacity-80 transition-opacity"><img src="./assets/coreimg/logo.png" class="w-12 h-12 object-contain" alt="Logo"></a>
+        <nav class="flex-1 flex flex-col space-y-12 items-center justify-center w-full">
+            <a href="./index.html#profile" class="group relative w-full flex justify-center"><span class="writing-vertical-lr text-xs font-nav italic font-[650] tracking-widest text-gray-400 group-hover:text-black transition-colors rotate-180" style="writing-mode: vertical-rl;">PROFILE</span></a>
+            <a href="./gallery.html" class="group relative w-full flex justify-center"><span class="writing-vertical-lr text-xs font-nav italic font-[650] tracking-widest text-gray-400 group-hover:text-black transition-colors rotate-180" style="writing-mode: vertical-rl;">GALLERY</span></a>
+            <a href="./blog.html" class="group relative w-full flex justify-center"><span class="writing-vertical-lr text-xs font-nav italic font-[650] tracking-widest text-gray-400 group-hover:text-black transition-colors rotate-180" style="writing-mode: vertical-rl;">BLOG</span></a>
+            <a href="store.html" id="desktop-store-link" class="group relative w-full flex justify-center"><span class="writing-vertical-lr text-xs font-nav italic font-[650] tracking-widest text-gray-400 group-hover:text-black transition-colors rotate-180" style="writing-mode: vertical-rl;">STORE</span></a>
+        </nav>
+        <div class="mt-auto mb-4 relative group">
+            <div id="langMenuDesktop" class="lang-menu absolute bottom-full left-0 mb-2 w-full bg-black text-white text-center py-2 rounded-sm shadow-xl flex flex-col gap-1">
+                <button onclick="switchLang('jp')" class="hover:text-tech-purple text-[10px] font-bold py-1">JP</button>
+                <button onclick="switchLang('en')" class="hover:text-tech-purple text-[10px] font-bold py-1">EN</button>
+                <button onclick="switchLang('zh')" class="hover:text-tech-purple text-[10px] font-bold py-1">ZH</button>
+            </div>
+            <button onclick="toggleDesktopLang()" class="w-10 h-10 border border-black flex items-center justify-center hover:bg-black hover:text-white transition-colors">
+                <span id="currentLangDisplay" class="text-[10px] font-bold">JP</span>
+            </button>
+        </div>
+    </aside>
+
+    <header class="fixed top-0 left-0 w-full h-16 bg-white/95 backdrop-blur-md z-50 flex items-center justify-between px-6 md:hidden border-b border-gray-200">
+        <a href="index.html"><img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="Logo"></a>
+        <button onclick="toggleMobileMenu()" class="p-2 space-y-1.5 group"><div class="w-6 h-0.5 bg-black group-hover:bg-tech-purple"></div><div class="w-6 h-0.5 bg-black group-hover:bg-tech-purple"></div><div class="w-6 h-0.5 bg-black group-hover:bg-tech-purple"></div></button>
+    </header>
+
+   <div id="mobileMenu" class="fixed inset-0 bg-white z-40 transform translate-x-full transition-transform duration-300 md:hidden flex flex-col pt-24 px-8">
+        <nav class="flex flex-col space-y-8 text-2xl font-nav italic font-[650] tracking-widest">
+        <a href="./index.html" class="border-b border-gray-100 pb-2">HOME</a>
+        <a href="./index.html#profile" onclick="toggleMobileMenu()" class="border-b border-gray-100 pb-2">PROFILE</a>
+        <a href="./gallery.html" onclick="toggleMobileMenu()" class="border-b border-gray-100 pb-2">GALLERY</a>
+        <a href="./blog.html" class="border-b border-gray-100 pb-2">BLOG</a>
+        <a href="store.html" id="mobile-store-link" class="border-b border-gray-100 pb-2">STORE</a> 
+        </nav>
+        <div class="mt-auto mb-12 flex space-x-4">
+            <button onclick="switchLang('jp')" class="w-12 h-12 border border-black flex items-center justify-center font-bold">JP</button>
+            <button onclick="switchLang('en')" class="w-12 h-12 border border-black flex items-center justify-center font-bold">EN</button>
+            <button onclick="switchLang('zh')" class="w-12 h-12 border border-black flex items-center justify-center font-bold">ZH</button>
+        </div>
+    </div>
+
+    <div class="pl-0 md:pl-20 min-h-screen pb-20">
+        
+        <div class="w-full h-64 md:h-96 overflow-hidden relative group">
+            <img id="post-img" src="" class="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
+            
+            <div class="absolute bottom-0 left-0 w-full p-6 md:p-12 text-white">
+                <div class="flex items-center space-x-4 mb-4">
+                    <span id="post-tag" class="bg-tech-purple text-black text-xs px-2 py-1 font-bold font-tech tracking-wider uppercase">NOTICE</span>
+                    <span id="post-date" class="text-xs font-mono text-gray-300"></span>
+                </div>
+                <h1 id="post-title" class="text-2xl md:text-5xl font-bold font-tech leading-tight max-w-5xl"></h1>
+            </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto px-6 py-12">
+            
+            <div class="mb-8 text-xs text-gray-500 font-mono">
+                <a href="blog.html" class="hover:text-black transition-colors">BLOG</a> / <span class="text-tech-purple font-bold">CURRENT_LOG</span>
+            </div>
+
+            <div id="post-content" class="prose prose-lg max-w-none leading-relaxed space-y-6 bg-white p-8 md:p-12 border border-gray-200 shadow-sm">
+            </div>
+
+            <div class="mt-24 pt-10 border-t border-gray-300 flex justify-between items-center">
+                <a href="blog.html" class="group flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-black transition-colors">
+                    <span class="group-hover:-translate-x-1 transition-transform">←</span>
+                    <span>BACK TO LIST</span>
+                </a>
+                
+                <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="w-10 h-10 border border-black text-black flex items-center justify-center hover:bg-tech-purple hover:border-tech-purple transition-colors">
+                    ↑
+                </button>
+            </div>
+        </div>
+
+        <footer class="bg-black text-white py-12 px-6 border-t-4 border-tech-purple mt-20">
+            <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0"><h2 class="text-2xl font-tech font-bold">STARYUME WEB</h2><p class="text-xs text-gray-500 font-mono mt-1">SYSTEM ONLINE // ALL RIGHTS RESERVED 2026</p></div>
+                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" class="hover:text-tech-purple transition-colors">MAIL</a></div>
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        let currentLang = localStorage.getItem('siteLang') || 'jp';
+
+        function init() {
+            document.getElementById('currentLangDisplay').innerText = currentLang.toUpperCase();
+            loadPostData();
+        }
+
+        function loadPostData() {
+            const params = new URLSearchParams(window.location.search);
+            const postId = parseInt(params.get('id'));
+            const post = siteData.posts.find(p => p.id === postId);
+
+            if (post) {
+                // --- SMART LANGUAGE FALLBACK ---
+                if (!post.title[currentLang] || post.title[currentLang] === "") {
+                    const availableLang = Object.keys(post.title).find(key => post.title[key] && post.title[key] !== "");
+                    if (availableLang) {
+                        currentLang = availableLang;
+                        const noticeDiv = document.createElement('div');
+                        noticeDiv.className = "bg-tech-purple text-black text-xs font-bold px-4 py-2 mb-8 text-center";
+                        noticeDiv.innerHTML = `NOTE: This post is only available in ${availableLang.toUpperCase()}.`;
+                        
+                        const contentBox = document.getElementById('post-content');
+                        contentBox.insertBefore(noticeDiv, contentBox.firstChild);
+                    }
+                }
+
+                document.getElementById('post-date').innerText = post.date;
+                document.getElementById('post-img').src = post.img;
+                document.getElementById('post-tag').innerText = post.tag;
+                document.getElementById('post-title').innerText = post.title[currentLang];
+                document.getElementById('post-content').innerHTML += DOMPurify.sanitize(marked.parse(post.content[currentLang]));
+                document.title = `${post.tag} | ${post.title[currentLang]}`;
+            } else {
+                document.getElementById('post-content').innerHTML = `
+                    <div class="text-center py-20">
+                        <h1 class="text-4xl font-bold text-black mb-4">404 // DATA MISSING</h1>
+                        <a href="blog.html" class="text-tech-purple font-bold hover:underline">RETURN TO ARCHIVE</a>
+                    </div>
+                `;
+                document.getElementById('post-title').innerText = "ERROR";
+                document.getElementById('post-img').style.display = 'none';
+            }
+        }
+
+        function switchLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('siteLang', lang);
+            document.getElementById('currentLangDisplay').innerText = lang.toUpperCase();
+            const internalShop = "store.html";
+            const boothShop = "https://staryume.booth.pm/"; 
+            const isChinese = (lang === 'zh');
+            const targetLink = isChinese ? internalShop : boothShop;
+            const targetTarget = isChinese ? "_self" : "_blank"; 
+            const dLink = document.getElementById('desktop-store-link'); if(dLink) { dLink.href = targetLink; dLink.target = targetTarget; }
+            const mLink = document.getElementById('mobile-store-link'); if(mLink) { mLink.href = targetLink; mLink.target = targetTarget; }
+            
+            // Clear content before reloading to prevent duplicates
+            document.getElementById('post-content').innerHTML = ''; 
+            loadPostData(); 
+            
+            const langMenu = document.getElementById('langMenuDesktop');
+            if(langMenu) langMenu.classList.remove('open');
+        }
+
+        function toggleDesktopLang() { document.getElementById('langMenuDesktop').classList.toggle('open'); }
+        function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('translate-x-full'); }
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
