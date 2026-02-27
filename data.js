@@ -76,7 +76,7 @@ const siteData = {
                 "zh": null
             },
             "content": {
-                "jp": "![./blog/20260227/20260227pricelist.jpg](https://)\n\n\n**ユイ (アストラル) 抱き枕カバー（R18）**\n\n※「すじ表現」が含まれており、イベントの基準ではないため、コミケの頒布はありません。\n\n生地：A&J ライクトロンリッチ (2wayトリコット)\nサイズ：1600×500mm\n\nサンプルが BOOTH のウェブで確認できます:\n[https://booth.pm/ja/items/7738636](https://)",
+                "jp": "![Image 01](./blog/20260227/20260227pricelist.jpg)\n\n**ユイ (アストラル) 抱き枕カバー（R18）**\n\n※「すじ表現」が含まれており、イベントの基準ではないため、コミケの頒布はありません。\n\n生地：A&J ライクトロンリッチ (2wayトリコット)\nサイズ：1600×500mm\n\nサンプルが BOOTH のウェブで確認できます:\n\n[https://booth.pm/ja/items/7738636](https://)",
                 "en": null,
                 "zh": null
             }
