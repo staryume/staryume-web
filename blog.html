@@ -45,7 +45,7 @@
         .lang-menu { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s ease; }
         .lang-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        /* Blog Filter Buttons - Updated for Light Theme */
+        /* Blog Filter Buttons - Light Theme */
         .filter-btn { color: #6b7280; border-color: transparent; padding-bottom: 4px; transition: all 0.2s; }
         .filter-btn:hover { color: #000000; }
         .filter-btn.active-filter { 
@@ -98,33 +98,37 @@
         </div>
     </div>
 
-    <div class="pl-0 md:pl-20 min-h-screen pt-16 md:pt-0">
-       <div class="w-full py-8 px-6 md:px-12 flex items-center justify-between overflow-hidden relative bg-cover bg-center" style="background-image: url('./assets/coreimg/topbg.jpg?q=80&w=1000');">
-            <div class="absolute inset-0 bg-black/60 z-0"></div>
-            <div class="z-10 relative">
-                <div class="bg-black text-white text-xs font-bold inline-block px-1 mb-1 font-tech tracking-wider">STARYUME WEB</div>
-                <h1 class="text-4xl md:text-5xl font-bold font-tech tracking-tighter text-white">BLOG</h1>
+    <div class="pl-0 md:pl-20 flex flex-col min-h-screen pt-16 md:pt-0">
+        
+        <main class="flex-grow pb-12">
+            <div class="w-full py-8 px-6 md:px-12 flex items-center justify-between overflow-hidden relative bg-cover bg-center" style="background-image: url('./assets/coreimg/topbg.jpg?q=80&w=1000');">
+                <div class="absolute inset-0 bg-black/60 z-0"></div>
+                <div class="z-10 relative">
+                    <div class="bg-black text-white text-xs font-bold inline-block px-1 mb-1 font-tech tracking-wider">STARYUME WEB</div>
+                    <h1 class="text-4xl md:text-5xl font-bold font-tech tracking-tighter text-white">BLOG</h1>
+                </div>
             </div>
-        </div>
 
-        <div class="max-w-6xl mx-auto px-6 py-8 border-b border-gray-300">
-            <div class="flex space-x-6 text-sm font-bold font-tech tracking-wider overflow-x-auto" id="filter-container">
-                <button onclick="filterPosts('ALL')" class="filter-btn active-filter" data-filter="ALL">LATEST</button>
-                <button onclick="filterPosts('NOTICE')" class="filter-btn" data-filter="NOTICE">NOTICE</button>
-                <button onclick="filterPosts('ACTIVITY')" class="filter-btn" data-filter="ACTIVITY">REPORT</button>
-                <button onclick="filterPosts('NEWS')" class="filter-btn" data-filter="NEWS">NEWS</button>
-                <button onclick="filterPosts('DIARY')" class="filter-btn" data-filter="DIARY">DIARY</button>
+            <div class="max-w-6xl mx-auto px-6 py-8 border-b border-gray-300">
+                <div class="flex space-x-6 text-sm font-bold font-tech tracking-wider overflow-x-auto" id="filter-container">
+                    <button onclick="filterPosts('ALL')" class="filter-btn active-filter" data-filter="ALL">LATEST</button>
+                    <button onclick="filterPosts('NOTICE')" class="filter-btn" data-filter="NOTICE">NOTICE</button>
+                    <button onclick="filterPosts('ACTIVITY')" class="filter-btn" data-filter="ACTIVITY">REPORT</button>
+                    <button onclick="filterPosts('NEWS')" class="filter-btn" data-filter="NEWS">NEWS</button>
+                    <button onclick="filterPosts('DIARY')" class="filter-btn" data-filter="DIARY">DIARY</button>
+                </div>
             </div>
-        </div>
 
-        <div id="blog-grid" class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+            <div id="blog-grid" class="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </main>
 
-         <footer class="bg-black text-white py-12 px-6 border-t-4 border-tech-purple">
+        <footer class="bg-black text-white py-12 px-6 border-t-4 border-tech-purple mt-auto">
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-6 md:mb-0"><h2 class="text-2xl font-tech font-bold">STARYUME WEB</h2><p class="text-xs text-gray-500 font-mono mt-1">SYSTEM ONLINE // ALL RIGHTS RESERVED 2026</p></div>
-                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" class="hover:text-tech-purple transition-colors">MAIL</a></div>
+                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" target="_blank" class="hover:text-tech-purple transition-colors">MAIL</a></div>
             </div>
         </footer>
+
     </div>
 
     <script>
@@ -154,7 +158,6 @@
                 return;
             }
 
-            // Updated to match the white cards on the index page
             grid.innerHTML = activePosts.map(post => `
                 <a href="post.html?id=${post.id}" class="group block bg-white border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     <div class="aspect-video overflow-hidden relative">
