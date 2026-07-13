@@ -34,22 +34,6 @@ const siteData = {
             }
         },
         {
-            "id": 3,
-            "tag": "NEWS",
-            "date": "2025/12/24",
-            "img": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=600",
-            "title": {
-                "jp": null,
-                "en": null,
-                "zh": null
-            },
-            "content": {
-                "jp": null,
-                "en": null,
-                "zh": "詳情..."
-            }
-        },
-        {
             "id": 4,
             "tag": "DIARY",
             "date": "2026/02/17",
@@ -67,18 +51,18 @@ const siteData = {
         },
         {
             "id": 5,
-            "tag": "NEWS",
-            "date": "2026/02/27",
-            "img": "./blog/20260227/20260227thumb.jpg",
+            "tag": "NOTICE",
+            "date": "2026/07/13",
+            "img": "./blog/20260217/20260217thumb.jpg",
             "title": {
-                "jp": "俺の嫁！ 伍弐 お品書き",
-                "en": null,
-                "zh": null
+                "jp": "大型卡盒2026組合教學",
+                "en": "大型卡盒2026組合教學",
+                "zh": "大型卡盒2026組合教學"
             },
             "content": {
-                "jp": "![Image 01](./blog/20260227/20260227pricelist.jpg)\n\n**ユイ (アストラル) 抱き枕カバー（R18）**\n\n※「すじ表現」が含まれており、イベントの基準ではないため、コミケの頒布はありません。\n\n生地：A&J ライクトロンリッチ (2wayトリコット)\nサイズ：1600×500mm\n\nサンプルが BOOTH のウェブで確認できます:\n\n[https://booth.pm/ja/items/7738636](https://)",
-                "en": null,
-                "zh": null
+                "jp": "testing",
+                "en": "testing",
+                "zh": "\n## 馬年快樂!\n\n新年快樂!2026馬年祝大家身體健康，龍馬精神!\n<br>\n馬年就當然是要畫馬娘，畫了我最喜歡的小鑽~\n<br>\n![Image 01](./blog/20260217/20260217satonoSNS.jpg)\n<br>\n然後就一個香港人限定的東西：<br>\n第一次試試看用 Payme 向各位朋友派一下開運利是\n<br>\n希望大家今年都能夠橫財就手!!!\n![Image 02](./blog/20260217/payme01.jpg)\n<br>\n假如想支持我今年有更多創作的話，也歡迎新年給利是我給我更多動力，收得到越多的話今年定當會更努力為大家畫多一些作品!!! :\n<br> (以下是 Payme 的「逗利是」用助養連結 w) \n![Image 03](./blog/20260217/payme02.jpg)\n                "
             }
         }
     ],
