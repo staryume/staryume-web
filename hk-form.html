@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新刊 Overlay Magic Color 4 領取方法登記 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="香港讀者領取方式登記表單">
+
+  <!--
+    Google Apps Script setup: see docs/hk-form-apps-script.md
+    After deploying the web app, paste the URL into SCRIPT_URL below.
+  -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20978566');
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+            nav: ['"Montserrat"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #D8B4FE; }
+    .field-error { border-color: #ef4444 !important; }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-center sticky top-0 z-50">
+    <a href="./index.html" class="hover:opacity-80 transition-opacity">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+    </a>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
+    <div class="mb-6 text-center">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">HK BOOK RESERVE FORM</p>
+      <h1 class="text-2xl font-bold tracking-tight">Overlay Magic Color 4 新刊 香港領取登記</h1>
+
+      <!-- Cover image: 500×400. Drop your file at assets/coreimg/hk-form-banner.jpg (or change src). -->
+      <div class="mt-4 mb-3 mx-auto w-full max-w-[500px] h-[400px] max-h-[min(400px,80vw)] rounded-xl overflow-hidden border border-gray-200 bg-gray-100 relative">
+        <img
+          src="./assets/coreimg/hk-form-banner.jpg"
+          alt="Overlay Magic Color 4"
+          width="500"
+          height="400"
+          class="w-full h-full object-cover"
+          onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+        >
+        <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-1 pointer-events-none">
+          <span class="text-sm font-mono font-bold">500 × 400</span>
+          <span class="text-xs">封面圖片位置</span>
+          <span class="text-[10px] font-mono opacity-70">assets/coreimg/hk-form-banner.jpg</span>
+        </div>
+      </div>
+
+      <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+        請填寫以下資料，方便安排領取或郵寄。<br>
+        提交後資料會記錄於表單系統。
+      </p>
+    </div>
+
+    <!-- Success state -->
+    <div id="successCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-tech-purple/40 flex items-center justify-center text-2xl">✓</div>
+      <h2 class="text-xl font-bold mb-2">提交成功！</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">
+        已收到你的登記資料。<br>
+        確認電郵已發送到你填寫的電郵地址（請檢查垃圾郵件匣）。
+      </p>
+      <div class="mt-6 p-4 bg-tech-gray rounded-xl text-left text-sm">
+        <p class="font-bold mb-2">有問題？加入 Discord 查詢</p>
+        <p class="text-gray-600 text-xs mb-3">活動後如有疑問，歡迎到 Discord 聯絡我們：</p>
+        <!-- Replace DISCORD_INVITE_URL_HERE with your real invite, e.g. https://discord.gg/staryume -->
+        <a id="discordLink" href="https://discord.gg/staryume" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center justify-center w-full py-2.5 bg-[#5865F2] text-white font-bold rounded-lg hover:opacity-90 transition text-sm">
+          加入 Discord
+        </a>
+      </div>
+      <a href="./index.html" class="inline-block mt-6 text-sm font-bold text-black underline decoration-tech-purple underline-offset-4 hover:text-gray-600">
+        返回首頁
+      </a>
+    </div>
+
+    <!-- Form card -->
+    <form id="hkForm" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-6" novalidate>
+      <!-- 1. Method -->
+      <fieldset>
+        <legend class="block text-sm font-bold mb-3">
+          1. 領取方式 <span class="text-red-500">*</span>
+        </legend>
+        <div class="space-y-3">
+          <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple transition has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+            <input type="radio" name="method" value="palette_ring" class="mt-1 accent-black" required>
+            <span>
+              <span class="block font-medium">9 月 Palette Ring 現場領取</span>
+              <span class="block text-xs text-gray-500 mt-0.5">於活動現場領取書籍</span>
+            </span>
+          </label>
+          <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple transition has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+            <input type="radio" name="method" value="mail" class="mt-1 accent-black">
+            <span>
+              <span class="block font-medium">郵寄</span>
+              <span class="block text-xs text-gray-500 mt-0.5">需要填寫電話及郵寄地址</span>
+            </span>
+          </label>
+        </div>
+        <p id="err-method" class="hidden text-xs text-red-500 mt-2">請選擇領取方式</p>
+      </fieldset>
+
+      <!-- 2. Serial number (流水號) -->
+      <div>
+        <label for="serial" class="block text-sm font-bold mb-2">
+          2. 流水號 <span class="text-red-500">*</span>
+        </label>
+        <input id="serial" name="serial" type="text" inputmode="text" autocomplete="off"
+          placeholder="請輸入你收到的專屬流水號"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition font-mono tracking-wide">
+        <p class="text-xs text-gray-400 mt-1.5">用於核對預約身份，每個流水號只能登記一次，請勿重複提交。</p>
+        <p id="err-serial" class="hidden text-xs text-red-500 mt-2">請填寫流水號</p>
+      </div>
+
+      <!-- 3. Name -->
+      <div>
+        <label for="name" class="block text-sm font-bold mb-2">
+          3. 姓名 <span class="text-red-500">*</span>
+        </label>
+        <input id="name" name="name" type="text" autocomplete="name" placeholder="請輸入姓名"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+        <p id="err-name" class="hidden text-xs text-red-500 mt-2">請填寫姓名</p>
+      </div>
+
+      <!-- 4. Email (for confirmation) -->
+      <div>
+        <label for="email" class="block text-sm font-bold mb-2">
+          4. 電郵 <span class="text-red-500">*</span>
+        </label>
+        <input id="email" name="email" type="email" autocomplete="email" placeholder="用於接收確認信，例如：name@example.com"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+        <p class="text-xs text-gray-400 mt-1.5">提交後會寄出確認信，內容包括你剛才填寫的資料。</p>
+        <p id="err-email" class="hidden text-xs text-red-500 mt-2">請填寫有效的電郵地址</p>
+      </div>
+
+      <!-- 5. SNS -->
+      <div class="space-y-4">
+        <div>
+          <label for="snsType" class="block text-sm font-bold mb-2">
+            5. SNS 聯絡方式 <span class="text-red-500">*</span>
+          </label>
+          <select id="snsType" name="snsType"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+            <option value="">請選擇 SNS</option>
+            <option value="facebook">Facebook</option>
+            <option value="instagram">Instagram</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="discord">Discord</option>
+            <option value="other">其他</option>
+          </select>
+          <p id="err-snsType" class="hidden text-xs text-red-500 mt-2">請選擇 SNS 種類</p>
+        </div>
+        <div>
+          <label for="snsContact" class="block text-sm font-bold mb-2">
+            SNS 帳號 / 聯絡資料 <span class="text-red-500">*</span>
+          </label>
+          <input id="snsContact" name="snsContact" type="text" placeholder="用戶名稱、ID 或電話號碼"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+          <p id="err-snsContact" class="hidden text-xs text-red-500 mt-2">請填寫 SNS 帳號或聯絡資料</p>
+        </div>
+      </div>
+
+      <!-- Mail-only fields -->
+      <div id="mailFields" class="hidden space-y-4 border-t border-gray-100 pt-6">
+        <p class="text-xs font-bold text-gray-400 tracking-wider">郵寄資料</p>
+        <div>
+          <label for="phone" class="block text-sm font-bold mb-2">
+            電話 <span class="text-red-500">*</span>
+          </label>
+          <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="例如：9123 4567"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+          <p id="err-phone" class="hidden text-xs text-red-500 mt-2">請填寫電話號碼</p>
+        </div>
+        <div>
+          <label for="address" class="block text-sm font-bold mb-2">
+            郵寄地址 <span class="text-red-500">*</span>
+          </label>
+          <textarea id="address" name="address" rows="3" placeholder="請填寫完整香港地址"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
+          <p id="err-address" class="hidden text-xs text-red-500 mt-2">請填寫郵寄地址</p>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label for="notes" class="block text-sm font-bold mb-2">
+          6. 其他備註 <span class="text-gray-400 font-normal">(選填)</span>
+        </label>
+        <textarea id="notes" name="notes" rows="3" placeholder="有什麼想補充的可以寫在這裡"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
+      </div>
+
+      <p id="formError" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3"></p>
+      <p id="configHint" class="hidden text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3">
+        表單尚未連接 Google 試算表。請先完成 Apps Script 部署，並在此頁設定 SCRIPT_URL。
+      </p>
+
+      <button type="submit" id="submitBtn"
+        class="w-full py-3.5 bg-tech-black text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        提交
+      </button>
+    </form>
+  </main>
+
+  <footer class="text-center py-8 text-xs text-gray-400 font-mono">
+    STARYUME WEB // HK FORM
+  </footer>
+
+  <script>
+    // ── Paste your Google Apps Script Web App URL here after deploy ──
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylUcTL4YOQ4gm25J1CMb_fE8HZmecGg2UuuKZ7FtyWW_o7lJlveOod8TmWbt8Tm-_rmA/exec';
+    // ── Paste your Discord invite (also update href on #discordLink above) ──
+    const DISCORD_INVITE_URL = 'https://discord.gg/staryume';
+
+    const form = document.getElementById('hkForm');
+    const successCard = document.getElementById('successCard');
+    const mailFields = document.getElementById('mailFields');
+    const submitBtn = document.getElementById('submitBtn');
+    const formError = document.getElementById('formError');
+    const configHint = document.getElementById('configHint');
+    const discordLink = document.getElementById('discordLink');
+
+    if (DISCORD_INVITE_URL && DISCORD_INVITE_URL !== 'DISCORD_INVITE_URL_HERE') {
+      discordLink.href = DISCORD_INVITE_URL;
+    }
+
+    if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
+      configHint.classList.remove('hidden');
+    }
+
+    function selectedMethod() {
+      const el = form.querySelector('input[name="method"]:checked');
+      return el ? el.value : '';
+    }
+
+    function toggleMailFields() {
+      const isMail = selectedMethod() === 'mail';
+      mailFields.classList.toggle('hidden', !isMail);
+      if (!isMail) {
+        document.getElementById('phone').value = '';
+        document.getElementById('address').value = '';
+        clearError('phone');
+        clearError('address');
+      }
+    }
+
+    form.querySelectorAll('input[name="method"]').forEach((radio) => {
+      radio.addEventListener('change', () => {
+        clearError('method');
+        toggleMailFields();
+      });
+    });
+
+    function showError(id, show) {
+      const err = document.getElementById('err-' + id);
+      const field = document.getElementById(id) || form.querySelector('[name="' + id + '"]');
+      if (err) err.classList.toggle('hidden', !show);
+      if (field && field.classList) {
+        if (show) field.classList.add('field-error');
+        else field.classList.remove('field-error');
+      }
+      // method radios: highlight fieldset via legend parent
+      if (id === 'method' && show) {
+        form.querySelectorAll('input[name="method"]').forEach((r) => {
+          r.closest('label')?.classList.add('border-red-400');
+        });
+      }
+      if (id === 'method' && !show) {
+        form.querySelectorAll('input[name="method"]').forEach((r) => {
+          r.closest('label')?.classList.remove('border-red-400');
+        });
+      }
+    }
+
+    function clearError(id) {
+      showError(id, false);
+    }
+
+    ['serial', 'name', 'email', 'snsType', 'snsContact', 'phone', 'address'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('input', () => clearError(id));
+      if (el) el.addEventListener('change', () => clearError(id));
+    });
+
+    function isValidEmail(value) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    }
+
+    function normalizeSerial(value) {
+      return String(value || '').trim().replace(/\s+/g, '');
+    }
+
+    function validate() {
+      let ok = true;
+      formError.classList.add('hidden');
+
+      const method = selectedMethod();
+      if (!method) { showError('method', true); ok = false; }
+      else showError('method', false);
+
+      const serial = normalizeSerial(document.getElementById('serial').value);
+      if (!serial) { showError('serial', true); ok = false; }
+      else showError('serial', false);
+
+      const name = document.getElementById('name').value.trim();
+      if (!name) { showError('name', true); ok = false; }
+      else showError('name', false);
+
+      const email = document.getElementById('email').value.trim();
+      if (!email || !isValidEmail(email)) { showError('email', true); ok = false; }
+      else showError('email', false);
+
+      const snsType = document.getElementById('snsType').value;
+      if (!snsType) { showError('snsType', true); ok = false; }
+      else showError('snsType', false);
+
+      const snsContact = document.getElementById('snsContact').value.trim();
+      if (!snsContact) { showError('snsContact', true); ok = false; }
+      else showError('snsContact', false);
+
+      if (method === 'mail') {
+        const phone = document.getElementById('phone').value.trim();
+        if (!phone) { showError('phone', true); ok = false; }
+        else showError('phone', false);
+
+        const address = document.getElementById('address').value.trim();
+        if (!address) { showError('address', true); ok = false; }
+        else showError('address', false);
+      }
+
+      return ok;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!validate()) return;
+
+      if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
+        configHint.classList.remove('hidden');
+        formError.textContent = '尚未設定表單後端，暫時無法提交。';
+        formError.classList.remove('hidden');
+        return;
+      }
+
+      const method = selectedMethod();
+      const payload = {
+        method: method,
+        serial: normalizeSerial(document.getElementById('serial').value),
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        snsType: document.getElementById('snsType').value,
+        snsContact: document.getElementById('snsContact').value.trim(),
+        phone: method === 'mail' ? document.getElementById('phone').value.trim() : '',
+        address: method === 'mail' ? document.getElementById('address').value.trim() : '',
+        notes: document.getElementById('notes').value.trim(),
+      };
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '提交中…';
+      formError.classList.add('hidden');
+
+      try {
+        // Apps Script web apps typically require no-cors; body still arrives server-side.
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+
+        form.classList.add('hidden');
+        successCard.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        formError.textContent = '提交失敗，請檢查網路後再試一次。';
+        formError.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交';
+      }
+    });
+  </script>
+</body>
+</html>

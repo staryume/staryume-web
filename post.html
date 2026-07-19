@@ -23,6 +23,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
 
     <script src="data.js"></script>
+    <script src="events.js"></script>
 
     <script>
         tailwind.config = {
@@ -45,6 +46,44 @@
         ::-webkit-scrollbar-thumb { background: #D8B4FE; }
         .lang-menu { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s ease; }
         .lang-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
+
+        /* お品書き hotspot map */
+        .oshinagaki-hotspot {
+            position: absolute;
+            z-index: 5;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            background: transparent;
+            cursor: pointer;
+            transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .oshinagaki-hotspot:hover,
+        .oshinagaki-hotspot:focus-visible {
+            border-color: #D8B4FE;
+            background: rgba(216, 180, 254, 0.18);
+            box-shadow: 0 0 0 2px rgba(216, 180, 254, 0.35);
+            outline: none;
+        }
+        .oshinagaki-hotspot.debug {
+            border-color: rgba(255, 0, 128, 0.7);
+            background: rgba(255, 0, 128, 0.12);
+        }
+        .oshinagaki-hotspot.pulse {
+            animation: hotspot-pulse 2s ease-in-out 3;
+        }
+        @keyframes hotspot-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(216, 180, 254, 0); border-color: transparent; }
+            50% { box-shadow: 0 0 0 4px rgba(216, 180, 254, 0.45); border-color: #D8B4FE; }
+        }
+        #event-modal.hidden { display: none; }
+        .event-tab-active {
+            color: #0a0a0a;
+            border-bottom: 2px solid #D8B4FE;
+            font-weight: 700;
+        }
     </style>
 </head>
 
@@ -115,6 +154,9 @@
                 <div id="post-content" class="prose prose-lg max-w-none leading-relaxed space-y-6 bg-white p-8 md:p-12 border border-gray-200 shadow-sm">
                 </div>
 
+                <!-- Interactive お品書き showcase (rendered when post.eventId is set) -->
+                <div id="event-showcase" class="hidden mt-10"></div>
+
                 <div class="mt-24 pt-10 border-t border-gray-300 flex justify-between items-center">
                     <a href="blog.html" class="group flex items-center space-x-2 text-sm font-bold text-gray-500 hover:text-black transition-colors">
                         <span class="group-hover:-translate-x-1 transition-transform">←</span>
@@ -137,23 +179,88 @@
 
     </div>
 
+    <!-- Event product detail modal -->
+    <div id="event-modal" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="event-modal-title">
+        <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" onclick="closeEventModal()"></div>
+        <div class="relative z-50 bg-white w-full max-w-5xl max-h-[90vh] rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+            <button type="button" onclick="closeEventModal()" class="absolute top-4 right-4 md:hidden z-50 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center" aria-label="Close">✕</button>
+
+            <div class="w-full md:w-1/2 bg-gray-100 relative group select-none flex flex-col">
+                <div id="event-modal-tabs" class="flex gap-4 px-4 pt-3 border-b border-gray-200 bg-white md:bg-gray-50"></div>
+                <div class="relative flex-1 flex items-center justify-center overflow-hidden min-h-[40vh] md:min-h-0">
+                    <img id="event-modal-img" src="" alt="" class="max-w-full max-h-[50vh] md:max-h-[80vh] object-contain transition-opacity duration-200">
+                    <button type="button" id="event-prev-btn" onclick="changeEventImage(-1)" class="absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white hidden z-20">❮</button>
+                    <button type="button" id="event-next-btn" onclick="changeEventImage(1)" class="absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white hidden z-20">❯</button>
+                    <div id="event-image-dots" class="absolute bottom-3 left-0 w-full flex justify-center gap-2 z-10"></div>
+                </div>
+            </div>
+
+            <div class="w-full md:w-1/2 p-6 md:p-10 flex flex-col overflow-y-auto bg-white">
+                <div class="flex justify-between items-start mb-2">
+                    <div id="event-modal-badges" class="flex flex-wrap gap-2"></div>
+                    <button type="button" onclick="closeEventModal()" class="hidden md:block text-gray-400 hover:text-black text-2xl transition-colors cursor-pointer ml-2" aria-label="Close">✕</button>
+                </div>
+                <h2 id="event-modal-title" class="text-2xl md:text-3xl font-bold mb-2 leading-tight"></h2>
+                <p id="event-modal-price" class="text-3xl font-bold text-tech-purple mb-3 font-mono"></p>
+                <p id="event-modal-specs" class="text-sm text-gray-500 mb-4 font-mono"></p>
+                <div class="prose prose-sm text-gray-600 mb-8 border-t border-gray-100 pt-4 flex-grow">
+                    <div id="event-modal-desc"></div>
+                </div>
+                <div class="mt-auto pt-4 border-t border-gray-100" id="event-modal-actions"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let currentLang = localStorage.getItem('siteLang') || 'jp';
+        let currentEvent = null;
+        let currentProduct = null;
+        let eventImgIndex = 0;
+        let eventImgList = [];
+        let eventModalTab = 'photos'; // 'photos' | 'pages'
+        let currentPostId = null;
+
+        function t(obj, fallbackLang) {
+            if (!obj) return '';
+            if (typeof obj === 'string') return obj;
+            return obj[currentLang] || obj[fallbackLang] || obj.jp || obj.en || obj.zh || '';
+        }
+
+        function ui() {
+            return (typeof eventUiStrings !== 'undefined' && eventUiStrings[currentLang])
+                ? eventUiStrings[currentLang]
+                : eventUiStrings.jp;
+        }
 
         function init() {
             document.getElementById('currentLangDisplay').innerText = currentLang.toUpperCase();
             loadPostData();
+            setupEventModalGestures();
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeEventModal();
+            });
         }
 
         function loadPostData() {
             const params = new URLSearchParams(window.location.search);
             const postId = parseInt(params.get('id'));
+            currentPostId = postId;
             const post = siteData.posts.find(p => p.id === postId);
+            const showcase = document.getElementById('event-showcase');
+            showcase.classList.add('hidden');
+            showcase.innerHTML = '';
+            currentEvent = null;
 
             if (post) {
-                // --- SMART LANGUAGE FALLBACK ---
-                if (!post.title[currentLang] || post.title[currentLang] === "") {
-                    const availableLang = Object.keys(post.title).find(key => post.title[key] && post.title[key] !== "");
+                // --- SMART LANGUAGE FALLBACK (respect langs toggles) ---
+                const langAllowed = (lang) => {
+                    if (post.langs && typeof post.langs[lang] === 'boolean') return post.langs[lang];
+                    return true;
+                };
+                if (!langAllowed(currentLang) || !post.title[currentLang] || post.title[currentLang] === "") {
+                    const availableLang = ['jp', 'en', 'zh'].find(key =>
+                        langAllowed(key) && post.title[key] && post.title[key] !== ""
+                    );
                     if (availableLang) {
                         currentLang = availableLang;
                         const noticeDiv = document.createElement('div');
@@ -169,8 +276,14 @@
                 document.getElementById('post-img').src = post.img;
                 document.getElementById('post-tag').innerText = post.tag;
                 document.getElementById('post-title').innerText = post.title[currentLang];
-                document.getElementById('post-content').innerHTML += marked.parse(post.content[currentLang]);
+                const contentHtml = post.content[currentLang] ? marked.parse(post.content[currentLang]) : '';
+                document.getElementById('post-content').innerHTML += contentHtml;
                 document.title = `${post.tag} | ${post.title[currentLang]}`;
+
+                if (post.eventId && typeof eventCatalog !== 'undefined' && eventCatalog[post.eventId]) {
+                    currentEvent = eventCatalog[post.eventId];
+                    renderEventShowcase(currentEvent);
+                }
             } else {
                 document.getElementById('post-content').innerHTML = `
                     <div class="text-center py-20">
@@ -181,6 +294,213 @@
                 document.getElementById('post-title').innerText = "ERROR";
                 document.getElementById('post-img').style.display = 'none';
             }
+        }
+
+        function renderEventShowcase(event) {
+            const root = document.getElementById('event-showcase');
+            const strings = ui();
+            const debug = new URLSearchParams(window.location.search).get('hotspotDebug') === '1';
+            const showPulse = !localStorage.getItem('oshinagakiHintSeen');
+
+            const boothLine = t(event.meta && event.meta.booth);
+            const mapsHtml = (event.menuImages || []).map((menu, menuIdx) => {
+                const label = t(menu.label);
+                const hotspots = (menu.hotspots || []).map(h => {
+                    const [l, top, w, ht] = h.coords;
+                    const product = event.products[h.productId];
+                    const aria = product ? t(product.title) : h.productId;
+                    const cls = `oshinagaki-hotspot${debug ? ' debug' : ''}${showPulse ? ' pulse' : ''}`;
+                    return `<button type="button" class="${cls}"
+                        style="left:${l}%;top:${top}%;width:${w}%;height:${ht}%;"
+                        data-product-id="${h.productId}"
+                        aria-label="${aria.replace(/"/g, '&quot;')}"
+                        onclick="openEventProduct('${h.productId}')"></button>`;
+                }).join('');
+
+                return `
+                    <div class="mb-8 last:mb-0">
+                        ${label ? `<p class="text-xs font-mono text-gray-400 mb-2 tracking-widest uppercase">${label}</p>` : ''}
+                        <div class="relative w-full rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                            <img src="${menu.src}" alt="${t(event.title)} ${menuIdx + 1}" class="w-full h-auto block select-none" draggable="false" loading="${menuIdx === 0 ? 'eager' : 'lazy'}">
+                            ${hotspots}
+                        </div>
+                    </div>`;
+            }).join('');
+
+            const order = event.productOrder || Object.keys(event.products || {});
+            const cards = order.map(id => {
+                const p = event.products[id];
+                if (!p) return '';
+                const title = t(p.title);
+                const price = t(p.price);
+                const cat = strings.category[p.category] || p.category;
+                const thumb = p.thumb || (p.gallery && p.gallery[0]) || '';
+                const badge = p.isNew
+                    ? `<span class="absolute top-0 left-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1 z-10 shadow-md">${strings.newBadge}</span>`
+                    : '';
+                return `
+                    <button type="button" onclick="openEventProduct('${id}')"
+                        class="group text-left cursor-pointer flex flex-col h-full bg-white border border-gray-100 hover:border-tech-purple hover:shadow-md transition-all rounded-lg overflow-hidden">
+                        <div class="aspect-square relative bg-gray-100 overflow-hidden">
+                            <img src="${thumb}" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            ${badge}
+                            <div class="absolute bottom-0 left-0 bg-black/90 text-white text-xs font-bold px-2 py-1 font-mono">${price}</div>
+                        </div>
+                        <div class="p-3 flex flex-col flex-grow">
+                            <span class="text-[10px] font-mono text-gray-400 tracking-wider uppercase mb-1">${cat}</span>
+                            <h4 class="text-sm font-bold leading-snug group-hover:text-tech-purple transition-colors line-clamp-2">${title}</h4>
+                        </div>
+                    </button>`;
+            }).join('');
+
+            root.innerHTML = `
+                <div class="bg-white border border-gray-200 shadow-sm rounded-sm overflow-hidden">
+                    <div class="px-4 py-3 md:px-6 bg-black text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div>
+                            <p class="text-[10px] font-mono text-tech-purple tracking-widest uppercase">${event.meta ? event.meta.event : ''}</p>
+                            <h2 class="text-lg md:text-xl font-bold font-tech">${t(event.title)}</h2>
+                            ${boothLine ? `<p class="text-xs text-gray-400 mt-1 font-mono">${strings.booth}: ${boothLine}</p>` : ''}
+                        </div>
+                        <p class="text-xs text-tech-purple font-bold">${strings.hint}</p>
+                    </div>
+                    <div class="p-4 md:p-8">
+                        ${mapsHtml}
+                    </div>
+                </div>
+                <div class="mt-10 md:hidden">
+                    <h3 class="text-xl font-bold flex items-center gap-3 mb-6">
+                        <span class="w-1.5 h-6 bg-tech-purple block"></span>
+                        ${strings.listHeading}
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        ${cards}
+                    </div>
+                </div>`;
+
+            root.classList.remove('hidden');
+            if (showPulse) {
+                localStorage.setItem('oshinagakiHintSeen', '1');
+            }
+        }
+
+        function openEventProduct(productId) {
+            if (!currentEvent || !currentEvent.products[productId]) return;
+            currentProduct = currentEvent.products[productId];
+            eventModalTab = 'photos';
+            eventImgIndex = 0;
+            refreshEventModalImages();
+            fillEventModalMeta();
+            document.getElementById('event-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function fillEventModalMeta() {
+            const p = currentProduct;
+            const strings = ui();
+            document.getElementById('event-modal-title').innerText = t(p.title);
+            document.getElementById('event-modal-price').innerText = t(p.price);
+            document.getElementById('event-modal-specs').innerText = t(p.specs);
+            document.getElementById('event-modal-desc').innerHTML = t(p.desc);
+
+            const badges = document.getElementById('event-modal-badges');
+            const cat = strings.category[p.category] || p.category;
+            badges.innerHTML = `<span class="bg-gray-100 text-gray-700 text-xs font-bold px-2 py-1 rounded font-mono">${cat}</span>`;
+            if (p.isNew) {
+                badges.innerHTML += `<span class="bg-tech-purple text-black text-xs font-bold px-2 py-1 rounded">${strings.newBadge}</span>`;
+            }
+
+            const cta = p.cta || currentEvent.defaultCta;
+            const actions = document.getElementById('event-modal-actions');
+            if (cta && cta.url) {
+                const label = t(cta.label);
+                const target = cta.external !== false ? ' target="_blank" rel="noopener noreferrer"' : '';
+                actions.innerHTML = `<a href="${cta.url}"${target} class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">${label}</a>`;
+            } else {
+                actions.innerHTML = '';
+            }
+
+            renderEventModalTabs();
+            updateEventCarousel();
+        }
+
+        function renderEventModalTabs() {
+            const strings = ui();
+            const tabs = document.getElementById('event-modal-tabs');
+            const hasPages = currentProduct.pages && currentProduct.pages.length > 0;
+            if (!hasPages) {
+                tabs.innerHTML = '';
+                tabs.classList.add('hidden');
+                return;
+            }
+            tabs.classList.remove('hidden');
+            tabs.innerHTML = `
+                <button type="button" class="pb-2 text-sm ${eventModalTab === 'photos' ? 'event-tab-active' : 'text-gray-400'}" onclick="setEventModalTab('photos')">${strings.photos}</button>
+                <button type="button" class="pb-2 text-sm ${eventModalTab === 'pages' ? 'event-tab-active' : 'text-gray-400'}" onclick="setEventModalTab('pages')">${strings.pages}</button>
+            `;
+        }
+
+        function setEventModalTab(tab) {
+            eventModalTab = tab;
+            eventImgIndex = 0;
+            refreshEventModalImages();
+            renderEventModalTabs();
+            updateEventCarousel();
+        }
+
+        function refreshEventModalImages() {
+            if (eventModalTab === 'pages' && currentProduct.pages && currentProduct.pages.length) {
+                eventImgList = currentProduct.pages.slice();
+            } else {
+                eventImgList = (currentProduct.gallery && currentProduct.gallery.length)
+                    ? currentProduct.gallery.slice()
+                    : (currentProduct.thumb ? [currentProduct.thumb] : []);
+            }
+        }
+
+        function updateEventCarousel() {
+            const img = document.getElementById('event-modal-img');
+            if (!eventImgList.length) {
+                img.src = '';
+                img.alt = '';
+            } else {
+                img.src = eventImgList[eventImgIndex];
+                img.alt = t(currentProduct.title);
+            }
+            const multi = eventImgList.length > 1;
+            document.getElementById('event-prev-btn').classList.toggle('hidden', !multi);
+            document.getElementById('event-next-btn').classList.toggle('hidden', !multi);
+            document.getElementById('event-image-dots').innerHTML = eventImgList.map((_, idx) =>
+                `<div class="w-2 h-2 rounded-full transition-colors ${idx === eventImgIndex ? 'bg-black' : 'bg-gray-300'}"></div>`
+            ).join('');
+        }
+
+        function changeEventImage(dir) {
+            if (!eventImgList.length) return;
+            eventImgIndex += dir;
+            if (eventImgIndex < 0) eventImgIndex = eventImgList.length - 1;
+            if (eventImgIndex >= eventImgList.length) eventImgIndex = 0;
+            updateEventCarousel();
+        }
+
+        function closeEventModal() {
+            document.getElementById('event-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+            currentProduct = null;
+        }
+
+        function setupEventModalGestures() {
+            const imgEl = document.getElementById('event-modal-img');
+            if (!imgEl) return;
+            const container = imgEl.parentElement;
+            let touchStartX = 0;
+            container.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+            container.addEventListener('touchend', e => {
+                const dx = e.changedTouches[0].screenX - touchStartX;
+                if (dx < -50) changeEventImage(1);
+                if (dx > 50) changeEventImage(-1);
+            }, { passive: true });
         }
 
         function switchLang(lang) {
@@ -197,7 +517,12 @@
             
             // Clear content before reloading to prevent duplicates
             document.getElementById('post-content').innerHTML = ''; 
-            loadPostData(); 
+            const openId = currentProduct ? currentProduct.id : null;
+            closeEventModal();
+            loadPostData();
+            if (openId && currentEvent && currentEvent.products[openId]) {
+                openEventProduct(openId);
+            }
             
             const langMenu = document.getElementById('langMenuDesktop');
             if(langMenu) langMenu.classList.remove('open');

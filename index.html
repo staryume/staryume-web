@@ -252,7 +252,10 @@
             const container = document.getElementById('index-blog-container');
             if (!container) return;
 
-            let latestPosts = siteData.posts.filter(post => post.title[currentLang]);
+            let latestPosts = siteData.posts.filter(post => {
+                if (post.langs && typeof post.langs[currentLang] === 'boolean' && !post.langs[currentLang]) return false;
+                return post.title[currentLang];
+            });
             latestPosts.sort((a, b) => b.id - a.id);
             const displayPosts = latestPosts.slice(0, 3);
 

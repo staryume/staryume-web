@@ -6,15 +6,21 @@ const siteData = {
             "tag": "NEWS",
             "date": "2025/12/24",
             "img": "./blog/20251224/20251224thumb.jpg",
+            "eventId": "c107",
             "title": {
                 "jp": "C107お品書き",
                 "en": "C107 Product Details",
                 "zh": "C107 販售物情報"
             },
             "content": {
-                "jp": "\n## C107のお品書き\n\nお久しぶりです!C107のお品書きを公開いたします。\n<br>\nイベント当日お待ちしております!\n<br>\n![Image 01](./blog/20251224/c107pricelist01.jpg)\n![Image 02](./blog/20251224/c107pricelist02.jpg)\n                ",
-                "en": "\n## C107 Product Info\n\nSorry for the wait! Here comes the C107 products info。\n<br>\nSee you at Comic Market 107!\n<br>\n![Image 01](./blog/20251224/c107pricelist01.jpg)\n![Image 02](./blog/20251224/c107pricelist02.jpg)\n                ",
-                "zh": "\n## C107 販售物情報\n\n讓大家久等了! 現在終於可以公布 C107 的販售物情報。\n<br>\n期待 C107 活動當天見面!\n<br>\n![Image 01](./blog/20251224/c107pricelist01.jpg)\n![Image 02](./blog/20251224/c107pricelist02.jpg)\n                "
+                "jp": "\n## C107のお品書き\n\nお久しぶりです!C107のお品書きを公開いたします。\n<br>\nイベント当日お待ちしております!\n<br>\n下の画像から気になる商品をタップ／クリックすると詳細を確認できます。\n                ",
+                "en": "\n## C107 Product Info\n\nSorry for the wait! Here comes the C107 products info.\n<br>\nSee you at Comic Market 107!\n<br>\nTap or click a product on the menu below for details.\n                ",
+                "zh": "\n## C107 販售物情報\n\n讓大家久等了! 現在終於可以公布 C107 的販售物情報。\n<br>\n期待 C107 活動當天見面!\n<br>\n點擊下方圖上的商品即可查看詳細資訊。\n                "
+            },
+            "langs": {
+                "jp": true,
+                "en": true,
+                "zh": true
             }
         },
         {
@@ -31,6 +37,12 @@ const siteData = {
                 "jp": "\n## C107 販售物情報\n\nお待たせいたしました！\nC107 BOOTHにて通販を開始しました。\n\n冬コミセット、新作カードスリーブ、抱き枕カバーなどを取り扱っております。\n各商品で納期が異なる場合がございますので、まとめてご購入の際はご確認ください！\n\n👉https://staryume.booth.pm\n",
                 "en": "\n## C107 Products Online Purchase available!\n\nHere is the link！\n\n👉https://staryume.booth.pm\n",
                 "zh": null
+            },
+            "eventId": null,
+            "langs": {
+                "jp": true,
+                "en": true,
+                "zh": false
             }
         },
         {
@@ -47,6 +59,12 @@ const siteData = {
                 "jp": null,
                 "en": null,
                 "zh": "\n## 馬年快樂!\n\n新年快樂!2026馬年祝大家身體健康，龍馬精神!\n<br>\n馬年就當然是要畫馬娘，畫了我最喜歡的小鑽~\n<br>\n![Image 01](./blog/20260217/20260217satonoSNS.jpg)\n<br>\n然後就一個香港人限定的東西：<br>\n第一次試試看用 Payme 向各位朋友派一下開運利是\n<br>\n希望大家今年都能夠橫財就手!!!\n![Image 02](./blog/20260217/payme01.jpg)\n<br>\n假如想支持我今年有更多創作的話，也歡迎新年給利是我給我更多動力，收得到越多的話今年定當會更努力為大家畫多一些作品!!! :\n<br> (以下是 Payme 的「逗利是」用助養連結 w) \n![Image 03](./blog/20260217/payme02.jpg)\n                "
+            },
+            "eventId": null,
+            "langs": {
+                "jp": false,
+                "en": false,
+                "zh": true
             }
         },
         {
@@ -63,6 +81,34 @@ const siteData = {
                 "jp": "testing",
                 "en": "testing",
                 "zh": "\n## 馬年快樂!\n\n新年快樂!2026馬年祝大家身體健康，龍馬精神!\n<br>\n馬年就當然是要畫馬娘，畫了我最喜歡的小鑽~\n<br>\n![Image 01](./blog/20260217/20260217satonoSNS.jpg)\n<br>\n然後就一個香港人限定的東西：<br>\n第一次試試看用 Payme 向各位朋友派一下開運利是\n<br>\n希望大家今年都能夠橫財就手!!!\n![Image 02](./blog/20260217/payme01.jpg)\n<br>\n假如想支持我今年有更多創作的話，也歡迎新年給利是我給我更多動力，收得到越多的話今年定當會更努力為大家畫多一些作品!!! :\n<br> (以下是 Payme 的「逗利是」用助養連結 w) \n![Image 03](./blog/20260217/payme02.jpg)\n                "
+            },
+            "eventId": null,
+            "langs": {
+                "jp": true,
+                "en": true,
+                "zh": true
+            }
+        },
+        {
+            "id": 6,
+            "tag": "NEWS",
+            "date": "2026/07/19",
+            "img": "./blog/20251224/20251224thumb.jpg",
+            "eventId": "acghk2026",
+            "title": {
+                "jp": null,
+                "en": null,
+                "zh": "ACGHK2026 販售物情報"
+            },
+            "content": {
+                "jp": null,
+                "en": null,
+                "zh": "## ACGHK2026 販售物情報\n\n讓大家久等了! 現在終於可以公布 ACGHK2026 的販售物情報。\n<br>\n期待 ACGHK2026 活動當天見面!\n<br>\n點擊下方圖上的商品即可查看詳細資訊。"
+            },
+            "langs": {
+                "jp": false,
+                "en": false,
+                "zh": true
             }
         }
     ],

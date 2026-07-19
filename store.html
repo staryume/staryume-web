@@ -268,7 +268,8 @@
         function renderCategories() {
             const container = document.getElementById('category-tabs');
             container.innerHTML = storeConfig.categories.map(cat => {
-                return `<button onclick="scrollToCategory('${cat.id}')" class="px-5 py-2 text-sm font-bold text-gray-500 hover:text-black hover:bg-gray-200 rounded-full transition-colors whitespace-nowrap">${cat.name[currentLang]}</button>`;
+                const catName = cat.name[currentLang] || cat.name.en || cat.name.zh || cat.id;
+                return `<button onclick="scrollToCategory('${cat.id}')" class="px-5 py-2 text-sm font-bold text-gray-500 hover:text-black hover:bg-gray-200 rounded-full transition-colors whitespace-nowrap">${catName}</button>`;
             }).join('');
         }
 
@@ -280,7 +281,8 @@
                 const items = storeProducts.filter(p => {
                     if (!p.category.includes(cat.id)) return false;
                     if (p.regions && !p.regions.includes(currentRegion)) return false;
-                    if (!showOutOfStock && p.isSoldOut) return false; 
+                    if (!showOutOfStock && p.isSoldOut) return false;
+                    if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
                     return true;
                 });
 
@@ -294,7 +296,7 @@
                     <div class="flex justify-between items-center mb-6 px-2">
                         <h3 class="text-2xl font-bold flex items-center gap-3">
                             <span class="w-1.5 h-6 bg-tech-purple block"></span>
-                            ${cat.name[currentLang]}
+                            ${cat.name[currentLang] || cat.name.en || cat.name.zh || cat.id}
                         </h3>
                     </div>`;
 
@@ -326,7 +328,7 @@
 
         function renderCard(product, hiddenClass = '') {
             const price = (currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`;
-            const title = product.title[currentLang] || product.title['en'];
+            const title = product.title[currentLang] || product.title.en || product.title.zh || product.title.jp || '';
             const thumb = (product.imgs && product.imgs.length > 0) ? product.imgs[0] : product.img; 
             
             let badge = '';
@@ -355,7 +357,9 @@
             const container = document.getElementById('store-container');
             const results = storeProducts.filter(p => {
                 if (p.regions && !p.regions.includes(currentRegion)) return false;
-                return (p.title.en + p.title.zh).toLowerCase().includes(query);
+                if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
+                const hay = [p.title?.jp, p.title?.en, p.title?.zh].filter(Boolean).join(' ').toLowerCase();
+                return hay.includes(query.toLowerCase());
             });
             container.innerHTML = `
                 <div class="py-8">
@@ -376,9 +380,9 @@
             currentProductImgs = product.imgs || [product.img];
             updateCarousel(); 
 
-            document.getElementById('modal-title').innerText = product.title[currentLang] || product.title['en'];
+            document.getElementById('modal-title').innerText = product.title[currentLang] || product.title.en || product.title.zh || product.title.jp || '';
             document.getElementById('modal-price').innerText = price;
-            document.getElementById('modal-desc').innerHTML = product.desc[currentLang] || product.desc['en'];
+            document.getElementById('modal-desc').innerHTML = product.desc[currentLang] || product.desc.en || product.desc.zh || product.desc.jp || '';
             
             // --- UPDATED BADGES: ID REMOVED ---
             const badges = document.getElementById('modal-badges');

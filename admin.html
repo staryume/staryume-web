@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>staryume Admin</title>
+  <title>staryume Admin CMS</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.js"></script>
   <script>
     tailwind.config = {
@@ -13,429 +14,554 @@
         extend: {
           colors: {
             'tech-purple': '#D8B4FE',
-            'tech-gray':   '#f2f2f2',
-            'tech-black':  '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+            'tech-black': '#0a0a0a',
           }
         }
       }
     }
   </script>
   <style>
-    .lang-tab { border-bottom: 2px solid transparent; cursor: pointer; }
-    .lang-tab.active { border-bottom-color: #0a0a0a; font-weight: 700; color: #0a0a0a; }
-    .lang-tab:not(.active) { color: #9ca3af; }
-    .lang-tab:not(.active):hover { color: #374151; }
-    /* Tighten up EasyMDE inside the card */
+    .lang-tab, .post-lang-tab, .store-lang-tab {
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+    .lang-tab.active, .post-lang-tab.active, .store-lang-tab.active {
+      border-bottom-color: #0a0a0a;
+      font-weight: 700;
+      color: #0a0a0a;
+    }
+    .lang-tab:not(.active), .post-lang-tab:not(.active), .store-lang-tab:not(.active) {
+      color: #9ca3af;
+    }
     .EasyMDEContainer .CodeMirror { font-size: 13px; }
   </style>
 </head>
 <body class="bg-gray-100 min-h-screen font-sans text-[#0a0a0a]">
 
-  <!-- Header -->
-  <header class="bg-[#0a0a0a] text-white px-6 py-4 flex items-center justify-between sticky top-0 z-50 shadow-lg">
-    <h1 class="text-lg font-bold tracking-widest font-mono">staryume / admin</h1>
-    <div class="flex gap-3 items-center">
-      <button id="btnOpen" onclick="openFile()"
-        class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-mono transition">
-        📂 Open data.js
+  <header class="bg-[#0a0a0a] text-white px-4 md:px-6 py-3 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 shadow-lg">
+    <div class="flex items-center gap-3">
+      <h1 class="text-sm md:text-lg font-bold tracking-widest font-mono">staryume / cms</h1>
+      <span id="dirtyBadge" class="hidden text-[10px] font-mono bg-amber-400 text-black px-2 py-0.5 rounded">UNSAVED</span>
+      <span id="folderLabel" class="hidden sm:inline text-xs font-mono text-gray-400"></span>
+    </div>
+    <div class="flex gap-2 items-center flex-wrap">
+      <button id="btnReopen" type="button"
+        class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded text-xs font-mono transition">
+        Reopen last
       </button>
-      <button id="btnSave" onclick="saveFile()" disabled
-        class="px-4 py-2 bg-[#D8B4FE] text-black hover:bg-purple-300 rounded text-sm font-mono transition disabled:opacity-40 disabled:cursor-not-allowed">
-        💾 Save data.js
+      <button id="btnOpen" type="button"
+        class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-xs font-mono transition">
+        Open project folder
+      </button>
+      <button id="btnSave" type="button" disabled
+        class="px-3 py-2 bg-[#D8B4FE] text-black hover:bg-purple-300 rounded text-xs font-mono transition disabled:opacity-40 disabled:cursor-not-allowed">
+        Save all
       </button>
     </div>
   </header>
 
-  <!-- Toast -->
+  <div id="fsWarning" class="hidden bg-red-600 text-white text-center text-sm font-mono py-2 px-4">
+    File System Access API not available. Use Chrome or Edge on desktop.
+  </div>
+
   <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
     <div id="toastInner" class="px-5 py-3 rounded-lg shadow-xl font-mono text-sm text-white"></div>
   </div>
 
-  <main class="max-w-4xl mx-auto px-4 py-8">
+  <!-- Placeholder -->
+  <div id="placeholder" class="text-center py-24 px-4 text-gray-400 max-w-xl mx-auto">
+    <div class="text-5xl mb-4">📁</div>
+    <p class="text-lg font-mono mb-2 text-gray-600">Open your site project folder</p>
+    <p class="text-sm mb-4">Select the folder that contains <code class="bg-gray-200 px-1 rounded">data.js</code>, <code class="bg-gray-200 px-1 rounded">store.js</code>, and <code class="bg-gray-200 px-1 rounded">events.js</code>.</p>
+    <p class="text-xs text-gray-400 mb-6">Chrome / Edge · local only · then git push to deploy</p>
+    <button type="button" onclick="document.getElementById('btnOpen').click()"
+      class="px-6 py-3 bg-tech-black text-white rounded-lg font-mono text-sm hover:bg-gray-800">
+      Open project folder
+    </button>
+  </div>
 
-    <!-- Placeholder (before file is loaded) -->
-    <div id="placeholder" class="text-center py-32 text-gray-400">
-      <div class="text-6xl mb-4">📄</div>
-      <p class="text-lg font-mono mb-2">Open data.js to get started</p>
-      <p class="text-sm text-gray-300">Chrome only — uses File System Access API</p>
-    </div>
+  <!-- Workspace -->
+  <div id="workspace" class="hidden max-w-5xl mx-auto px-4 py-6">
+    <nav class="flex flex-wrap gap-2 mb-6 bg-gray-200/80 p-1.5 rounded-xl">
+      <button type="button" data-nav="blog" class="px-4 py-2 rounded-lg text-sm font-mono bg-white text-tech-black shadow">Blog</button>
+      <button type="button" data-nav="events" class="px-4 py-2 rounded-lg text-sm font-mono text-gray-400">Events</button>
+      <button type="button" data-nav="gallery" class="px-4 py-2 rounded-lg text-sm font-mono text-gray-400">Gallery</button>
+      <button type="button" data-nav="store" class="px-4 py-2 rounded-lg text-sm font-mono text-gray-400">Store</button>
+      <button type="button" data-nav="shop" class="px-4 py-2 rounded-lg text-sm font-mono text-gray-400">Shop settings</button>
+    </nav>
 
-    <!-- Post List View -->
-    <div id="listView" class="hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold font-mono">Blog Posts</h2>
-        <button onclick="newPost()"
-          class="px-4 py-2 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded font-mono text-sm transition">
-          + New Post
-        </button>
+    <!-- ═══════ BLOG ═══════ -->
+    <section data-section="blog">
+      <div id="postListView">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold font-mono">Blog Posts</h2>
+          <button id="btnNewPost" type="button"
+            class="px-4 py-2 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded font-mono text-sm transition">
+            + New Post
+          </button>
+        </div>
+        <div id="postList" class="flex flex-col gap-3"></div>
       </div>
-      <div id="postList" class="flex flex-col gap-3"></div>
-    </div>
 
-    <!-- Edit / Create View -->
-    <div id="editView" class="hidden">
-      <div class="flex justify-between items-center mb-6">
-        <h2 id="editHeading" class="text-2xl font-bold font-mono">New Post</h2>
-        <button onclick="showList()"
-          class="px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded font-mono text-sm transition">
-          ← Cancel
-        </button>
-      </div>
+      <div id="postEditView" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 id="editHeading" class="text-2xl font-bold font-mono">New Post</h2>
+          <button id="btnCancelPost" type="button"
+            class="px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded font-mono text-sm transition">
+            ← Back
+          </button>
+        </div>
 
-      <div class="bg-white rounded-xl shadow p-6 space-y-6">
+        <div class="bg-white rounded-xl shadow p-6 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Tag</label>
+              <select id="fTag"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+                <option>NEWS</option>
+                <option>NOTICE</option>
+                <option>DIARY</option>
+                <option>ACTIVITY</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Date</label>
+              <input id="fDate" type="date"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+            </div>
+          </div>
 
-        <!-- Tag + Date -->
-        <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Tag</label>
-            <select id="fTag"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
-              <option>NEWS</option>
-              <option>NOTICE</option>
-              <option>DIARY</option>
-              <option>ACTIVITY</option>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Event お品書き (optional)</label>
+            <select id="fEventId"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+              <option value="">— none —</option>
+            </select>
+            <p class="text-[11px] text-gray-400 mt-1 font-mono">Links this post to interactive menu in events.js (Events tab).</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Thumbnail</label>
+            <div class="flex gap-2">
+              <input id="fImg" type="text" placeholder="./blog/YYYYMMDD/thumb.jpg"
+                class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+              <button id="btnPickThumb" type="button"
+                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-mono whitespace-nowrap">
+                Image…
+              </button>
+            </div>
+            <div id="thumbWrap" class="mt-2 hidden">
+              <img id="thumbImg" class="h-28 rounded-lg border object-cover" alt="thumbnail preview">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Visible languages</label>
+            <div class="flex flex-wrap gap-4">
+              <label class="inline-flex items-center gap-2 text-sm font-mono cursor-pointer">
+                <input type="checkbox" id="langOn-jp" checked class="rounded"> JP
+              </label>
+              <label class="inline-flex items-center gap-2 text-sm font-mono cursor-pointer">
+                <input type="checkbox" id="langOn-en" checked class="rounded"> EN
+              </label>
+              <label class="inline-flex items-center gap-2 text-sm font-mono cursor-pointer">
+                <input type="checkbox" id="langOn-zh" checked class="rounded"> ZH
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex gap-0 mb-5 border-b border-gray-200">
+              <button type="button" class="post-lang-tab active px-5 py-2 text-sm font-mono" data-lang="jp">JP</button>
+              <button type="button" class="post-lang-tab px-5 py-2 text-sm font-mono" data-lang="en">EN</button>
+              <button type="button" class="post-lang-tab px-5 py-2 text-sm font-mono" data-lang="zh">ZH</button>
+            </div>
+
+            <div id="panel-jp" class="post-lang-panel space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Title (JP)</label>
+                <input id="fTitle-jp" type="text" placeholder="タイトル"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Content (JP)</label>
+                <textarea id="editor-jp"></textarea>
+              </div>
+            </div>
+            <div id="panel-en" class="post-lang-panel hidden space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Title (EN)</label>
+                <input id="fTitle-en" type="text" placeholder="Title"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Content (EN)</label>
+                <textarea id="editor-en"></textarea>
+              </div>
+            </div>
+            <div id="panel-zh" class="post-lang-panel hidden space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Title (ZH)</label>
+                <input id="fTitle-zh" type="text" placeholder="標題"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Content (ZH)</label>
+                <textarea id="editor-zh"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2 border-t border-gray-100">
+            <button id="btnSavePost" type="button"
+              class="px-6 py-2.5 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded-lg font-mono text-sm transition">
+              ✓ Save Post
+            </button>
+            <button id="btnCancelPost2" type="button"
+              class="px-6 py-2.5 border border-gray-200 hover:bg-gray-100 rounded-lg font-mono text-sm transition">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════ GALLERY ═══════ -->
+    <section data-section="gallery" class="hidden">
+      <div id="galleryListView">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold font-mono">Gallery</h2>
+          <button id="btnNewGallery" type="button"
+            class="px-4 py-2 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded font-mono text-sm transition">
+            + Add image
+          </button>
+        </div>
+        <div id="galleryList" class="flex flex-col gap-3"></div>
+      </div>
+
+      <div id="galleryEditView" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 id="galleryEditHeading" class="text-2xl font-bold font-mono">New gallery item</h2>
+          <button id="btnCancelGallery" type="button"
+            class="px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded font-mono text-sm">← Back</button>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Tag</label>
+            <select id="gTag" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+              <option>FANART</option>
+              <option>ORIGINAL</option>
+              <option>COMMISSION</option>
+              <option>OTHER</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Date</label>
-            <input id="fDate" type="date"
-              class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
+            <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Image</label>
+            <div class="flex gap-2">
+              <input id="gSrc" type="text" placeholder="./assets/gallery/..."
+                class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+              <button id="btnPickGalleryImg" type="button"
+                class="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-mono whitespace-nowrap">Image…</button>
+            </div>
+            <div id="gPreviewWrap" class="mt-3 hidden">
+              <img id="gPreviewImg" class="max-h-64 rounded-lg border object-contain" alt="preview">
+            </div>
+          </div>
+          <div class="flex gap-3 pt-2 border-t">
+            <button id="btnSaveGallery" type="button" class="px-6 py-2.5 bg-tech-black text-white rounded-lg font-mono text-sm">✓ Save</button>
+            <button id="btnCancelGallery2" type="button" class="px-6 py-2.5 border rounded-lg font-mono text-sm">Cancel</button>
           </div>
         </div>
-
-        <!-- Thumbnail URL -->
-        <div>
-          <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Thumbnail URL</label>
-          <input id="fImg" type="text" placeholder="./blog/YYYYMMDD/thumb.jpg"
-            oninput="updateThumb()"
-            class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
-          <div id="thumbWrap" class="mt-2 hidden">
-            <img id="thumbImg" class="h-28 rounded-lg border object-cover" alt="thumbnail preview">
-          </div>
-        </div>
-
-        <!-- Language tabs -->
-        <div>
-          <div class="flex gap-0 mb-5 border-b border-gray-200">
-            <button class="lang-tab active px-5 py-2 text-sm font-mono" data-lang="jp" onclick="switchLang('jp')">JP</button>
-            <button class="lang-tab px-5 py-2 text-sm font-mono" data-lang="en" onclick="switchLang('en')">EN</button>
-            <button class="lang-tab px-5 py-2 text-sm font-mono" data-lang="zh" onclick="switchLang('zh')">ZH</button>
-          </div>
-
-          <div id="panel-jp" class="lang-panel space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Title (JP)</label>
-              <input id="fTitle-jp" type="text" placeholder="タイトル（空欄可）"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Content (JP)</label>
-              <textarea id="editor-jp"></textarea>
-            </div>
-          </div>
-
-          <div id="panel-en" class="lang-panel hidden space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Title (EN)</label>
-              <input id="fTitle-en" type="text" placeholder="Title (optional)"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Content (EN)</label>
-              <textarea id="editor-en"></textarea>
-            </div>
-          </div>
-
-          <div id="panel-zh" class="lang-panel hidden space-y-3">
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Title (ZH)</label>
-              <input id="fTitle-zh" type="text" placeholder="標題（可留空）"
-                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:bg-white transition">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase tracking-wider">Content (ZH)</label>
-              <textarea id="editor-zh"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <!-- Form actions -->
-        <div class="flex gap-3 pt-2 border-t border-gray-100">
-          <button onclick="savePost()"
-            class="px-6 py-2.5 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded-lg font-mono text-sm transition">
-            ✓ Save Post
-          </button>
-          <button onclick="showList()"
-            class="px-6 py-2.5 border border-gray-200 hover:bg-gray-100 rounded-lg font-mono text-sm transition">
-            Cancel
-          </button>
-        </div>
-
       </div>
-    </div>
+    </section>
 
-  </main>
+    <!-- ═══════ STORE ═══════ -->
+    <section data-section="store" class="hidden">
+      <div id="storeListView">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="text-2xl font-bold font-mono">Store products</h2>
+          <button id="btnNewProduct" type="button"
+            class="px-4 py-2 bg-[#0a0a0a] text-white hover:bg-gray-800 rounded font-mono text-sm">
+            + New product
+          </button>
+        </div>
+        <div id="storeList" class="flex flex-col gap-3"></div>
+      </div>
 
-  <script>
-    // ─── State ────────────────────────────────────────────────────────────────
-    let fileHandle = null;
-    let siteData   = null;
-    let editingId  = null;   // null = new post
-    let editors    = {};     // { jp, en, zh } EasyMDE instances
-
-    // ─── File System Access API ───────────────────────────────────────────────
-    async function openFile() {
-      try {
-        [fileHandle] = await window.showOpenFilePicker({
-          types: [{ description: 'JavaScript file', accept: { 'text/javascript': ['.js'] } }],
-          multiple: false
-        });
-        const file = await fileHandle.getFile();
-        const text = await file.text();
-        try {
-          const fn = new Function(text + '\nreturn siteData;');
-          siteData = fn();
-        } catch (parseErr) {
-          showToast('Failed to parse data.js: ' + parseErr.message, 'error');
-          fileHandle = null;
-          return;
-        }
-        document.getElementById('btnSave').disabled = false;
-        showList();
-      } catch (e) {
-        if (e.name !== 'AbortError') showToast('Error opening file: ' + e.message, 'error');
-      }
-    }
-
-    async function saveFile() {
-      if (!fileHandle || !siteData) return;
-      try {
-        // Serialize: preserve posts, gallery, and translations exactly as-is.
-        // JSON.stringify safely handles all markdown content (newlines, quotes, etc.)
-        const content = '// GLOBAL SITE DATA\nconst siteData = ' +
-          JSON.stringify(siteData, null, 4) + ';\n';
-        const writable = await fileHandle.createWritable();
-        await writable.write(content);
-        await writable.close();
-        showToast('✓ data.js saved successfully!');
-      } catch (e) {
-        showToast('Save failed: ' + e.message, 'error');
-      }
-    }
-
-    // ─── View switching ───────────────────────────────────────────────────────
-    function showList() {
-      document.getElementById('placeholder').classList.add('hidden');
-      document.getElementById('editView').classList.add('hidden');
-      document.getElementById('listView').classList.remove('hidden');
-      renderList();
-    }
-
-    function showEdit() {
-      document.getElementById('placeholder').classList.add('hidden');
-      document.getElementById('listView').classList.add('hidden');
-      document.getElementById('editView').classList.remove('hidden');
-    }
-
-    // ─── Post List ────────────────────────────────────────────────────────────
-    const TAG_BADGE = {
-      NEWS:     'bg-purple-100 text-purple-700',
-      NOTICE:   'bg-yellow-100 text-yellow-700',
-      DIARY:    'bg-green-100  text-green-700',
-      ACTIVITY: 'bg-blue-100   text-blue-700',
-    };
-
-    function renderList() {
-      const el = document.getElementById('postList');
-      const posts = [...siteData.posts].sort((a, b) => b.id - a.id);
-      if (posts.length === 0) {
-        el.innerHTML = '<p class="text-center text-gray-400 py-12 font-mono">No posts yet.</p>';
-        return;
-      }
-      el.innerHTML = posts.map(p => {
-        const title = p.title.jp || p.title.en || p.title.zh || '(untitled)';
-        const badge = TAG_BADGE[p.tag] || 'bg-gray-100 text-gray-600';
-        const imgHtml = p.img
-          ? `<img src="${p.img}" onerror="this.style.display='none'" class="w-16 h-16 object-cover rounded-lg flex-shrink-0">`
-          : `<div class="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center text-2xl flex-shrink-0 text-gray-300">🖼</div>`;
-        return `
-          <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition group">
-            ${imgHtml}
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-bold px-2 py-0.5 rounded font-mono ${badge}">${p.tag}</span>
-                <span class="text-xs text-gray-400 font-mono">${p.date}</span>
-                <span class="text-xs text-gray-300 font-mono">#${p.id}</span>
-              </div>
-              <p class="font-semibold text-gray-800 truncate text-sm">${escHtml(title)}</p>
-            </div>
-            <div class="flex gap-2 flex-shrink-0 opacity-60 group-hover:opacity-100 transition">
-              <button onclick="editPost(${p.id})"
-                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-mono transition">Edit</button>
-              <button onclick="deletePost(${p.id})"
-                class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-mono transition">Delete</button>
+      <div id="storeEditView" class="hidden">
+        <div class="flex justify-between items-center mb-6">
+          <h2 id="storeEditHeading" class="text-2xl font-bold font-mono">New product</h2>
+          <button id="btnCancelProduct" type="button"
+            class="px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded font-mono text-sm">← Back</button>
+        </div>
+        <div class="bg-white rounded-xl shadow p-6 space-y-5">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Categories</label>
+            <div id="pCatBoxes" class="flex flex-wrap gap-2"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Regions</label>
+            <div class="flex gap-4">
+              <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" name="pRegion" value="TW" class="rounded"> TW</label>
+              <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" name="pRegion" value="HK" class="rounded"> HK</label>
             </div>
           </div>
-        `;
-      }).join('');
-    }
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Price TW</label>
+              <input id="pPriceTW" type="number" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Price HK</label>
+              <input id="pPriceHK" type="number" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Link TW</label>
+              <input id="pLinkTW" type="url" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Link HK</label>
+              <input id="pLinkHK" type="url" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+          </div>
+          <div class="flex gap-6">
+            <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" id="pIsNew" class="rounded"> isNew</label>
+            <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" id="pIsSoldOut" class="rounded"> isSoldOut</label>
+          </div>
 
-    // ─── EasyMDE editors ──────────────────────────────────────────────────────
-    function initEditors() {
-      // Show ALL panels so CodeMirror can measure dimensions correctly.
-      // switchLang() will hide the inactive ones after init.
-      document.querySelectorAll('.lang-panel').forEach(p => p.classList.remove('hidden'));
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-xs font-bold text-gray-500 uppercase">Images</label>
+              <button id="btnAddProductImg" type="button" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-xs font-mono">+ Image…</button>
+            </div>
+            <div id="pImgList" class="space-y-2"></div>
+          </div>
 
-      for (const lang of ['jp', 'en', 'zh']) {
-        if (editors[lang]) {
-          try { editors[lang].toTextArea(); } catch (e) { /* already cleaned up */ }
-          editors[lang] = null;
-        }
-      }
-      for (const lang of ['jp', 'en', 'zh']) {
-        editors[lang] = new EasyMDE({
-          element: document.getElementById('editor-' + lang),
-          spellChecker: false,
-          autofocus: false,
-          status: false,
-          minHeight: '220px',
-          toolbar: [
-            'bold', 'italic', 'heading-2', 'heading-3', '|',
-            'quote', 'unordered-list', 'ordered-list', '|',
-            'link', 'image', '|',
-            'preview', 'side-by-side', 'fullscreen'
-          ],
-        });
-      }
-    }
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-2 uppercase">Visible languages</label>
+            <div class="flex flex-wrap gap-4">
+              <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" id="pLangOn-jp" class="rounded"> JP</label>
+              <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" id="pLangOn-en" checked class="rounded"> EN</label>
+              <label class="inline-flex items-center gap-2 text-sm font-mono"><input type="checkbox" id="pLangOn-zh" checked class="rounded"> ZH</label>
+            </div>
+          </div>
 
-    // ─── New Post ─────────────────────────────────────────────────────────────
-    function newPost() {
-      editingId = null;
-      document.getElementById('editHeading').textContent = 'New Post';
-      document.getElementById('fTag').value  = 'NEWS';
-      document.getElementById('fDate').value = new Date().toISOString().slice(0, 10);
-      document.getElementById('fImg').value  = '';
-      updateThumb();
-      for (const lang of ['jp', 'en', 'zh']) {
-        document.getElementById('fTitle-' + lang).value = '';
-      }
-      showEdit();
-      initEditors();
-      for (const lang of ['jp', 'en', 'zh']) editors[lang].value('');
-      switchLang('jp');
-    }
+          <div>
+            <div class="flex gap-0 mb-4 border-b border-gray-200">
+              <button type="button" class="store-lang-tab px-5 py-2 text-sm font-mono" data-lang="jp">JP</button>
+              <button type="button" class="store-lang-tab px-5 py-2 text-sm font-mono" data-lang="en">EN</button>
+              <button type="button" class="store-lang-tab active px-5 py-2 text-sm font-mono" data-lang="zh">ZH</button>
+            </div>
+            <div id="p-panel-jp" class="store-lang-panel hidden space-y-3">
+              <input id="pTitle-jp" type="text" placeholder="Title JP" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50">
+              <textarea id="pDesc-jp" rows="5" placeholder="Description HTML (JP)" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 font-mono"></textarea>
+            </div>
+            <div id="p-panel-en" class="store-lang-panel hidden space-y-3">
+              <input id="pTitle-en" type="text" placeholder="Title EN" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50">
+              <textarea id="pDesc-en" rows="5" placeholder="Description HTML (EN)" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 font-mono"></textarea>
+            </div>
+            <div id="p-panel-zh" class="store-lang-panel space-y-3">
+              <input id="pTitle-zh" type="text" placeholder="Title ZH" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50">
+              <textarea id="pDesc-zh" rows="5" placeholder="Description HTML (ZH)" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-gray-50 font-mono"></textarea>
+            </div>
+          </div>
 
-    // ─── Edit Post ────────────────────────────────────────────────────────────
-    function editPost(id) {
-      const post = siteData.posts.find(p => p.id === id);
-      if (!post) return;
-      editingId = id;
-      document.getElementById('editHeading').textContent = 'Edit Post #' + id;
-      document.getElementById('fTag').value  = post.tag;
-      document.getElementById('fDate').value = (post.date || '').replace(/\//g, '-');
-      document.getElementById('fImg').value  = post.img || '';
-      updateThumb();
-      for (const lang of ['jp', 'en', 'zh']) {
-        document.getElementById('fTitle-' + lang).value = post.title[lang] || '';
-      }
-      showEdit();
-      initEditors();
-      for (const lang of ['jp', 'en', 'zh']) {
-        editors[lang].value(post.content[lang] || '');
-      }
-      switchLang('jp');
-    }
+          <div class="flex gap-3 pt-2 border-t">
+            <button id="btnSaveProduct" type="button" class="px-6 py-2.5 bg-tech-black text-white rounded-lg font-mono text-sm">✓ Save product</button>
+            <button id="btnCancelProduct2" type="button" class="px-6 py-2.5 border rounded-lg font-mono text-sm">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    // ─── Save Post (in-memory) ────────────────────────────────────────────────
-    function savePost() {
-      const dateRaw = document.getElementById('fDate').value;
-      if (!dateRaw) { showToast('Please pick a date.', 'error'); return; }
+    <!-- ═══════ EVENTS お品書き ═══════ -->
+    <section data-section="events" class="hidden">
+      <div id="eventListView">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h2 class="text-2xl font-bold font-mono">Events / お品書き</h2>
+            <p class="text-xs text-gray-400 font-mono mt-1">Menu images, hotspots, product modals · saved to events.js</p>
+          </div>
+        </div>
+        <div id="eventList" class="flex flex-col gap-3"></div>
+      </div>
 
-      const maxId = siteData.posts.length > 0
-        ? Math.max(...siteData.posts.map(p => p.id))
-        : 0;
+      <div id="eventEditView" class="hidden">
+        <div class="flex justify-between items-center mb-6 gap-3 flex-wrap">
+          <h2 id="evEditHeading" class="text-2xl font-bold font-mono">Edit event</h2>
+          <button id="btnCancelEvent" type="button"
+            class="px-4 py-2 border border-gray-300 hover:bg-gray-200 rounded font-mono text-sm">
+            ← Back
+          </button>
+        </div>
 
-      const post = {
-        id:   editingId !== null ? editingId : maxId + 1,
-        tag:  document.getElementById('fTag').value,
-        date: dateRaw.replace(/-/g, '/'),
-        img:  document.getElementById('fImg').value.trim() || null,
-        title: {
-          jp: document.getElementById('fTitle-jp').value.trim() || null,
-          en: document.getElementById('fTitle-en').value.trim() || null,
-          zh: document.getElementById('fTitle-zh').value.trim() || null,
-        },
-        content: {
-          jp: editors.jp ? (editors.jp.value().trim() || null) : null,
-          en: editors.en ? (editors.en.value().trim() || null) : null,
-          zh: editors.zh ? (editors.zh.value().trim() || null) : null,
-        }
-      };
+        <div class="bg-white rounded-xl shadow p-6 space-y-6 mb-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Event ID</label>
+              <input id="evId" type="text" readonly
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-100 text-gray-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Meta event name</label>
+              <input id="evMetaEvent" type="text" placeholder="ACGHK 2026"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Dates</label>
+              <input id="evMetaDates" type="text" placeholder="2026/…"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Default CTA URL</label>
+              <input id="evCtaUrl" type="text" placeholder="https://…"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+          </div>
 
-      if (editingId !== null) {
-        const idx = siteData.posts.findIndex(p => p.id === editingId);
-        if (idx !== -1) siteData.posts[idx] = post;
-        showToast('Post updated — click 💾 to write to disk.');
-      } else {
-        siteData.posts.push(post);
-        showToast(`Post #${post.id} created — click 💾 to write to disk.`);
-      }
-      showList();
-    }
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5">Title JP</label>
+              <input id="evTitle-jp" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 mt-3">Booth JP</label>
+              <input id="evBooth-jp" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 mt-3">CTA label JP</label>
+              <input id="evCtaLabel-jp" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5">Title EN</label>
+              <input id="evTitle-en" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 mt-3">Booth EN</label>
+              <input id="evBooth-en" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 mt-3">CTA label EN</label>
+              <input id="evCtaLabel-en" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5">Title ZH</label>
+              <input id="evTitle-zh" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 mt-3">Booth ZH</label>
+              <input id="evBooth-zh" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 mt-3">CTA label ZH</label>
+              <input id="evCtaLabel-zh" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+            </div>
+          </div>
+        </div>
 
-    // ─── Delete Post ──────────────────────────────────────────────────────────
-    function deletePost(id) {
-      const post = siteData.posts.find(p => p.id === id);
-      const name = post
-        ? (post.title.jp || post.title.en || post.title.zh || 'this post')
-        : 'this post';
-      if (!confirm(`Delete post #${id}: "${name}"?\n\nChange is in memory only until you Save data.js.`)) return;
-      siteData.posts = siteData.posts.filter(p => p.id !== id);
-      renderList();
-      showToast('Post deleted — click 💾 to write to disk.');
-    }
+        <!-- Hotspot editor -->
+        <div class="bg-white rounded-xl shadow p-6 space-y-4 mb-6">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="font-bold font-mono text-lg">Menu image & hotspots</h3>
+            <div id="evMenuTabs" class="flex flex-wrap gap-2"></div>
+          </div>
 
-    // ─── Language tab switching ───────────────────────────────────────────────
-    function switchLang(lang) {
-      document.querySelectorAll('.lang-tab').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.lang === lang);
-      });
-      document.querySelectorAll('.lang-panel').forEach(p => p.classList.add('hidden'));
-      document.getElementById('panel-' + lang).classList.remove('hidden');
-      // Refresh CodeMirror after the panel becomes visible
-      if (editors[lang]) {
-        setTimeout(() => editors[lang].codemirror.refresh(), 20);
-      }
-    }
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Menu image path</label>
+              <div class="flex gap-2">
+                <input id="evMenuSrc" type="text" placeholder="./blog/…/menu.jpg"
+                  class="flex-1 border border-gray-200 rounded-lg px-3 py-2 font-mono text-sm bg-gray-50">
+                <button id="btnPickMenuImg" type="button" class="px-3 py-2 bg-gray-100 rounded-lg text-xs font-mono">Image…</button>
+              </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Label JP</label>
+                <input id="evMenuLabel-jp" type="text" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-gray-50">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Label EN</label>
+                <input id="evMenuLabel-en" type="text" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-gray-50">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-400 mb-1">Label ZH</label>
+                <input id="evMenuLabel-zh" type="text" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-gray-50">
+              </div>
+            </div>
+          </div>
 
-    // ─── Thumbnail preview ────────────────────────────────────────────────────
-    function updateThumb() {
-      const url = document.getElementById('fImg').value.trim();
-      document.getElementById('thumbImg').src = url;
-      document.getElementById('thumbWrap').classList.toggle('hidden', !url);
-    }
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="btnAddHotspot" type="button" class="px-3 py-1.5 bg-tech-black text-white rounded-lg text-xs font-mono">+ Add box</button>
+            <button id="btnDelHotspot" type="button" class="px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-xs font-mono">Delete selected</button>
+            <select id="evHotspotProduct" class="border border-gray-200 rounded-lg px-2 py-1.5 text-xs font-mono bg-gray-50 min-w-[12rem]"></select>
+            <span id="evHotspotCoords" class="text-[11px] font-mono text-gray-400">No hotspot selected</span>
+          </div>
+          <p class="text-[11px] text-gray-400 font-mono">Drag on empty area to draw · drag box to move · purple corner to resize · assign product from dropdown</p>
 
-    // ─── Toast ────────────────────────────────────────────────────────────────
-    let toastTimer = null;
-    function showToast(msg, type = 'success') {
-      const inner = document.getElementById('toastInner');
-      inner.textContent = msg;
-      inner.className = 'px-5 py-3 rounded-lg shadow-xl font-mono text-sm text-white ' +
-        (type === 'error' ? 'bg-red-600' : 'bg-green-700');
-      document.getElementById('toast').classList.remove('hidden');
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => document.getElementById('toast').classList.add('hidden'), 3500);
-    }
+          <div id="evHotspotStage" class="relative w-full max-w-3xl mx-auto border border-gray-200 rounded-lg overflow-hidden bg-gray-100 select-none touch-none">
+            <img id="evHotspotImg" src="" alt="menu" class="w-full h-auto block pointer-events-none" draggable="false">
+          </div>
+        </div>
 
-    // ─── Util ─────────────────────────────────────────────────────────────────
-    function escHtml(str) {
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-  </script>
+        <div class="bg-white rounded-xl shadow p-6 mb-6">
+          <h3 class="font-bold font-mono text-lg mb-3">Products (read-only list)</h3>
+          <p class="text-[11px] text-gray-400 font-mono mb-3">Edit product titles/prices in events.js for now, or clone C107 products as baseline.</p>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left">
+              <thead>
+                <tr class="text-[10px] font-mono text-gray-400 uppercase border-b">
+                  <th class="py-1 pr-2">ID</th>
+                  <th class="py-1">Title</th>
+                  <th class="py-1">Cat</th>
+                </tr>
+              </thead>
+              <tbody id="evProductTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <p class="text-xs text-gray-400 font-mono mb-8">Remember: header <strong>Save all</strong> writes events.js. Preview: <code class="bg-gray-200 px-1 rounded">post.html?id=N</code> or <code class="bg-gray-200 px-1 rounded">?hotspotDebug=1</code></p>
+      </div>
+    </section>
+
+    <!-- ═══════ SHOP SETTINGS ═══════ -->
+    <section data-section="shop" class="hidden">
+      <h2 class="text-2xl font-bold font-mono mb-6">Shop settings</h2>
+      <div class="bg-white rounded-xl shadow p-6 space-y-5 max-w-xl">
+        <div>
+          <label class="inline-flex items-center gap-2 text-sm font-mono cursor-pointer select-none">
+            <input type="checkbox" id="shopIsOpen" class="w-4 h-4 rounded accent-purple-500 cursor-pointer">
+            <span class="font-bold">Shop is open</span>
+          </label>
+          <p id="shopOpenHint" class="text-xs font-mono mt-1 text-gray-500">Toggle updates immediately; click Save to write store.js.</p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Next open message</label>
+          <input id="shopNextOpen" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Banner image</label>
+          <div class="flex gap-2">
+            <input id="bannerImg" type="text" class="flex-1 border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            <button id="btnPickBanner" type="button" class="px-3 py-2 bg-gray-100 rounded-lg text-xs font-mono">Image…</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Banner link</label>
+          <input id="bannerLink" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Banner text</label>
+          <input id="bannerText" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+        </div>
+        <button id="btnSaveShop" type="button" class="px-6 py-2.5 bg-tech-black text-white rounded-lg font-mono text-sm hover:bg-gray-800">
+          ✓ Save shop settings
+        </button>
+        <p class="text-[11px] text-gray-400 font-mono">Writes data.js + store.js to your project folder (same as header “Save all”).</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="admin/state.js"></script>
+  <script src="admin/fs.js"></script>
+  <script src="admin/ui.js"></script>
+  <script src="admin/image-picker.js"></script>
+  <script src="admin/posts.js"></script>
+  <script src="admin/events-admin.js"></script>
+  <script src="admin/gallery.js"></script>
+  <script src="admin/store-admin.js"></script>
+  <script src="admin/app.js"></script>
 </body>
 </html>
