@@ -127,8 +127,8 @@
           <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple transition has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
             <input type="radio" name="method" value="mail" class="mt-1 accent-black">
             <span>
-              <span class="block font-medium">郵寄</span>
-              <span class="block text-xs text-gray-500 mt-0.5">需要填寫電話及郵寄地址</span>
+              <span class="block font-medium">郵寄（順豐快運 · 順豐站）</span>
+              <span class="block text-xs text-gray-500 mt-0.5">只限順豐快運至順豐站；需填寫電話及順豐站代碼</span>
             </span>
           </label>
         </div>
@@ -195,9 +195,12 @@
         </div>
       </div>
 
-      <!-- Mail-only fields -->
+      <!-- Mail-only fields (SF Express station only) -->
       <div id="mailFields" class="hidden space-y-4 border-t border-gray-100 pt-6">
-        <p class="text-xs font-bold text-gray-400 tracking-wider">郵寄資料</p>
+        <p class="text-xs font-bold text-gray-400 tracking-wider">郵寄資料（順豐快運）</p>
+        <p class="text-xs text-gray-500 leading-relaxed">
+          本次郵寄只接受<strong>順豐快運送往順豐站</strong>，請填寫你要取件的順豐站代碼（不接受住宅／公司地址）。
+        </p>
         <div>
           <label for="phone" class="block text-sm font-bold mb-2">
             電話 <span class="text-red-500">*</span>
@@ -208,11 +211,19 @@
         </div>
         <div>
           <label for="address" class="block text-sm font-bold mb-2">
-            郵寄地址 <span class="text-red-500">*</span>
+            順豐站代碼 <span class="text-red-500">*</span>
           </label>
-          <textarea id="address" name="address" rows="3" placeholder="請填寫完整香港地址"
-            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
-          <p id="err-address" class="hidden text-xs text-red-500 mt-2">請填寫郵寄地址</p>
+          <input id="address" name="address" type="text" inputmode="text" autocomplete="off"
+            placeholder="請輸入順豐站代碼"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition font-mono tracking-wide">
+          <p class="text-xs text-gray-500 mt-1.5 leading-relaxed">
+            不知道代碼？可到順豐官網查詢服務點／站點代碼：
+            <a href="https://hk.sf-express.com/hk/tc/store" target="_blank" rel="noopener noreferrer"
+              class="font-bold text-tech-black underline decoration-tech-purple underline-offset-2 hover:text-gray-600">
+              順豐站查詢（hk.sf-express.com）
+            </a>
+          </p>
+          <p id="err-address" class="hidden text-xs text-red-500 mt-2">請填寫順豐站代碼</p>
         </div>
       </div>
 

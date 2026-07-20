@@ -71,16 +71,16 @@ const siteData = {
             "id": 5,
             "tag": "NOTICE",
             "date": "2026/07/13",
-            "img": "./blog/20260217/20260217thumb.jpg",
+            "img": "./blog/20260713/20260713thumb.jpg",
             "title": {
-                "jp": "大型卡盒2026組合教學",
-                "en": "大型卡盒2026組合教學",
-                "zh": "大型卡盒2026組合教學"
+                "jp": "大型ストレージボックスの組み立て",
+                "en": "Large Storage Box Assemble Guide",
+                "zh": "大型卡盒組合教學"
             },
             "content": {
-                "jp": "testing",
-                "en": "testing",
-                "zh": "\n## 馬年快樂!\n\n新年快樂!2026馬年祝大家身體健康，龍馬精神!\n<br>\n馬年就當然是要畫馬娘，畫了我最喜歡的小鑽~\n<br>\n![Image 01](./blog/20260217/20260217satonoSNS.jpg)\n<br>\n然後就一個香港人限定的東西：<br>\n第一次試試看用 Payme 向各位朋友派一下開運利是\n<br>\n希望大家今年都能夠橫財就手!!!\n![Image 02](./blog/20260217/payme01.jpg)\n<br>\n假如想支持我今年有更多創作的話，也歡迎新年給利是我給我更多動力，收得到越多的話今年定當會更努力為大家畫多一些作品!!! :\n<br> (以下是 Payme 的「逗利是」用助養連結 w) \n![Image 03](./blog/20260217/payme02.jpg)\n                "
+                "jp": "### 大型ストレージボックスの組み立て\n<br>\n\n<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;\">\n  <iframe\n    src=\"https://www.youtube.com/embed/i-DuWaB0sVo\"\n    style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\"\n    title=\"YouTube video\"\n    allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\"\n    allowfullscreen\n  ></iframe>\n</div>",
+                "en": "### 15th Anniversary Large Storage Box Assemble Guide\n<br>\n\n<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;\">\n  <iframe\n    src=\"https://www.youtube.com/embed/i-DuWaB0sVo\"\n    style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\"\n    title=\"YouTube video\"\n    allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\"\n    allowfullscreen\n  ></iframe>\n</div>",
+                "zh": "### 15週年紀念套組大型卡盒組合教學\n<br>\n\n<div style=\"position:relative;padding-bottom:56.25%;height:0;overflow:hidden;max-width:100%;\">\n  <iframe\n    src=\"https://www.youtube.com/embed/i-DuWaB0sVo\"\n    style=\"position:absolute;top:0;left:0;width:100%;height:100%;border:0;\"\n    title=\"YouTube video\"\n    allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\"\n    allowfullscreen\n  ></iframe>\n</div>"
             },
             "eventId": null,
             "langs": {
@@ -93,7 +93,7 @@ const siteData = {
             "id": 6,
             "tag": "NEWS",
             "date": "2026/07/19",
-            "img": "./blog/20251224/20251224thumb.jpg",
+            "img": "./blog/20260719/20260719thumb.jpg",
             "eventId": "acghk2026",
             "title": {
                 "jp": null,
@@ -103,7 +103,7 @@ const siteData = {
             "content": {
                 "jp": null,
                 "en": null,
-                "zh": "## ACGHK2026 販售物情報\n\n讓大家久等了! 現在終於可以公布 ACGHK2026 的販售物情報。\n<br>\n期待 ACGHK2026 活動當天見面!\n<br>\n點擊下方圖上的商品即可查看詳細資訊。"
+                "zh": "## ACGHK2026 販售物情報\n\n因為今年是星夢亭的成立 15週年紀念，這次的販售物會比以往的豐富!\n<br>\n同時這次價目表的顯示方式也超絕強化了，按下價目表內對應的商品位置就可以看到詳細的介紹圖片!\n<br>\n期待 ACGHK2026 活動當天見面!\n<br>\n最終更新： 2026/07/20"
             },
             "langs": {
                 "jp": false,

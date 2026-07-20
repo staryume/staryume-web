@@ -47,12 +47,18 @@
         .lang-menu { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s ease; }
         .lang-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; }
 
-        /* お品書き hotspot map */
+        /* お品書き hotspot map — radius scales with image width to match flyer cards */
+        .oshinagaki-map {
+            container-type: inline-size;
+            container-name: oshinagaki;
+        }
         .oshinagaki-hotspot {
             position: absolute;
             z-index: 5;
             border: 2px solid transparent;
-            border-radius: 8px;
+            /* ~26px corner at 1200px flyer width; scales with map */
+            border-radius: 22px;
+            border-radius: 2.2cqi;
             background: transparent;
             cursor: pointer;
             transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
@@ -320,7 +326,7 @@
                 return `
                     <div class="mb-8 last:mb-0">
                         ${label ? `<p class="text-xs font-mono text-gray-400 mb-2 tracking-widest uppercase">${label}</p>` : ''}
-                        <div class="relative w-full rounded-lg overflow-hidden border border-gray-200 shadow-sm bg-white">
+                        <div class="oshinagaki-map relative w-full overflow-hidden bg-white">
                             <img src="${menu.src}" alt="${t(event.title)} ${menuIdx + 1}" class="w-full h-auto block select-none" draggable="false" loading="${menuIdx === 0 ? 'eager' : 'lazy'}">
                             ${hotspots}
                         </div>
@@ -394,6 +400,61 @@
             document.body.style.overflow = 'hidden';
         }
 
+        /**
+         * Resolve product CTA:
+         * - enabled: false → greyed disabled button
+         * - urlOverride set → use that URL for all languages
+         * - else ZH → store (default store.html), JP/EN → BOOTH (default booth URL)
+         */
+        function resolveEventCta(product, event, lang) {
+            const pCta = product.cta && typeof product.cta === 'object' ? product.cta : {};
+            const dCta = event.defaultCta && typeof event.defaultCta === 'object' ? event.defaultCta : {};
+            const enabled = pCta.enabled !== false;
+
+            const storeUrl = dCta.storeUrl || 'store.html';
+            const boothUrl = dCta.boothUrl || dCta.url || 'https://staryume.booth.pm';
+            const override = (pCta.urlOverride || pCta.url || '').trim();
+
+            let url;
+            let external;
+            let isStore = false;
+
+            if (override) {
+                url = override;
+                external = /^https?:\/\//i.test(override);
+                isStore = !external && /store\.html/i.test(override);
+            } else if (lang === 'zh') {
+                url = storeUrl;
+                external = /^https?:\/\//i.test(storeUrl);
+                isStore = true;
+            } else {
+                url = boothUrl;
+                external = true;
+            }
+
+            // Labels: product override → event default → sensible fallback by destination
+            let label = '';
+            if (pCta.label && (pCta.label[lang] || pCta.label.jp || pCta.label.en || pCta.label.zh)) {
+                label = t(pCta.label);
+            } else if (dCta.label && (dCta.label[lang] || dCta.label.jp || dCta.label.en || dCta.label.zh)) {
+                // When auto ZH→store, prefer store-oriented label if event still says BOOTH
+                if (isStore && !override) {
+                    const storeLabels = { jp: 'ストアへ', en: 'Visit Store', zh: '前往商店' };
+                    label = storeLabels[lang] || storeLabels.en;
+                } else {
+                    label = t(dCta.label);
+                }
+            } else {
+                const fallback = isStore
+                    ? { jp: 'ストアへ', en: 'Visit Store', zh: '前往商店' }
+                    : { jp: 'BOOTHで購入', en: 'Buy on BOOTH', zh: '前往 BOOTH 購買' };
+                label = fallback[lang] || fallback.en;
+            }
+
+            if (!url) return null;
+            return { enabled, url, external, label };
+        }
+
         function fillEventModalMeta() {
             const p = currentProduct;
             const strings = ui();
@@ -409,14 +470,15 @@
                 badges.innerHTML += `<span class="bg-tech-purple text-black text-xs font-bold px-2 py-1 rounded">${strings.newBadge}</span>`;
             }
 
-            const cta = p.cta || currentEvent.defaultCta;
             const actions = document.getElementById('event-modal-actions');
-            if (cta && cta.url) {
-                const label = t(cta.label);
-                const target = cta.external !== false ? ' target="_blank" rel="noopener noreferrer"' : '';
-                actions.innerHTML = `<a href="${cta.url}"${target} class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">${label}</a>`;
-            } else {
+            const ctaInfo = resolveEventCta(p, currentEvent, currentLang);
+            if (!ctaInfo) {
                 actions.innerHTML = '';
+            } else if (!ctaInfo.enabled) {
+                actions.innerHTML = `<button type="button" disabled class="block w-full bg-gray-200 text-gray-400 text-center font-bold py-4 rounded-lg cursor-not-allowed shadow-none">${ctaInfo.label}</button>`;
+            } else {
+                const target = ctaInfo.external ? ' target="_blank" rel="noopener noreferrer"' : '';
+                actions.innerHTML = `<a href="${ctaInfo.url}"${target} class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">${ctaInfo.label}</a>`;
             }
 
             renderEventModalTabs();

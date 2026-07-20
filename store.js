@@ -2,7 +2,7 @@
 
 const storeConfig = {
     "shopStatus": {
-        "isOpen": true,
+        "isOpen": false,
         "nextOpenDate": ""
     },
     "banner": {

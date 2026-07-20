@@ -24,7 +24,9 @@ In row 1, set headers (left to right):
 
 | A | B | C | D | E | F | G | H | I | J |
 |---|---|---|---|---|---|---|---|---|---|
-| Timestamp | Serial | Method | Name | Email | SNS Type | SNS Contact | Phone | Address | Notes |
+| Timestamp | Serial | Method | Name | Email | SNS Type | SNS Contact | Phone | SF Station (順豐站代碼) | Notes |
+
+> **Address column:** stores the customer’s **順豐站代碼** (not a street address). Mail is SF Express → SF station only.
 
 If you already have an older sheet without **Serial**:
 
@@ -54,7 +56,7 @@ function doPost(e) {
 
     var methodLabels = {
       palette_ring: '9月 Palette Ring 現場領取',
-      mail: '郵寄'
+      mail: '郵寄（順豐快運 · 順豐站）'
     };
     var snsLabels = {
       facebook: 'Facebook',
@@ -151,7 +153,7 @@ function sendConfirmationEmail_(info) {
   lines.push('【電郵】 ' + info.email);
   lines.push('【SNS】 ' + info.snsType + ' / ' + info.snsContact);
   if (info.phone) lines.push('【電話】 ' + info.phone);
-  if (info.address) lines.push('【郵寄地址】 ' + info.address);
+  if (info.address) lines.push('【順豐站代碼】 ' + info.address);
   if (info.notes) lines.push('【其他備註】 ' + info.notes);
   lines.push('');
   lines.push('如資料有誤，或之後有任何問題，歡迎加入 Discord 查詢：');
@@ -212,10 +214,13 @@ Already sends:
   "snsType": "...",
   "snsContact": "...",
   "phone": "",
-  "address": "",
+  "address": "<順豐站代碼 when method is mail>",
   "notes": ""
 }
 ```
+
+Mail option is **SF Express to SF station only**. `address` holds the station code (look up: https://hk.sf-express.com/hk/tc/store).
+
 
 `SCRIPT_URL` must still point at your Web App `/exec` URL.
 

@@ -47,6 +47,8 @@
               <p class="font-semibold text-gray-800 truncate text-sm">${global.AdminUI.escHtml(title)}</p>
             </div>
             <div class="flex gap-2 flex-shrink-0 opacity-80 group-hover:opacity-100 transition flex-wrap justify-end">
+              <a href="post.html?id=${p.id}" target="_blank" rel="noopener noreferrer"
+                class="px-3 py-1.5 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-lg text-xs font-mono text-gray-700">View</a>
               <button type="button" data-edit-post="${p.id}" class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-mono">Edit</button>
               <button type="button" data-dup-post="${p.id}" class="px-3 py-1.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg text-xs font-mono">Duplicate</button>
               <button type="button" data-del-post="${p.id}" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg text-xs font-mono">Delete</button>

@@ -416,9 +416,15 @@
                 class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
             </div>
             <div>
-              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Default CTA URL</label>
-              <input id="evCtaUrl" type="text" placeholder="https://…"
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Default BOOTH URL (JP / EN)</label>
+              <input id="evCtaUrl" type="text" placeholder="https://staryume.booth.pm"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Default Store URL (ZH)</label>
+              <input id="evCtaStoreUrl" type="text" placeholder="store.html"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+              <p class="text-[10px] text-gray-400 mt-1 font-mono">Auto CTA: ZH → Store · JP/EN → BOOTH (unless product overrides)</p>
             </div>
           </div>
 
@@ -496,19 +502,135 @@
         </div>
 
         <div class="bg-white rounded-xl shadow p-6 mb-6">
-          <h3 class="font-bold font-mono text-lg mb-3">Products (read-only list)</h3>
-          <p class="text-[11px] text-gray-400 font-mono mb-3">Edit product titles/prices in events.js for now, or clone C107 products as baseline.</p>
-          <div class="overflow-x-auto">
+          <h3 class="font-bold font-mono text-lg mb-3">Products</h3>
+          <p class="text-[11px] text-gray-400 font-mono mb-3">Click <strong>Edit</strong> to change modal title, price, specs, description (JP/EN/ZH). Header <strong>Save all</strong> writes events.js.</p>
+          <div class="overflow-x-auto mb-6">
             <table class="w-full text-left">
               <thead>
                 <tr class="text-[10px] font-mono text-gray-400 uppercase border-b">
                   <th class="py-1 pr-2">ID</th>
                   <th class="py-1">Title</th>
                   <th class="py-1">Cat</th>
+                  <th class="py-1">Price</th>
+                  <th class="py-1"></th>
                 </tr>
               </thead>
               <tbody id="evProductTable"></tbody>
             </table>
+          </div>
+
+          <!-- Product editor panel -->
+          <div id="evProductEdit" class="hidden border-t border-gray-100 pt-6 space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <h4 class="font-bold font-mono text-base">Edit product: <span id="evProdIdLabel" class="text-tech-purple"></span></h4>
+              <button id="btnCloseProductEdit" type="button" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs font-mono hover:bg-gray-50">Close product</button>
+            </div>
+            <input type="hidden" id="evProdId" value="">
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Category</label>
+                <select id="evProdCategory" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono">
+                  <option value="set">set</option>
+                  <option value="book">book</option>
+                  <option value="sleeve">sleeve</option>
+                  <option value="mat">mat</option>
+                  <option value="goods">goods</option>
+                  <option value="other">other</option>
+                </select>
+              </div>
+              <div class="flex items-end pb-2">
+                <label class="inline-flex items-center gap-2 text-sm font-mono cursor-pointer">
+                  <input id="evProdIsNew" type="checkbox" class="rounded border-gray-300">
+                  isNew (新作 badge)
+                </label>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Thumb path</label>
+                <input id="evProdThumb" type="text" placeholder="./blog/…/01.jpg"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 font-mono text-xs bg-gray-50">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="space-y-2">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Japanese</p>
+                <label class="block text-[10px] text-gray-500">Title JP</label>
+                <input id="evProdTitle-jp" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <label class="block text-[10px] text-gray-500">Price JP</label>
+                <input id="evProdPrice-jp" type="text" placeholder="¥1,500 / $240" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono">
+                <label class="block text-[10px] text-gray-500">Specs JP</label>
+                <input id="evProdSpecs-jp" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <label class="block text-[10px] text-gray-500">Description JP (HTML OK, use &lt;br&gt;)</label>
+                <textarea id="evProdDesc-jp" rows="6" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono"></textarea>
+              </div>
+              <div class="space-y-2">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">English</p>
+                <label class="block text-[10px] text-gray-500">Title EN</label>
+                <input id="evProdTitle-en" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <label class="block text-[10px] text-gray-500">Price EN</label>
+                <input id="evProdPrice-en" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono">
+                <label class="block text-[10px] text-gray-500">Specs EN</label>
+                <input id="evProdSpecs-en" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <label class="block text-[10px] text-gray-500">Description EN</label>
+                <textarea id="evProdDesc-en" rows="6" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono"></textarea>
+              </div>
+              <div class="space-y-2">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Chinese</p>
+                <label class="block text-[10px] text-gray-500">Title ZH</label>
+                <input id="evProdTitle-zh" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <label class="block text-[10px] text-gray-500">Price ZH</label>
+                <input id="evProdPrice-zh" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono">
+                <label class="block text-[10px] text-gray-500">Specs ZH</label>
+                <input id="evProdSpecs-zh" type="text" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <label class="block text-[10px] text-gray-500">Description ZH</label>
+                <textarea id="evProdDesc-zh" rows="6" class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 font-mono"></textarea>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Gallery images (one path per line)</label>
+                <textarea id="evProdGallery" rows="5" placeholder="./blog/…/01.jpg" class="w-full border border-gray-200 rounded-lg px-3 py-2 font-mono text-xs bg-gray-50"></textarea>
+                <p class="text-[10px] text-gray-400 mt-1 font-mono">Modal photo carousel · multiple lines = multi-slide</p>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Page previews (one path per line)</label>
+                <textarea id="evProdPages" rows="5" placeholder="optional interior pages" class="w-full border border-gray-200 rounded-lg px-3 py-2 font-mono text-xs bg-gray-50"></textarea>
+                <p class="text-[10px] text-gray-400 mt-1 font-mono">Optional · empty hides Pages tab</p>
+              </div>
+            </div>
+
+            <!-- CTA button settings -->
+            <div class="border border-gray-100 rounded-xl p-4 bg-gray-50/80 space-y-3">
+              <h5 class="font-bold font-mono text-sm">CTA button (前往 BOOTH / 商店)</h5>
+              <label class="inline-flex items-center gap-2 text-sm font-mono cursor-pointer">
+                <input id="evProdCtaEnabled" type="checkbox" class="rounded border-gray-300" checked>
+                CTA enabled (off = greyed out, not clickable)
+              </label>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">URL override (optional)</label>
+                <input id="evProdCtaUrlOverride" type="text" placeholder="Leave empty: ZH→store.html · JP/EN→BOOTH"
+                  class="w-full border border-gray-200 rounded-lg px-3 py-2 font-mono text-xs bg-white">
+                <p class="text-[10px] text-gray-400 mt-1 font-mono">Per-product link, e.g. a specific BOOTH item URL. Empty = language default.</p>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">CTA label JP (optional)</label>
+                  <input id="evProdCtaLabel-jp" type="text" placeholder="BOOTHで購入" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-white">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">CTA label EN (optional)</label>
+                  <input id="evProdCtaLabel-en" type="text" placeholder="Buy on BOOTH" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-white">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-gray-500 mb-1">CTA label ZH (optional)</label>
+                  <input id="evProdCtaLabel-zh" type="text" placeholder="前往商店" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-white">
+                </div>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-gray-400 font-mono">Changes apply to memory on edit. Click header <strong>Save all</strong> to write events.js.</p>
           </div>
         </div>
 
