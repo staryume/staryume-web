@@ -82,7 +82,10 @@ const eventCatalog = {
                 "zh": "前往 BOOTH 購買"
             },
             "url": "https://staryume.booth.pm",
-            "external": true
+            "external": true,
+            "boothUrl": "https://staryume.booth.pm",
+            "storeUrl": "store.html",
+            "storeRegion": "TW"
         },
         "menuImages": [
             {
@@ -783,7 +786,8 @@ const eventCatalog = {
             "url": "https://staryume.booth.pm",
             "external": true,
             "boothUrl": "https://staryume.booth.pm",
-            "storeUrl": "store.html"
+            "storeUrl": "store.html",
+            "storeRegion": "HK"
         },
         "menuImages": [
             {
@@ -799,36 +803,54 @@ const eventCatalog = {
                         "productId": "anni-15-set",
                         "coords": [
                             1.9,
-                            15.9,
+                            12.6,
                             95.6,
-                            53
+                            42.1
                         ]
                     },
                     {
                         "productId": "sleeve-gagaga",
                         "coords": [
                             1.9,
-                            70.3,
+                            55.8,
                             23.5,
-                            26.4
+                            20.9
                         ]
                     },
                     {
                         "productId": "sleeve-dmg-2026",
                         "coords": [
                             25.4,
-                            70.3,
+                            55.8,
                             23.5,
-                            26.4
+                            20.9
                         ]
                     },
                     {
                         "productId": "mat-dmg-2026",
                         "coords": [
                             50.7,
-                            70.3,
+                            55.8,
                             46.9,
-                            26.4
+                            20.9
+                        ]
+                    },
+                    {
+                        "productId": "goods-deckbox",
+                        "coords": [
+                            1.9,
+                            77.8,
+                            47,
+                            20.9
+                        ]
+                    },
+                    {
+                        "productId": "goods-cardbox",
+                        "coords": [
+                            50.7,
+                            77.8,
+                            46.9,
+                            20.9
                         ]
                     }
                 ]
@@ -861,30 +883,30 @@ const eventCatalog = {
                         ]
                     },
                     {
-                        "productId": "sleeve-legacy",
+                        "productId": "goods-akkey",
                         "coords": [
                             1.9,
                             50.6,
                             47,
-                            30.2
+                            14.5
                         ]
                     },
                     {
-                        "productId": "goods-akkey",
+                        "productId": "mat-legacy",
+                        "coords": [
+                            1.9,
+                            66,
+                            47,
+                            14.5
+                        ]
+                    },
+                    {
+                        "productId": "sleeve-legacy",
                         "coords": [
                             50.7,
                             50.6,
                             46.9,
-                            15
-                        ]
-                    },
-                    {
-                        "productId": "goods-cardbox",
-                        "coords": [
-                            50.7,
-                            66.5,
-                            46.9,
-                            14.3
+                            30.2
                         ]
                     },
                     {
@@ -922,11 +944,13 @@ const eventCatalog = {
             "sleeve-gagaga",
             "sleeve-dmg-2026",
             "mat-dmg-2026",
+            "goods-deckbox",
+            "goods-cardbox",
             "set-makeine",
             "set-yugioh-2025",
-            "sleeve-legacy",
             "goods-akkey",
-            "goods-cardbox",
+            "mat-legacy",
+            "sleeve-legacy",
             "book-too-many-seichi",
             "book-omc3",
             "book-om-gala"
@@ -1002,7 +1026,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-gagaga/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1037,7 +1061,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-dmg-2026/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1073,7 +1097,42 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "goods-deckbox": {
+                "id": "goods-deckbox",
+                "category": "goods",
+                "isNew": false,
+                "title": {
+                    "jp": "レザーデッキケース",
+                    "en": "Leather Card Deck Box",
+                    "zh": "皮質卡片收納盒"
+                },
+                "price": {
+                    "jp": "$220",
+                    "en": "$220",
+                    "zh": "$220"
+                },
+                "specs": {
+                    "jp": "レザーデッキケース",
+                    "en": "Leather deck box",
+                    "zh": "皮質卡片收納盒"
+                },
+                "desc": {
+                    "jp": "レザー素材のデッキケース／カード収納箱。",
+                    "en": "Leather-style card deck box.",
+                    "zh": "皮質卡片收納盒。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/goods-deckbox/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
+                "cta": {
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1113,7 +1172,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/set-makeine/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1151,7 +1210,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/set-yugioh-2025/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1191,7 +1250,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-legacy/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1226,7 +1285,42 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-akkey/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "mat-legacy": {
+                "id": "mat-legacy",
+                "category": "mat",
+                "isNew": false,
+                "title": {
+                    "jp": "既存プレイマット",
+                    "en": "Legacy Playmat",
+                    "zh": "既作遊戲墊"
+                },
+                "price": {
+                    "jp": "$180",
+                    "en": "$180",
+                    "zh": "$180"
+                },
+                "specs": {
+                    "jp": "既存プレイマット",
+                    "en": "Catalog playmat",
+                    "zh": "既作遊戲墊"
+                },
+                "desc": {
+                    "jp": "既存プレイマット商品。",
+                    "en": "Legacy playmat.",
+                    "zh": "既作遊戲墊。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/mat-legacy/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/mat-legacy/01.jpg",
+                "cta": {
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1263,7 +1357,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-cardbox/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1298,7 +1392,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-too-many-seichi/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1333,7 +1427,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-omc3/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1368,7 +1462,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-om-gala/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }

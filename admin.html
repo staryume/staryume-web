@@ -424,7 +424,15 @@
               <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Default Store URL (ZH)</label>
               <input id="evCtaStoreUrl" type="text" placeholder="store.html"
                 class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
-              <p class="text-[10px] text-gray-400 mt-1 font-mono">Auto CTA: ZH → Store · JP/EN → BOOTH (unless product overrides)</p>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1.5 uppercase">Store region (ZH CTA)</label>
+              <select id="evCtaStoreRegion"
+                class="w-full border border-gray-200 rounded-lg px-3 py-2.5 font-mono text-sm bg-gray-50">
+                <option value="HK">HK — Hong Kong (PayMe / SF COD)</option>
+                <option value="TW">TW — Taiwan (7-11 MyShip / 賣貨便)</option>
+              </select>
+              <p class="text-[10px] text-gray-400 mt-1 font-mono">Auto CTA: ZH → store.html?region=HK|TW · JP/EN → BOOTH</p>
             </div>
           </div>
 

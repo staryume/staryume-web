@@ -229,8 +229,12 @@
                 }
             }
 
+            // Region from event CTA deep link (?region=HK|TW), else default TW
+            const regionParam = (new URLSearchParams(window.location.search).get('region') || '').toUpperCase();
+            const initialRegion = (regionParam === 'HK' || regionParam === 'TW') ? regionParam : 'TW';
+
             renderCategories();
-            renderAllSections();
+            setRegion(initialRegion);
             
             document.getElementById('store-search').addEventListener('input', (e) => {
                 const val = e.target.value.toLowerCase();

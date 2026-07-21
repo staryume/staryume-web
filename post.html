@@ -401,17 +401,43 @@
         }
 
         /**
+         * Append ?region=HK|TW to a same-site store URL (preserves existing query if any).
+         */
+        function buildStoreUrlWithRegion(baseUrl, region) {
+            const base = (baseUrl || 'store.html').trim() || 'store.html';
+            const reg = (region === 'HK' || region === 'TW') ? region : 'TW';
+            // Absolute external URLs: do not force region param unless it looks like our store page
+            if (/^https?:\/\//i.test(base) && !/store\.html/i.test(base)) return base;
+            try {
+                // Relative paths: resolve against current origin for URL API, then return path+search
+                const u = new URL(base, window.location.href);
+                u.searchParams.set('region', reg);
+                // Prefer relative form for site links
+                if (!/^https?:\/\//i.test(base)) {
+                    return u.pathname.split('/').pop() + u.search + u.hash;
+                }
+                return u.href;
+            } catch (_) {
+                const sep = base.includes('?') ? '&' : '?';
+                return `${base}${sep}region=${reg}`;
+            }
+        }
+
+        /**
          * Resolve product CTA:
          * - enabled: false → greyed disabled button
          * - urlOverride set → use that URL for all languages
-         * - else ZH → store (default store.html), JP/EN → BOOTH (default booth URL)
+         * - else ZH → store (store.html?region=HK|TW from event), JP/EN → BOOTH
          */
         function resolveEventCta(product, event, lang) {
             const pCta = product.cta && typeof product.cta === 'object' ? product.cta : {};
             const dCta = event.defaultCta && typeof event.defaultCta === 'object' ? event.defaultCta : {};
             const enabled = pCta.enabled !== false;
 
-            const storeUrl = dCta.storeUrl || 'store.html';
+            const storeBase = dCta.storeUrl || 'store.html';
+            const storeRegion = (dCta.storeRegion === 'HK' || dCta.storeRegion === 'TW')
+                ? dCta.storeRegion
+                : 'TW';
             const boothUrl = dCta.boothUrl || dCta.url || 'https://staryume.booth.pm';
             const override = (pCta.urlOverride || pCta.url || '').trim();
 
@@ -424,8 +450,8 @@
                 external = /^https?:\/\//i.test(override);
                 isStore = !external && /store\.html/i.test(override);
             } else if (lang === 'zh') {
-                url = storeUrl;
-                external = /^https?:\/\//i.test(storeUrl);
+                url = buildStoreUrlWithRegion(storeBase, storeRegion);
+                external = /^https?:\/\//i.test(url);
                 isStore = true;
             } else {
                 url = boothUrl;
@@ -437,7 +463,6 @@
             if (pCta.label && (pCta.label[lang] || pCta.label.jp || pCta.label.en || pCta.label.zh)) {
                 label = t(pCta.label);
             } else if (dCta.label && (dCta.label[lang] || dCta.label.jp || dCta.label.en || dCta.label.zh)) {
-                // When auto ZH→store, prefer store-oriented label if event still says BOOTH
                 if (isStore && !override) {
                     const storeLabels = { jp: 'ストアへ', en: 'Visit Store', zh: '前往商店' };
                     label = storeLabels[lang] || storeLabels.en;

@@ -135,6 +135,11 @@
       (ev.defaultCta && (ev.defaultCta.boothUrl || ev.defaultCta.url)) || '';
     document.getElementById('evCtaStoreUrl').value =
       (ev.defaultCta && ev.defaultCta.storeUrl) || 'store.html';
+    const regionSel = document.getElementById('evCtaStoreRegion');
+    if (regionSel) {
+      const r = (ev.defaultCta && ev.defaultCta.storeRegion) || 'TW';
+      regionSel.value = r === 'HK' ? 'HK' : 'TW';
+    }
     for (const lang of global.AdminState.LANGS) {
       document.getElementById('evTitle-' + lang).value = (ev.title && ev.title[lang]) || '';
       document.getElementById('evBooth-' + lang).value =
@@ -162,15 +167,26 @@
     if (!ev.title) ev.title = {};
     if (!ev.meta) ev.meta = {};
     if (!ev.meta.booth) ev.meta.booth = {};
-    if (!ev.defaultCta) ev.defaultCta = { label: {}, boothUrl: '', storeUrl: 'store.html', external: true };
+    if (!ev.defaultCta) {
+      ev.defaultCta = {
+        label: {},
+        boothUrl: '',
+        storeUrl: 'store.html',
+        storeRegion: 'TW',
+        external: true,
+      };
+    }
     if (!ev.defaultCta.label) ev.defaultCta.label = {};
 
     ev.meta.event = document.getElementById('evMetaEvent')?.value.trim() || '';
     ev.meta.dates = document.getElementById('evMetaDates')?.value.trim() || '';
     const boothUrl = document.getElementById('evCtaUrl')?.value.trim() || '';
     const storeUrl = document.getElementById('evCtaStoreUrl')?.value.trim() || 'store.html';
+    const storeRegionRaw = document.getElementById('evCtaStoreRegion')?.value || 'TW';
+    const storeRegion = storeRegionRaw === 'HK' ? 'HK' : 'TW';
     ev.defaultCta.boothUrl = boothUrl;
     ev.defaultCta.storeUrl = storeUrl;
+    ev.defaultCta.storeRegion = storeRegion;
     // keep legacy `url` in sync for older readers
     ev.defaultCta.url = boothUrl;
     ev.defaultCta.external = true;
@@ -659,6 +675,7 @@
       'evMetaDates',
       'evCtaUrl',
       'evCtaStoreUrl',
+      'evCtaStoreRegion',
       'evMenuSrc',
       'evTitle-jp',
       'evTitle-en',
