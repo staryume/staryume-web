@@ -94,6 +94,9 @@ const siteData = {
             "tag": "NEWS",
             "date": "2026/07/19",
             "img": "./blog/20260719/20260719thumb.jpg",
+            "ogImage": "./blog/20260719/20260719-og.jpg",
+            "ogImageWidth": 1200,
+            "ogImageHeight": 630,
             "eventId": "acghk2026",
             "title": {
                 "jp": null,

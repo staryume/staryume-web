@@ -38,7 +38,12 @@ export default async (request, context) => {
     const raw =
       pickLang(post.content, ["zh", "jp", "en"]) || "";
     const description = toPlainText(raw).slice(0, 180) || "STARYUME WEB Blog";
-    const image = toAbsoluteUrl(post.img, url.origin) || `${url.origin}/assets/coreimg/logo.png`;
+    // Prefer dedicated 1200×630 ogImage for large Facebook/Messenger cards
+    const imagePath = post.ogImage || post.img;
+    const image =
+      toAbsoluteUrl(imagePath, url.origin) || `${url.origin}/assets/coreimg/logo.png`;
+    const imageWidth = Number(post.ogImageWidth) || (post.ogImage ? 1200 : 0);
+    const imageHeight = Number(post.ogImageHeight) || (post.ogImage ? 630 : 0);
     const pageUrl = `${url.origin}/post.html?id=${encodeURIComponent(idParam)}`;
     const fullTitle = `${title} | STARYUME WEB`;
 
@@ -47,6 +52,8 @@ export default async (request, context) => {
       title,
       description,
       image,
+      imageWidth,
+      imageHeight,
       pageUrl,
       tag: post.tag || "article",
     });
@@ -97,12 +104,28 @@ function escapeAttr(s) {
     .replace(/>/g, "&gt;");
 }
 
-function buildMetaTags({ fullTitle, title, description, image, pageUrl, tag }) {
+function buildMetaTags({
+  fullTitle,
+  title,
+  description,
+  image,
+  imageWidth,
+  imageHeight,
+  pageUrl,
+  tag,
+}) {
   const t = escapeAttr(title);
   const ft = escapeAttr(fullTitle);
   const d = escapeAttr(description);
   const img = escapeAttr(image);
   const u = escapeAttr(pageUrl);
+  const sizeTags =
+    imageWidth > 0 && imageHeight > 0
+      ? `
+    <meta property="og:image:width" content="${imageWidth}">
+    <meta property="og:image:height" content="${imageHeight}">
+    <meta property="og:image:type" content="image/jpeg">`
+      : "";
   return `
     <title>${ft}</title>
     <meta name="description" content="${d}">
@@ -111,7 +134,8 @@ function buildMetaTags({ fullTitle, title, description, image, pageUrl, tag }) {
     <meta property="og:title" content="${t}">
     <meta property="og:description" content="${d}">
     <meta property="og:image" content="${img}">
-    <meta property="og:image:secure_url" content="${img}">
+    <meta property="og:image:secure_url" content="${img}">${sizeTags}
+    <meta property="og:image:alt" content="${t}">
     <meta property="og:url" content="${u}">
     <meta property="og:locale" content="zh_HK">
     <meta name="twitter:card" content="summary_large_image">
