@@ -322,10 +322,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應遊戲王迷你尺寸。"
                 },
                 "gallery": [
-                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030655488.jpg"
+                    "./blog/20260719/products/sleeve-legacy/04.jpg"
                 ],
                 "pages": [],
-                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030655488.jpg",
+                "thumb": "./blog/20260719/products/sleeve-legacy/04.jpg",
                 "cta": null
             },
             "sleeve-furi": {
@@ -353,10 +353,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應遊戲王迷你尺寸。"
                 },
                 "gallery": [
-                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030654315.jpg"
+                    "./blog/20260719/products/sleeve-legacy/03.jpg"
                 ],
                 "pages": [],
-                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030654315.jpg",
+                "thumb": "./blog/20260719/products/sleeve-legacy/03.jpg",
                 "cta": null
             },
             "mat-annna": {
@@ -415,10 +415,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應 MTG / PTCG 標準尺寸。"
                 },
                 "gallery": [
-                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030652984.jpg"
+                    "./blog/20260719/products/sleeve-legacy/05.jpg"
                 ],
                 "pages": [],
-                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030652984.jpg",
+                "thumb": "./blog/20260719/products/sleeve-legacy/05.jpg",
                 "cta": null
             },
             "sleeve-dreizehn": {
@@ -446,10 +446,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應 MTG / PTCG 標準尺寸。"
                 },
                 "gallery": [
-                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030650952.jpg"
+                    "./blog/20260719/products/sleeve-legacy/06.jpg"
                 ],
                 "pages": [],
-                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030650952.jpg",
+                "thumb": "./blog/20260719/products/sleeve-legacy/06.jpg",
                 "cta": null
             },
             "book-too-many-seichi": {
@@ -611,10 +611,10 @@ const eventCatalog = {
                     "zh": "黑魔導女孩牌墊。"
                 },
                 "gallery": [
-                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2508240784869452.jpg"
+                    "./blog/20260719/products/mat-dmg-2026/01.jpg"
                 ],
                 "pages": [],
-                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2508240784869452.jpg",
+                "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
                 "cta": null
             },
             "goods-makein-akkey": {

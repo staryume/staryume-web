@@ -26,8 +26,6 @@
                 }
             }
         }
-        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfqCc-EaIoK2dheJH5ZHPkbGKb_uXo_o_DyIvnZV5eblP8w-w/viewform";
-        const GOOGLE_ENTRY_ID = "entry.548811884"; 
     </script>
 
     <style>
@@ -38,6 +36,9 @@
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
         .lang-menu { opacity: 0; transform: translateY(10px); pointer-events: none; transition: all 0.2s ease; visibility: hidden; }
         .lang-menu.open { opacity: 1; transform: translateY(0); pointer-events: auto; visibility: visible; }
+        #bag-drawer.open { transform: translateX(0); }
+        #bag-overlay.open { opacity: 1; pointer-events: auto; }
+        #bag-fab.hidden-fab { opacity: 0; pointer-events: none; transform: scale(0.9); }
     </style>
 </head>
 <body class="bg-gray-50 text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black flex flex-col">
@@ -131,6 +132,9 @@
                 <p id="region-notice" class="text-[11px] font-mono font-bold text-gray-500 text-center md:text-right w-full md:w-auto">
                     PAYMENT: 7-11 MYSHIP / 賣貨便到付
                 </p>
+                <span id="region-badge" class="hidden text-[10px] font-bold tracking-wider uppercase bg-tech-purple/30 text-black px-2 py-1 rounded">
+                    香港商店
+                </span>
             </div>
 
             <div class="border-t border-gray-100 py-2">
@@ -189,21 +193,42 @@
         </div>
     </div>
 
-    <div id="cart-bar" class="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 shadow-[0_-10px_40px_rgba(0,0,0,0.1)] p-4 transform translate-y-full transition-transform duration-300 z-[90]">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
+    <!-- Floating bag button (HK only when cart has items) -->
+    <button type="button" id="bag-fab" onclick="openBagDrawer()"
+        class="hidden-fab fixed bottom-6 right-6 z-[90] md:right-10 flex items-center gap-2 pl-4 pr-5 py-3.5 bg-black text-white rounded-full shadow-2xl hover:bg-tech-purple hover:text-black transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+        <span class="text-sm font-bold tracking-wide">購物車</span>
+        <span id="bag-fab-count" class="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-tech-purple text-black text-xs font-bold flex items-center justify-center">0</span>
+    </button>
+
+    <!-- Bag drawer overlay -->
+    <div id="bag-overlay" onclick="closeBagDrawer()"
+        class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[95] opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <aside id="bag-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[100] shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-out" aria-label="Shopping bag">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
-                <p class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Total Amount</p>
-                <p class="text-2xl font-bold font-mono text-black" id="cart-total">HKD$ 0</p>
+                <p class="text-[10px] font-tech tracking-widest text-gray-400 uppercase">Hong Kong</p>
+                <h2 class="text-lg font-bold">購物車 <span id="bag-header-count" class="text-gray-400 font-mono text-sm font-normal"></span></h2>
             </div>
-            <div class="flex gap-3">
-                <button onclick="clearCart()" class="px-4 py-3 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors">RESET</button>
-                <button onclick="checkoutHK()" class="px-8 py-3 bg-black text-white text-sm font-bold rounded hover:bg-tech-purple hover:text-black transition-colors shadow-lg">CHECKOUT</button>
-            </div>
+            <button type="button" onclick="closeBagDrawer()" class="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-500 hover:text-black transition-colors text-xl" aria-label="Close bag">✕</button>
         </div>
-    </div>
-
-    
-
+        <div id="bag-lines" class="flex-1 overflow-y-auto px-5 py-4 space-y-4"></div>
+        <div class="border-t border-gray-100 p-5 space-y-3 bg-white">
+            <div class="flex justify-between items-baseline">
+                <span class="text-xs font-bold text-gray-400 tracking-widest uppercase">Subtotal</span>
+                <span id="cart-total" class="text-2xl font-bold font-mono">HKD$ 0</span>
+            </div>
+            <p class="text-[11px] text-gray-400 leading-relaxed">PayMe / FPS · 上載付款截圖</p>
+            <button type="button" onclick="checkoutHK()" id="bag-checkout-btn"
+                class="w-full py-3.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-tech-purple hover:text-black transition-colors shadow-lg disabled:opacity-40 disabled:cursor-not-allowed">
+                Checkout · 前往結帳
+            </button>
+            <button type="button" onclick="clearCart()" class="w-full py-2 text-xs font-bold text-gray-400 hover:text-red-600 transition-colors">
+                清空購物車
+            </button>
+        </div>
+    </aside>
 
     <script>
         let currentRegion = 'TW';
@@ -217,7 +242,9 @@
             if (typeof storeConfig === 'undefined') { alert("Error: store.js missing"); return; }
             window.toggleDesktopLang = () => document.getElementById('langMenuDesktop').classList.toggle('open');
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
-            window.switchLang = (l) => { currentLang = l; renderCategories(); renderAllSections(); document.getElementById('langMenuDesktop').classList.remove('open'); };
+            window.switchLang = (l) => { currentLang = l; renderCategories(); renderAllSections(); renderBagDrawer(); document.getElementById('langMenuDesktop').classList.remove('open'); };
+
+            cart = typeof loadHkCart === 'function' ? loadHkCart() : {};
 
             // --- CHECK SHOP STATUS ---
             if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
@@ -235,6 +262,7 @@
 
             renderCategories();
             setRegion(initialRegion);
+            updateCartUI();
             
             document.getElementById('store-search').addEventListener('input', (e) => {
                 const val = e.target.value.toLowerCase();
@@ -248,6 +276,10 @@
                 if (e.changedTouches[0].screenX < touchStartX - 50) changeImage(1); 
                 if (e.changedTouches[0].screenX > touchStartX + 50) changeImage(-1); 
             }, {passive: true});
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') closeBagDrawer();
+            });
         });
 
         // --- STOCK TOGGLE ---
@@ -403,7 +435,13 @@
             } else if (currentRegion === 'TW') {
                 actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
             } else {
-                actions.innerHTML = `<button onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">ADD TO CART</button>`;
+                const hkOn = storeConfig.hkCheckout && storeConfig.hkCheckout.enabled !== false;
+                if (hkOn) {
+                    actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車</button>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">PayMe · FPS</p>`;
+                } else {
+                    actions.innerHTML = `<button type="button" disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">HK checkout closed</button>`;
+                }
             }
             modal.classList.remove('hidden');
         }
@@ -447,34 +485,133 @@
             const btnHk = document.getElementById('btn-hk');
             const notice = document.getElementById('region-notice');
             const shipText = document.getElementById('shipping-text');
+            const badge = document.getElementById('region-badge');
 
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(notice) notice.innerText = "PAYMENT: 7-11 MYSHIP / 賣貨便到付";
                 if(shipText) shipText.innerText = "Taiwan orders: Shipped via 7-11 Myship.";
+                if(badge) badge.classList.add('hidden');
+                closeBagDrawer();
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
-                if(notice) notice.innerText = "PAYMENT: PAYME · FPS · SF COD / 順豐站到付";
-                if(shipText) shipText.innerText = "Hong Kong orders: Shipped via SF Express (Pay on Delivery).";
+                if(notice) notice.innerText = "PAYMENT: PAYME · FPS";
+                if(shipText) shipText.innerText = "Hong Kong: PayMe / FPS.";
+                if(badge) badge.classList.remove('hidden');
             }
 
-            const cartBar = document.getElementById('cart-bar');
-            if(cartBar) {
-                if (currentRegion === 'HK' && Object.keys(cart).length > 0) cartBar.classList.remove('translate-y-full'); 
-                else cartBar.classList.add('translate-y-full');
+            updateCartUI();
+        }
+
+        function openBagDrawer() {
+            if (currentRegion !== 'HK') return;
+            document.getElementById('bag-overlay').classList.add('open');
+            document.getElementById('bag-drawer').classList.add('open');
+            document.body.style.overflow = 'hidden';
+            renderBagDrawer();
+        }
+
+        function closeBagDrawer() {
+            document.getElementById('bag-overlay').classList.remove('open');
+            document.getElementById('bag-drawer').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function renderBagDrawer() {
+            const container = document.getElementById('bag-lines');
+            if (!container) return;
+            const lines = getHkCartLines(cart, storeProducts, currentLang);
+            const count = getHkCartCount(cart);
+            const headerCount = document.getElementById('bag-header-count');
+            if (headerCount) headerCount.textContent = count ? `(${count})` : '';
+
+            if (!lines.length) {
+                container.innerHTML = `
+                    <div class="py-16 text-center">
+                        <p class="text-gray-400 text-sm mb-4">購物車是空的</p>
+                        <button type="button" onclick="closeBagDrawer()" class="text-sm font-bold underline decoration-tech-purple underline-offset-4">繼續選購</button>
+                    </div>`;
+                return;
             }
+
+            container.innerHTML = lines.map((line) => `
+                <div class="flex gap-3 items-start border-b border-gray-50 pb-4">
+                    <div class="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+                        ${line.thumb ? `<img src="${line.thumb}" alt="" class="w-full h-full object-cover">` : ''}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-bold leading-snug line-clamp-2">${line.title}</p>
+                        <p class="text-xs font-mono text-gray-500 mt-1">HKD$ ${line.unit}</p>
+                        ${line.soldOut ? '<p class="text-[10px] text-red-500 font-bold mt-1">SOLD OUT — 請移除</p>' : ''}
+                        <div class="flex items-center gap-2 mt-2">
+                            <button type="button" onclick="setCartQty(${line.id}, ${(line.qty) - 1})" class="w-8 h-8 rounded-full border border-gray-200 text-sm font-bold hover:border-black" aria-label="Decrease">−</button>
+                            <span class="w-6 text-center text-sm font-mono font-bold">${line.qty}</span>
+                            <button type="button" onclick="setCartQty(${line.id}, ${(line.qty) + 1})" class="w-8 h-8 rounded-full border border-gray-200 text-sm font-bold hover:border-black" aria-label="Increase">+</button>
+                            <button type="button" onclick="setCartQty(${line.id}, 0)" class="ml-auto text-[10px] font-bold text-gray-400 hover:text-red-600">移除</button>
+                        </div>
+                    </div>
+                    <p class="text-sm font-mono font-bold whitespace-nowrap">HKD$ ${line.lineTotal}</p>
+                </div>
+            `).join('');
         }
         
-        function addToCart(id) { if(!cart[id]) cart[id] = 0; cart[id]++; updateCartUI(); closeModal(); document.getElementById('cart-bar').classList.remove('translate-y-full'); }
-        function clearCart() { cart = {}; updateCartUI(); document.getElementById('cart-bar').classList.add('translate-y-full'); }
-        function updateCartUI() { let total = 0; Object.keys(cart).forEach(id => { const item = storeProducts.find(p => p.id == id); if(item) total += item.priceHK * cart[id]; }); document.getElementById('cart-total').innerText = `HKD$ ${total}`; }
+        function addToCart(id) {
+            const key = String(id);
+            if (!cart[key]) cart[key] = 0;
+            cart[key]++;
+            saveHkCart(cart);
+            updateCartUI();
+            closeModal();
+            openBagDrawer();
+        }
+
+        function setCartQty(id, qty) {
+            const key = String(id);
+            const n = parseInt(qty, 10);
+            if (!n || n < 1) delete cart[key];
+            else cart[key] = Math.min(n, 99);
+            saveHkCart(cart);
+            updateCartUI();
+        }
+
+        function clearCart() {
+            if (getHkCartCount(cart) && !confirm('清空購物車？')) return;
+            cart = {};
+            clearHkCart();
+            updateCartUI();
+            closeBagDrawer();
+        }
+
+        function updateCartUI() {
+            const total = getHkCartTotal(cart, storeProducts);
+            const count = getHkCartCount(cart);
+            const totalEl = document.getElementById('cart-total');
+            if (totalEl) totalEl.innerText = `HKD$ ${total}`;
+
+            const fab = document.getElementById('bag-fab');
+            const fabCount = document.getElementById('bag-fab-count');
+            if (fabCount) fabCount.textContent = String(count);
+            if (fab) {
+                if (currentRegion === 'HK' && count > 0) fab.classList.remove('hidden-fab');
+                else fab.classList.add('hidden-fab');
+            }
+
+            const checkoutBtn = document.getElementById('bag-checkout-btn');
+            if (checkoutBtn) checkoutBtn.disabled = count === 0;
+
+            renderBagDrawer();
+        }
+
         function checkoutHK() {
-            let orderText = "ORDER SUMMARY (HK):\n"; let total = 0;
-            Object.keys(cart).forEach(id => { const item = storeProducts.find(p => p.id == id); if(item) { orderText += `- ${item.title.en} (x${cart[id]}) @ $${item.priceHK * cart[id]}\n`; total += item.priceHK * cart[id]; }});
-            if(total === 0) return; orderText += `\nTOTAL HKD: $${total}`;
-            if(confirm(`Total HKD $${total}. Proceed?`)) window.open(`${GOOGLE_FORM_URL}?usp=pp_url&${GOOGLE_ENTRY_ID}=${encodeURIComponent(orderText)}`, '_blank');
+            if (currentRegion !== 'HK') {
+                setRegion('HK');
+            }
+            const total = getHkCartTotal(cart, storeProducts);
+            if (total <= 0 || getHkCartCount(cart) === 0) return;
+            saveHkCart(cart);
+            window.location.href = 'checkout.html';
         }
     </script>
 </body>

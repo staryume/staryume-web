@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout · 香港結帳 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="STARYUME 香港商店站內結帳 — FPS / PayMe">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20978566');
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
+  <script src="store.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+            nav: ['"Montserrat"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #D8B4FE; }
+    .step-dot.active { background: #0a0a0a; color: #fff; }
+    .step-dot.done { background: #D8B4FE; color: #0a0a0a; }
+    .field-error { border-color: #ef4444 !important; }
+    .option-card:has(input:checked) {
+      border-color: #0a0a0a;
+      background: rgba(216, 180, 254, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
+    <a href="./store.html?region=HK" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+      <span class="hidden sm:block text-xs font-tech tracking-widest text-gray-400">HK CHECKOUT</span>
+    </a>
+    <a href="./store.html?region=HK" class="text-xs font-bold text-gray-500 hover:text-black transition-colors">← 返回商店</a>
+  </header>
+
+  <!-- Success -->
+  <div id="successView" class="hidden max-w-xl mx-auto px-4 py-12 md:py-16">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-10 text-center">
+      <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-tech-purple/40 flex items-center justify-center text-3xl">✓</div>
+      <p class="text-[10px] font-tech tracking-widest text-gray-400 mb-2">ORDER PLACED</p>
+      <h1 class="text-2xl md:text-3xl font-bold mb-2">訂單已提交</h1>
+      <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+        已收到你的香港訂單與付款證明。<br>
+        我們會核對後再安排出貨／取貨。
+      </p>
+      <div class="bg-tech-gray rounded-xl p-4 text-left mb-6">
+        <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Order ID</p>
+        <p id="successOrderId" class="font-mono font-bold text-lg">—</p>
+        <p id="successTotal" class="text-sm text-gray-600 mt-2 font-mono"></p>
+      </div>
+      <p class="text-xs text-gray-500 mb-4">確認電郵（如有填寫）可能稍後送達，請檢查垃圾郵件匣。</p>
+      <a id="successDiscord" href="https://discord.gg/staryume" target="_blank" rel="noopener noreferrer"
+        class="inline-flex items-center justify-center w-full py-3 bg-[#5865F2] text-white font-bold rounded-xl hover:opacity-90 transition text-sm mb-3">
+        有問題？加入 Discord
+      </a>
+      <a href="./store.html?region=HK" class="inline-block text-sm font-bold underline decoration-tech-purple underline-offset-4 hover:text-gray-600">
+        返回商店
+      </a>
+    </div>
+  </div>
+
+  <!-- Checkout flow -->
+  <div id="checkoutFlow" class="max-w-6xl mx-auto px-4 py-8 md:py-12">
+    <div class="mb-8 md:mb-10">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">HONG KONG · 香港</p>
+      <h1 class="text-3xl md:text-4xl font-bold font-tech tracking-tight">Checkout</h1>
+    </div>
+
+    <!-- Steps -->
+    <nav id="stepNav" class="flex flex-wrap gap-2 mb-8 md:mb-10" aria-label="Checkout steps"></nav>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10">
+      <!-- Main -->
+      <div class="lg:col-span-3 space-y-6">
+        <div id="stepPanels" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8"></div>
+
+        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:justify-between">
+          <button type="button" id="btnBack"
+            class="px-6 py-3 text-sm font-bold text-gray-500 hover:text-black transition-colors rounded-xl">
+            上一步
+          </button>
+          <button type="button" id="btnNext"
+            class="px-8 py-3.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-tech-purple hover:text-black transition-colors shadow-lg disabled:opacity-40">
+            繼續
+          </button>
+        </div>
+        <p id="flowError" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3"></p>
+      </div>
+
+      <!-- Sticky summary -->
+      <aside class="lg:col-span-2">
+        <div class="lg:sticky lg:top-24 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h2 class="text-sm font-bold tracking-widest uppercase text-gray-400 mb-4">Order summary</h2>
+          <div id="summaryLines" class="space-y-3 mb-4 max-h-64 overflow-y-auto"></div>
+          <div class="border-t border-gray-100 pt-4 flex justify-between items-baseline">
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total</span>
+            <span id="summaryTotal" class="text-2xl font-bold font-mono">HKD$ 0</span>
+          </div>
+          <p class="text-[11px] text-gray-400 mt-3 leading-relaxed">價格以港幣 HKD 計算。送出訂單前請確認商品與數量。</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <footer class="text-center py-10 text-xs text-gray-400 font-mono">
+    STARYUME WEB // HK CHECKOUT
+  </footer>
+
+  <!-- Honeypot -->
+  <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" class="absolute opacity-0 pointer-events-none h-0 w-0" aria-hidden="true">
+
+  <script>
+    const STEPS = [
+      { id: 'bag', label: 'Cart', labelZh: '購物車' },
+      { id: 'contact', label: 'Contact', labelZh: '聯絡' },
+      { id: 'fulfill', label: 'Pickup', labelZh: '取貨' },
+      { id: 'pay', label: 'Pay', labelZh: '付款' },
+      { id: 'proof', label: 'Confirm', labelZh: '確認並提交' },
+    ];
+
+    let stepIndex = 0;
+    let cart = {};
+    let state = {
+      name: '',
+      email: '',
+      phone: '',
+      snsType: '',
+      snsContact: '',
+      fulfillmentId: '',
+      sfCode: '',
+      paymentMethod: '',
+      paidConfirmed: false,
+      notes: '',
+      proofDataUrl: '',
+      proofName: '',
+      proofMime: '',
+    };
+
+    const hk = () => (storeConfig && storeConfig.hkCheckout) || {};
+
+    function t(obj, fallback) {
+      if (!obj) return fallback || '';
+      if (typeof obj === 'string') return obj;
+      return obj.zh || obj.en || fallback || '';
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('flowError');
+      if (!msg) {
+        el.classList.add('hidden');
+        el.textContent = '';
+        return;
+      }
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function redirectIfEmpty() {
+      cart = loadHkCart();
+      if (!getHkCartCount(cart)) {
+        window.location.replace('store.html?region=HK');
+        return true;
+      }
+      if (hk().enabled === false) {
+        alert('香港站內結帳暫時關閉。');
+        window.location.replace('store.html?region=HK');
+        return true;
+      }
+      return false;
+    }
+
+    function renderSummary() {
+      const lines = getHkCartLines(cart, storeProducts, 'zh');
+      const total = getHkCartTotal(cart, storeProducts);
+      document.getElementById('summaryTotal').textContent = 'HKD$ ' + total;
+      document.getElementById('summaryLines').innerHTML = lines.map((line) => `
+        <div class="flex gap-3 items-center">
+          <div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
+            ${line.thumb ? `<img src="${line.thumb}" class="w-full h-full object-cover" alt="">` : ''}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-bold line-clamp-2">${line.title}</p>
+            <p class="text-[10px] text-gray-400 font-mono">×${line.qty}</p>
+          </div>
+          <p class="text-xs font-mono font-bold">HKD$ ${line.lineTotal}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderStepNav() {
+      document.getElementById('stepNav').innerHTML = STEPS.map((s, i) => {
+        let cls = 'step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-500';
+        if (i === stepIndex) cls += ' active';
+        else if (i < stepIndex) cls += ' done';
+        return `
+          <div class="flex items-center gap-2 ${i < STEPS.length - 1 ? 'mr-1' : ''}">
+            <div class="${cls}">${i < stepIndex ? '✓' : (i + 1)}</div>
+            <span class="text-xs font-bold ${i === stepIndex ? 'text-black' : 'text-gray-400'} hidden sm:inline">${s.labelZh}</span>
+            ${i < STEPS.length - 1 ? '<span class="w-4 sm:w-8 h-px bg-gray-200 mx-1"></span>' : ''}
+          </div>`;
+      }).join('');
+    }
+
+    function setCartQty(id, qty) {
+      const key = String(id);
+      const n = parseInt(qty, 10);
+      if (!n || n < 1) delete cart[key];
+      else cart[key] = Math.min(n, 99);
+      saveHkCart(cart);
+      if (!getHkCartCount(cart)) {
+        window.location.href = 'store.html?region=HK';
+        return;
+      }
+      renderSummary();
+      renderPanel();
+    }
+
+    function availableFulfillment() {
+      return getAvailableHkFulfillment(cart, storeProducts, storeConfig);
+    }
+
+    function paymentOptions() {
+      const p = hk().payment || {};
+      const list = [];
+      if (p.fps && p.fps.enabled !== false) list.push({ id: 'fps', ...p.fps, label: 'FPS 轉數快' });
+      if (p.payme && p.payme.enabled !== false) list.push({ id: 'payme', ...p.payme, label: 'PayMe' });
+      return list;
+    }
+
+    function renderPanel() {
+      const panel = document.getElementById('stepPanels');
+      const id = STEPS[stepIndex].id;
+      const total = getHkCartTotal(cart, storeProducts);
+
+      if (id === 'bag') {
+        const lines = getHkCartLines(cart, storeProducts, 'zh');
+        panel.innerHTML = `
+          <h2 class="text-xl font-bold mb-1">檢視購物車</h2>
+          <p class="text-sm text-gray-500 mb-6">確認商品與數量後繼續。</p>
+          <div class="space-y-4">
+            ${lines.map((line) => `
+              <div class="flex gap-4 items-start border-b border-gray-50 pb-4">
+                <div class="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                  ${line.thumb ? `<img src="${line.thumb}" class="w-full h-full object-cover" alt="">` : ''}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-bold text-sm leading-snug">${line.title}</p>
+                  <p class="text-xs font-mono text-gray-500 mt-1">HKD$ ${line.unit} each</p>
+                  ${line.soldOut ? '<p class="text-xs text-red-500 font-bold mt-1">此商品已完售，請移除後再結帳</p>' : ''}
+                  <div class="flex items-center gap-2 mt-3">
+                    <button type="button" data-qty="${line.id}" data-delta="-1" class="qty-btn w-8 h-8 rounded-full border border-gray-200 font-bold hover:border-black">−</button>
+                    <span class="w-6 text-center font-mono text-sm font-bold">${line.qty}</span>
+                    <button type="button" data-qty="${line.id}" data-delta="1" class="qty-btn w-8 h-8 rounded-full border border-gray-200 font-bold hover:border-black">+</button>
+                    <button type="button" data-remove="${line.id}" class="remove-btn ml-2 text-[10px] font-bold text-gray-400 hover:text-red-600">移除</button>
+                  </div>
+                </div>
+                <p class="font-mono font-bold text-sm">HKD$ ${line.lineTotal}</p>
+              </div>
+            `).join('')}
+          </div>
+          <a href="store.html?region=HK" class="inline-block mt-6 text-sm font-bold underline decoration-tech-purple underline-offset-4">← 繼續選購</a>
+        `;
+        panel.querySelectorAll('.qty-btn').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const pid = btn.getAttribute('data-qty');
+            const delta = parseInt(btn.getAttribute('data-delta'), 10);
+            const cur = cart[String(pid)] || 0;
+            setCartQty(pid, cur + delta);
+          });
+        });
+        panel.querySelectorAll('.remove-btn').forEach((btn) => {
+          btn.addEventListener('click', () => setCartQty(btn.getAttribute('data-remove'), 0));
+        });
+      }
+
+      if (id === 'contact') {
+        panel.innerHTML = `
+          <h2 class="text-xl font-bold mb-1">聯絡資料</h2>
+          <p class="text-sm text-gray-500 mb-6">方便核對訂單與出貨聯絡。</p>
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-bold mb-2" for="c-name">姓名 <span class="text-red-500">*</span></label>
+              <input id="c-name" type="text" autocomplete="name" value="${escapeAttr(state.name)}"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-2" for="c-email">電郵 <span class="text-red-500">*</span></label>
+              <input id="c-email" type="email" autocomplete="email" value="${escapeAttr(state.email)}"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white"
+                placeholder="name@example.com">
+              <p class="text-xs text-gray-400 mt-1">用於訂單確認（如已設定後端電郵）。</p>
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-2" for="c-phone">電話 <span class="text-red-500">*</span></label>
+              <input id="c-phone" type="tel" autocomplete="tel" value="${escapeAttr(state.phone)}"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white"
+                placeholder="例如：9123 4567">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-bold mb-2" for="c-snsType">SNS 種類 <span class="text-red-500">*</span></label>
+                <select id="c-snsType" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+                  <option value="">請選擇</option>
+                  ${['facebook','instagram','whatsapp','discord','other'].map((v) =>
+                    `<option value="${v}" ${state.snsType === v ? 'selected' : ''}>${v === 'other' ? '其他' : v.charAt(0).toUpperCase() + v.slice(1)}</option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-bold mb-2" for="c-snsContact">SNS 帳號 <span class="text-red-500">*</span></label>
+                <input id="c-snsContact" type="text" value="${escapeAttr(state.snsContact)}"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white"
+                  placeholder="用戶名稱 / ID / 電話">
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      if (id === 'fulfill') {
+        const selectable = availableFulfillment();
+        const allMethods = (hk().fulfillment || []).slice();
+        if (!selectable.length && !allMethods.length) {
+          panel.innerHTML = `
+            <h2 class="text-xl font-bold mb-2">取貨方式</h2>
+            <p class="text-sm text-red-600 leading-relaxed">目前沒有適用於此購物車的取貨方式。請返回商店調整商品，或稍後再試。</p>
+          `;
+        } else {
+          if (!state.fulfillmentId || !selectable.find((m) => m.id === state.fulfillmentId)) {
+            state.fulfillmentId = selectable.length ? selectable[0].id : '';
+          }
+          const selected = selectable.find((m) => m.id === state.fulfillmentId);
+          const needsSf = selected && selected.fields && selected.fields.includes('sfCode');
+          const selectableIds = new Set(selectable.map((m) => m.id));
+          const displayList = allMethods.length ? allMethods : selectable;
+          panel.innerHTML = `
+            <h2 class="text-xl font-bold mb-1">取貨方式</h2>
+            <div class="space-y-3 mt-6" id="fulfill-options">
+              ${displayList.map((m) => {
+                const isOpen = selectableIds.has(m.id);
+                if (!isOpen) {
+                  return `
+                <div class="flex items-start gap-3 p-4 border border-gray-100 rounded-xl bg-gray-50 opacity-60 cursor-not-allowed select-none">
+                  <input type="radio" disabled class="mt-1 accent-gray-400" tabindex="-1">
+                  <span>
+                    <span class="block font-bold text-sm text-gray-400">${t(m.label, m.id)}</span>
+                    <span class="block text-xs text-gray-400 mt-1 leading-relaxed">${t(m.desc, '')}</span>
+                  </span>
+                </div>`;
+                }
+                return `
+                <label class="option-card flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-gray-400 transition">
+                  <input type="radio" name="fulfillment" value="${m.id}" class="mt-1 accent-black" ${state.fulfillmentId === m.id ? 'checked' : ''}>
+                  <span>
+                    <span class="block font-bold text-sm">${t(m.label, m.id)}</span>
+                    <span class="block text-xs text-gray-500 mt-1 leading-relaxed">${t(m.desc, '')}</span>
+                  </span>
+                </label>`;
+              }).join('')}
+            </div>
+            <div id="sf-fields" class="${needsSf ? '' : 'hidden'} mt-6 space-y-4 border-t border-gray-100 pt-6">
+              <p class="text-xs font-bold text-gray-400 tracking-wider">順豐站代碼</p>
+              <div>
+                <label class="block text-sm font-bold mb-2" for="c-sfCode">順豐站 / 順豐自助櫃 / 順豐合作點 地址或編號 <span class="text-red-500">*</span></label>
+                <input id="c-sfCode" type="text" value="${escapeAttr(state.sfCode)}"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white font-mono"
+                  placeholder="請輸入">
+                <p class="text-xs text-gray-500 mt-1.5">
+                  查詢：
+                  <a href="https://hk.sf-express.com/hk/tc/store" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">順豐服務網點查詢</a>
+                </p>
+              </div>
+            </div>
+          `;
+          panel.querySelectorAll('input[name="fulfillment"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+              state.fulfillmentId = radio.value;
+              renderPanel();
+            });
+          });
+        }
+      }
+
+      if (id === 'pay') {
+        const opts = paymentOptions();
+        if (!state.paymentMethod && opts.length) state.paymentMethod = opts[0].id;
+        const selected = opts.find((o) => o.id === state.paymentMethod) || opts[0];
+        panel.innerHTML = `
+          <h2 class="text-xl font-bold mb-1">付款</h2>
+          <p class="text-sm text-gray-500 mb-4">請完成轉帳／支付，並上載付款成功截圖。</p>
+          <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
+            <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Amount due</p>
+            <p class="text-3xl font-bold font-mono" id="pay-amount">HKD$ ${total}</p>
+          </div>
+          ${!opts.length ? '<p class="text-sm text-red-600">尚未設定付款方式，請聯絡賣家。</p>' : `
+          <div class="space-y-3 mb-6">
+            ${opts.map((o) => `
+              <label class="option-card flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer">
+                <input type="radio" name="payMethod" value="${o.id}" class="accent-black" ${state.paymentMethod === o.id ? 'checked' : ''}>
+                <span class="font-bold text-sm">${o.label}</span>
+              </label>
+            `).join('')}
+          </div>
+          <div id="pay-details" class="border border-gray-100 rounded-xl p-5 space-y-3">
+            ${renderPayDetails(selected)}
+          </div>
+          <div class="mt-8 pt-6 border-t border-gray-100 space-y-3">
+            <h3 class="text-sm font-bold">付款截圖 <span class="text-red-500">*</span></h3>
+            <p class="text-xs text-gray-500">上載 FPS / PayMe 成功截圖。</p>
+            <input id="c-proof" type="file" accept="image/*"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-black file:text-white file:font-bold file:text-xs hover:file:bg-tech-purple hover:file:text-black">
+            <div id="proof-preview" class="mt-2 ${state.proofDataUrl ? '' : 'hidden'}">
+              <img id="proof-img" src="${state.proofDataUrl || ''}" alt="Proof preview" class="max-h-48 rounded-xl border border-gray-100">
+              <p id="proof-name" class="text-xs text-gray-400 mt-1 font-mono">${escapeHtml(state.proofName || '')}</p>
+            </div>
+          </div>
+          <label class="flex items-start gap-3 mt-6 p-4 border border-gray-200 rounded-xl cursor-pointer">
+            <input type="checkbox" id="c-paid" class="mt-1 accent-black" ${state.paidConfirmed ? 'checked' : ''}>
+            <span class="text-sm"><span class="font-bold">我已完成付款並已上載付款成功截圖</span><span class="text-gray-500">（金額 HKD$ ${total}）</span></span>
+          </label>
+          `}
+        `;
+        panel.querySelectorAll('input[name="payMethod"]').forEach((radio) => {
+          radio.addEventListener('change', () => {
+            const paid = document.getElementById('c-paid');
+            if (paid) state.paidConfirmed = !!paid.checked;
+            state.paymentMethod = radio.value;
+            renderPanel();
+          });
+        });
+        const fileInput = document.getElementById('c-proof');
+        if (fileInput) {
+          fileInput.addEventListener('change', () => handleProofFile(fileInput.files && fileInput.files[0]));
+        }
+      }
+
+      if (id === 'proof') {
+        panel.innerHTML = `
+          <h2 class="text-xl font-bold mb-1">確認並提交</h2>
+          <p class="text-sm text-gray-500 mb-6">請確認訂單內容後提交。</p>
+          <div class="space-y-4">
+            <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
+              <p class="font-bold text-black text-sm mb-2">訂單摘要</p>
+              <p>姓名：${escapeHtml(state.name)}</p>
+              <p>電郵：${escapeHtml(state.email)}</p>
+              <p>付款：${state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'}</p>
+              <p>取貨：${escapeHtml(fulfillmentLabel(state.fulfillmentId))}</p>
+              <p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>
+              <p class="font-mono font-bold text-black pt-1">合計 HKD$ ${total}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-2" for="c-notes">想對我說的話 <span class="text-gray-400 font-normal">(非必填)</span></label>
+              <textarea id="c-notes" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white resize-y"
+                placeholder="想補充的內容">${escapeHtml(state.notes)}</textarea>
+            </div>
+          </div>
+        `;
+      }
+
+      updateNavButtons();
+    }
+
+    function renderPayDetails(opt) {
+      if (!opt) return '';
+      if (opt.id === 'fps') {
+        return `
+          <p class="text-sm font-bold mb-1">FPS 轉數快</p>
+          <p class="text-xs text-gray-500 mb-3 leading-relaxed">請用銀行 App 掃描 QR，或以 FPS 識別代號轉帳（貨幣：港元）。</p>
+          <div class="flex flex-col sm:flex-row gap-4 items-start">
+            ${opt.qrImage ? `<img src="${escapeAttr(opt.qrImage)}" alt="FPS QR Code" class="w-full max-w-[220px] rounded-xl border border-gray-100 bg-white shadow-sm">` : ''}
+            <div class="space-y-2 text-sm">
+              ${opt.accountName ? `<p class="text-gray-600">收款名稱<br><span class="font-bold text-black">${escapeHtml(opt.accountName)}</span></p>` : ''}
+              <p class="text-gray-600">FPS 識別代號<br><span class="font-mono font-bold text-lg text-black tracking-wide">${escapeHtml(opt.accountId || '')}</span></p>
+              <p class="text-xs text-gray-400">請轉帳上方「Amount due」所示金額，並於本頁下方上載成功截圖。</p>
+            </div>
+          </div>
+        `;
+      }
+      const payLink = opt.linkOrPhone || 'https://payme.hsbc/staryume';
+      return `
+        <p class="text-sm font-bold mb-1">PayMe</p>
+        <p class="text-xs text-gray-500 mb-3 leading-relaxed">請用 PayMe App 掃描 QR，或點擊下方連結完成付款。</p>
+        <div class="flex flex-col sm:flex-row gap-4 items-start">
+          ${opt.qrImage ? `<img src="${escapeAttr(opt.qrImage)}" alt="PayMe QR Code" class="w-full max-w-[220px] rounded-xl border border-gray-100 bg-white shadow-sm">` : ''}
+          <div class="space-y-3 text-sm">
+            <p class="text-gray-600">收款帳戶<br><span class="font-bold text-black">Staryume Store</span></p>
+            <a href="${escapeAttr(payLink)}" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center justify-center px-4 py-2.5 bg-black text-white text-xs font-bold rounded-lg hover:bg-tech-purple hover:text-black transition-colors">
+              開啟 PayMe 付款連結
+            </a>
+            <p class="text-xs font-mono text-gray-500 break-all">${escapeHtml(payLink)}</p>
+            <p class="text-xs text-gray-400">請支付上方「Amount due」所示金額，並於本頁下方上載成功截圖。</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function fulfillmentLabel(id) {
+      const m = (hk().fulfillment || []).find((f) => f.id === id);
+      return m ? t(m.label, id) : id;
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+    function escapeAttr(s) {
+      return escapeHtml(s).replace(/'/g, '&#39;');
+    }
+
+    function readContactFromDom() {
+      const g = (id) => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+      };
+      if (STEPS[stepIndex].id === 'contact') {
+        state.name = g('c-name');
+        state.email = g('c-email');
+        state.phone = g('c-phone');
+        state.snsType = g('c-snsType');
+        state.snsContact = g('c-snsContact');
+      }
+      if (STEPS[stepIndex].id === 'fulfill') {
+        const sf = document.getElementById('c-sfCode');
+        if (sf) state.sfCode = sf.value.trim();
+      }
+      if (STEPS[stepIndex].id === 'pay') {
+        const paid = document.getElementById('c-paid');
+        state.paidConfirmed = !!(paid && paid.checked);
+      }
+      if (STEPS[stepIndex].id === 'proof') {
+        const notes = document.getElementById('c-notes');
+        if (notes) state.notes = notes.value.trim();
+      }
+    }
+
+    function validateStep() {
+      readContactFromDom();
+      const id = STEPS[stepIndex].id;
+      const lines = getHkCartLines(cart, storeProducts, 'zh');
+
+      if (id === 'bag') {
+        if (!lines.length) return '購物車是空的。';
+        if (lines.some((l) => l.soldOut)) return '購物車含完售商品，請先移除。';
+        return '';
+      }
+      if (id === 'contact') {
+        if (!state.name) return '請填寫姓名。';
+        if (!state.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) return '請填寫有效電郵。';
+        if (!state.phone) return '請填寫電話。';
+        if (!state.snsType) return '請選擇 SNS 種類。';
+        if (!state.snsContact) return '請填寫 SNS 帳號。';
+        return '';
+      }
+      if (id === 'fulfill') {
+        const methods = availableFulfillment();
+        if (!methods.length) return '沒有可用的取貨方式。';
+        if (!state.fulfillmentId) return '請選擇取貨方式。';
+        const m = methods.find((x) => x.id === state.fulfillmentId);
+        if (m && m.fields && m.fields.includes('sfCode') && !state.sfCode) return '請填寫順豐站代碼。';
+        return '';
+      }
+      if (id === 'pay') {
+        if (!paymentOptions().length) return '尚未設定付款方式。';
+        if (!state.paymentMethod) return '請選擇付款方式。';
+        if (!state.proofDataUrl) return '請上載付款截圖。';
+        if (!state.paidConfirmed) return '請確認已完成付款並已上載付款成功截圖。';
+        return '';
+      }
+      if (id === 'proof') {
+        if (!state.proofDataUrl) return '請返回上一步上載付款截圖。';
+        return '';
+      }
+      return '';
+    }
+
+    function handleProofFile(file) {
+      if (!file) return;
+      if (!file.type || !file.type.startsWith('image/')) {
+        showError('請上載圖片檔案。');
+        return;
+      }
+      // Compress / resize so Apps Script POST stays reliable
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const maxSide = 1600;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxSide || h > maxSide) {
+            const scale = maxSide / Math.max(w, h);
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, w, h);
+          let quality = 0.82;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          // Keep under ~1.8MB base64 payload
+          while (dataUrl.length > 2400000 && quality > 0.45) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          state.proofDataUrl = dataUrl;
+          state.proofName = (file.name || 'proof').replace(/\.\w+$/, '') + '.jpg';
+          state.proofMime = 'image/jpeg';
+          showError('');
+          const prev = document.getElementById('proof-preview');
+          const preview = document.getElementById('proof-img');
+          const nameEl = document.getElementById('proof-name');
+          if (prev) prev.classList.remove('hidden');
+          if (preview) preview.src = state.proofDataUrl;
+          if (nameEl) nameEl.textContent = state.proofName;
+        };
+        img.onerror = () => showError('無法讀取圖片，請換另一張再試。');
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateNavButtons() {
+      const back = document.getElementById('btnBack');
+      const next = document.getElementById('btnNext');
+      back.style.visibility = stepIndex === 0 ? 'hidden' : 'visible';
+      const last = stepIndex === STEPS.length - 1;
+      next.textContent = last ? '提交訂單 · Place order' : '繼續';
+    }
+
+    function goNext() {
+      showError('');
+      const err = validateStep();
+      if (err) {
+        showError(err);
+        return;
+      }
+      if (stepIndex < STEPS.length - 1) {
+        stepIndex++;
+        renderStepNav();
+        renderPanel();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      submitOrder();
+    }
+
+    function goBack() {
+      showError('');
+      readContactFromDom();
+      if (stepIndex > 0) {
+        stepIndex--;
+        renderStepNav();
+        renderPanel();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    async function submitOrder() {
+      readContactFromDom();
+      const err = validateStep();
+      if (err) {
+        showError(err);
+        return;
+      }
+
+      const honeypot = document.getElementById('website');
+      if (honeypot && honeypot.value) {
+        showSuccess(generateHkOrderId());
+        return;
+      }
+
+      const scriptUrl = (hk().scriptUrl || '').trim();
+      const lines = getHkCartLines(cart, storeProducts, 'zh');
+      const total = getHkCartTotal(cart, storeProducts);
+      const orderId = generateHkOrderId();
+
+      const itemsText = lines.map((l) => `${l.title} ×${l.qty} @ HKD$${l.unit} = HKD$${l.lineTotal}`).join('\n');
+      const itemsJson = lines.map((l) => ({
+        id: l.id,
+        title: l.title,
+        qty: l.qty,
+        unit: l.unit,
+        lineTotal: l.lineTotal,
+      }));
+
+      const payload = {
+        orderId,
+        items: itemsJson,
+        itemsText,
+        totalHkd: total,
+        name: state.name,
+        email: state.email,
+        phone: state.phone,
+        snsType: state.snsType,
+        snsContact: state.snsContact,
+        fulfillmentId: state.fulfillmentId,
+        fulfillmentLabel: fulfillmentLabel(state.fulfillmentId),
+        sfCode: state.sfCode || '',
+        paymentMethod: state.paymentMethod,
+        notes: state.notes || '',
+        proof: {
+          name: state.proofName || 'proof.jpg',
+          mimeType: state.proofMime || 'image/jpeg',
+          dataUrl: state.proofDataUrl,
+        },
+      };
+
+      const next = document.getElementById('btnNext');
+      next.disabled = true;
+      next.textContent = '提交中…';
+
+      if (!scriptUrl || scriptUrl === 'YOUR_SCRIPT_URL_HERE') {
+        console.warn('[checkout] scriptUrl not set — order not sent to Sheets. Payload:', payload);
+        try {
+          sessionStorage.setItem('staryume_last_order_preview', JSON.stringify({ orderId, total, name: state.name, items: itemsJson }));
+        } catch (e) { /* ignore */ }
+        // Local UX demo: checkout.html?demo=1 completes without Sheets
+        const isDemo = new URLSearchParams(location.search).get('demo') === '1';
+        if (isDemo) {
+          clearHkCart();
+          cart = {};
+          showSuccess(orderId, total);
+          return;
+        }
+        showError('後端尚未連接。請在 store.js → hkCheckout.scriptUrl 貼上 Apps Script URL（見 docs/hk-store-checkout-apps-script.md）。本機可加 ?demo=1 預覽成功畫面。');
+        next.disabled = false;
+        next.textContent = '提交訂單 · Place order';
+        return;
+      }
+
+      try {
+        // text/plain avoids CORS preflight; Apps Script still receives the body.
+        // Prefer reading JSON when the redirect allows it; fall back if opaque.
+        const res = await fetch(scriptUrl, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        let result = null;
+        try {
+          const text = await res.text();
+          if (text && text.trim().startsWith('{')) result = JSON.parse(text);
+        } catch (parseErr) {
+          result = null;
+        }
+        if (result && result.ok === false) {
+          console.error('[checkout] backend error', result);
+          showError('訂單送出失敗：' + (result.error || '請稍後再試，或聯絡賣家。'));
+          next.disabled = false;
+          next.textContent = '提交訂單 · Place order';
+          return;
+        }
+        clearHkCart();
+        cart = {};
+        showSuccess(orderId, total);
+      } catch (e) {
+        // Some browsers still block reading Apps Script responses; retry no-cors once.
+        try {
+          await fetch(scriptUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload),
+          });
+          clearHkCart();
+          cart = {};
+          showSuccess(orderId, total);
+        } catch (e2) {
+          showError('提交失敗，請檢查網路後再試一次。');
+          next.disabled = false;
+          next.textContent = '提交訂單 · Place order';
+        }
+      }
+    }
+
+    function showSuccess(orderId, total) {
+      document.getElementById('checkoutFlow').classList.add('hidden');
+      document.getElementById('successView').classList.remove('hidden');
+      document.getElementById('successOrderId').textContent = orderId;
+      if (total != null) {
+        document.getElementById('successTotal').textContent = '合計 HKD$ ' + total;
+      }
+      const discord = hk().discordInvite;
+      if (discord) document.getElementById('successDiscord').href = discord;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (typeof storeConfig === 'undefined' || typeof storeProducts === 'undefined') {
+        alert('store.js failed to load');
+        return;
+      }
+      if (redirectIfEmpty()) return;
+      renderSummary();
+      renderStepNav();
+      renderPanel();
+      document.getElementById('btnNext').addEventListener('click', goNext);
+      document.getElementById('btnBack').addEventListener('click', goBack);
+    });
+  </script>
+</body>
+</html>
