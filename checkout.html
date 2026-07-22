@@ -58,7 +58,6 @@
   <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
     <a href="./store.html?region=HK" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
       <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
-      <span class="hidden sm:block text-xs font-tech tracking-widest text-gray-400">HK CHECKOUT</span>
     </a>
     <a href="./store.html?region=HK" class="text-xs font-bold text-gray-500 hover:text-black transition-colors">← 返回商店</a>
   </header>
@@ -92,7 +91,7 @@
   <!-- Checkout flow -->
   <div id="checkoutFlow" class="max-w-6xl mx-auto px-4 py-8 md:py-12">
     <div class="mb-8 md:mb-10">
-      <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">HONG KONG · 香港</p>
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">HONG KONG ONLINE STORE</p>
       <h1 class="text-3xl md:text-4xl font-bold font-tech tracking-tight">Checkout</h1>
     </div>
 
@@ -275,7 +274,6 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-bold text-sm leading-snug">${line.title}</p>
-                  <p class="text-xs font-mono text-gray-500 mt-1">HKD$ ${line.unit} each</p>
                   ${line.soldOut ? '<p class="text-xs text-red-500 font-bold mt-1">此商品已完售，請移除後再結帳</p>' : ''}
                   <div class="flex items-center gap-2 mt-3">
                     <button type="button" data-qty="${line.id}" data-delta="-1" class="qty-btn w-8 h-8 rounded-full border border-gray-200 font-bold hover:border-black">−</button>
@@ -318,7 +316,7 @@
               <input id="c-email" type="email" autocomplete="email" value="${escapeAttr(state.email)}"
                 class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white"
                 placeholder="name@example.com">
-              <p class="text-xs text-gray-400 mt-1">用於訂單確認（如已設定後端電郵）。</p>
+              <p class="text-xs text-gray-400 mt-1">用於發送訂單確認電郵</p>
             </div>
             <div>
               <label class="block text-sm font-bold mb-2" for="c-phone">電話 <span class="text-red-500">*</span></label>
@@ -328,7 +326,7 @@
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-bold mb-2" for="c-snsType">SNS 種類 <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-bold mb-2" for="c-snsType">社交媒體額外聯絡方法 <span class="text-red-500">*</span></label>
                 <select id="c-snsType" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
                   <option value="">請選擇</option>
                   ${['facebook','instagram','whatsapp','discord','other'].map((v) =>
@@ -337,7 +335,7 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-bold mb-2" for="c-snsContact">SNS 帳號 <span class="text-red-500">*</span></label>
+                <label class="block text-sm font-bold mb-2" for="c-snsContact">帳號資料 <span class="text-red-500">*</span></label>
                 <input id="c-snsContact" type="text" value="${escapeAttr(state.snsContact)}"
                   class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white"
                   placeholder="用戶名稱 / ID / 電話">
@@ -389,7 +387,7 @@
               }).join('')}
             </div>
             <div id="sf-fields" class="${needsSf ? '' : 'hidden'} mt-6 space-y-4 border-t border-gray-100 pt-6">
-              <p class="text-xs font-bold text-gray-400 tracking-wider">順豐站代碼</p>
+              <p class="text-xs font-bold text-gray-400 tracking-wider">順豐發貨資料</p>
               <div>
                 <label class="block text-sm font-bold mb-2" for="c-sfCode">順豐站 / 順豐自助櫃 / 順豐合作點 地址或編號 <span class="text-red-500">*</span></label>
                 <input id="c-sfCode" type="text" value="${escapeAttr(state.sfCode)}"
@@ -495,7 +493,7 @@
       if (opt.id === 'fps') {
         return `
           <p class="text-sm font-bold mb-1">FPS 轉數快</p>
-          <p class="text-xs text-gray-500 mb-3 leading-relaxed">請用銀行 App 掃描 QR，或以 FPS 識別代號轉帳（貨幣：港元）。</p>
+          <p class="text-xs text-gray-500 mb-3 leading-relaxed">請用銀行 App 掃描 QR，或以 FPS 識別代號轉帳</p>
           <div class="flex flex-col sm:flex-row gap-4 items-start">
             ${opt.qrImage ? `<img src="${escapeAttr(opt.qrImage)}" alt="FPS QR Code" class="w-full max-w-[220px] rounded-xl border border-gray-100 bg-white shadow-sm">` : ''}
             <div class="space-y-2 text-sm">
@@ -581,8 +579,8 @@
         if (!state.name) return '請填寫姓名。';
         if (!state.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.email)) return '請填寫有效電郵。';
         if (!state.phone) return '請填寫電話。';
-        if (!state.snsType) return '請選擇 SNS 種類。';
-        if (!state.snsContact) return '請填寫 SNS 帳號。';
+        if (!state.snsType) return '請選擇社交媒體額外聯絡方法。';
+        if (!state.snsContact) return '請填寫帳號資料。';
         return '';
       }
       if (id === 'fulfill') {
@@ -590,7 +588,7 @@
         if (!methods.length) return '沒有可用的取貨方式。';
         if (!state.fulfillmentId) return '請選擇取貨方式。';
         const m = methods.find((x) => x.id === state.fulfillmentId);
-        if (m && m.fields && m.fields.includes('sfCode') && !state.sfCode) return '請填寫順豐站代碼。';
+        if (m && m.fields && m.fields.includes('sfCode') && !state.sfCode) return '請填寫順豐發貨資料。';
         return '';
       }
       if (id === 'pay') {
