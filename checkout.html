@@ -701,11 +701,19 @@
 
       const honeypot = document.getElementById('website');
       if (honeypot && honeypot.value) {
+        // Silent fake success for bots
         showSuccess(generateHkOrderId());
         return;
       }
 
-      const scriptUrl = (hk().scriptUrl || '').trim();
+      const isLocal =
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname === '[::1]';
+      const isDemo =
+        isLocal && new URLSearchParams(location.search).get('demo') === '1';
+
+      const scriptUrl = resolveOrderEndpoint();
       const lines = getHkCartLines(cart, storeProducts, 'zh');
       const total = getHkCartTotal(cart, storeProducts);
       const orderId = generateHkOrderId();
@@ -739,40 +747,43 @@
           mimeType: state.proofMime || 'image/jpeg',
           dataUrl: state.proofDataUrl,
         },
+        // Timestamp helps backend auditing (optional)
+        clientTs: Date.now(),
       };
 
       const next = document.getElementById('btnNext');
       next.disabled = true;
       next.textContent = '提交中…';
 
-      if (!scriptUrl || scriptUrl === 'YOUR_SCRIPT_URL_HERE') {
-        console.warn('[checkout] scriptUrl not set — order not sent to Sheets. Payload:', payload);
-        try {
-          sessionStorage.setItem('staryume_last_order_preview', JSON.stringify({ orderId, total, name: state.name, items: itemsJson }));
-        } catch (e) { /* ignore */ }
-        // Local UX demo: checkout.html?demo=1 completes without Sheets
-        const isDemo = new URLSearchParams(location.search).get('demo') === '1';
-        if (isDemo) {
-          clearHkCart();
-          cart = {};
-          showSuccess(orderId, total);
-          return;
-        }
-        showError('後端尚未連接。請在 store.js → hkCheckout.scriptUrl 貼上 Apps Script URL（見 docs/hk-store-checkout-apps-script.md）。本機可加 ?demo=1 預覽成功畫面。');
+      // Demo mode: localhost only (?demo=1) — never on production
+      if (isDemo) {
+        console.warn('[checkout] demo mode — not sent to backend', payload);
+        clearHkCart();
+        cart = {};
+        showSuccess(orderId, total);
+        return;
+      }
+
+      if (!scriptUrl) {
+        showError('後端尚未連接。請稍後再試。');
         next.disabled = false;
         next.textContent = '提交訂單 · Place order';
         return;
       }
 
       try {
-        // text/plain avoids CORS preflight; Apps Script still receives the body.
-        // Prefer reading JSON when the redirect allows it; fall back if opaque.
+        const useProxy = scriptUrl.startsWith('/') || scriptUrl.includes('/api/hk-order');
         const res = await fetch(scriptUrl, {
           method: 'POST',
           redirect: 'follow',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          headers: {
+            'Content-Type': useProxy
+              ? 'application/json;charset=utf-8'
+              : 'text/plain;charset=utf-8',
+          },
           body: JSON.stringify(payload),
         });
+
         let result = null;
         try {
           const text = await res.text();
@@ -780,34 +791,79 @@
         } catch (parseErr) {
           result = null;
         }
-        if (result && result.ok === false) {
-          console.error('[checkout] backend error', result);
-          showError('訂單送出失敗：' + (result.error || '請稍後再試，或聯絡賣家。'));
+
+        if (res.status === 429 || (result && result.error === 'rate_limited')) {
+          showError('提交過於頻繁，請稍後再試。');
           next.disabled = false;
           next.textContent = '提交訂單 · Place order';
           return;
         }
+
+        if (result && result.ok === false) {
+          console.error('[checkout] backend error', result);
+          showError('訂單送出失敗：' + humanizeOrderError(result.error));
+          next.disabled = false;
+          next.textContent = '提交訂單 · Place order';
+          return;
+        }
+
+        if (!res.ok && !result) {
+          showError('提交失敗（伺服器 ' + res.status + '），請稍後再試。');
+          next.disabled = false;
+          next.textContent = '提交訂單 · Place order';
+          return;
+        }
+
         clearHkCart();
         cart = {};
         showSuccess(orderId, total);
       } catch (e) {
-        // Some browsers still block reading Apps Script responses; retry no-cors once.
-        try {
-          await fetch(scriptUrl, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload),
-          });
-          clearHkCart();
-          cart = {};
-          showSuccess(orderId, total);
-        } catch (e2) {
-          showError('提交失敗，請檢查網路後再試一次。');
-          next.disabled = false;
-          next.textContent = '提交訂單 · Place order';
+        // Direct Apps Script (localhost) may need no-cors fallback
+        if (isLocal && scriptUrl.includes('script.google.com')) {
+          try {
+            await fetch(scriptUrl, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+              body: JSON.stringify(payload),
+            });
+            clearHkCart();
+            cart = {};
+            showSuccess(orderId, total);
+            return;
+          } catch (e2) { /* fall through */ }
         }
+        showError('提交失敗，請檢查網路後再試一次。');
+        next.disabled = false;
+        next.textContent = '提交訂單 · Place order';
       }
+    }
+
+    /** Production → /api/hk-order; localhost → direct Apps Script URL */
+    function resolveOrderEndpoint() {
+      const cfg = hk();
+      const isLocal =
+        location.hostname === 'localhost' ||
+        location.hostname === '127.0.0.1' ||
+        location.hostname === '[::1]';
+      if (isLocal) {
+        return (cfg.scriptUrlDirect || cfg.scriptUrl || '').trim();
+      }
+      const url = (cfg.scriptUrl || '/api/hk-order').trim();
+      return url || '/api/hk-order';
+    }
+
+    function humanizeOrderError(code) {
+      const map = {
+        rate_limited: '提交過於頻繁，請稍後再試。',
+        body_too_large: '付款截圖過大，請換較小的圖片。',
+        missing_proof: '請上載付款截圖。',
+        missing_fields: '訂單資料不完整，請返回檢查。',
+        invalid_json: '訂單格式錯誤，請重新整理後再試。',
+        proxy_failed: '伺服器暫時無法連線，請稍後再試。',
+        upstream_error: '訂單系統暫時忙碌，請稍後再試。',
+      };
+      return map[code] || code || '請稍後再試，或聯絡賣家。';
     }
 
     function showSuccess(orderId, total) {

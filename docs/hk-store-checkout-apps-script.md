@@ -91,15 +91,24 @@ If you edit the script later: **Deploy → Manage deployments → Edit (pencil) 
 
 ## D. Connect the website
 
-1. In this repo, open **`store.js`**.
-2. Find `hkCheckout` and set:
+**Production** posts to the Netlify edge proxy (rate-limited):
 
 ```js
-"scriptUrl": "https://script.google.com/macros/s/YOUR_ID/exec",
+"scriptUrl": "/api/hk-order",
+"scriptUrlDirect": "https://script.google.com/macros/s/YOUR_ID/exec",
 ```
 
-3. Save, then deploy the site (`git add` / `commit` / `push` so Netlify updates production).
-4. For local test: hard-refresh `http://localhost:8000/store.html?region=HK` after saving.
+- `scriptUrl` → used on staryu.me (`/api/hk-order` → Apps Script)  
+- `scriptUrlDirect` → used only on **localhost** (python server has no edge functions)
+
+Also: **Deploy → New version** after any Apps Script edit.
+
+### Security / ops
+
+- Watch the Sheet for spam rows; delete junk; Status column can mark `spam`.  
+- Payment screenshots stay **private** in Drive (no public link sharing).  
+- `/docs/*` and `/admin*` return 404 on Netlify.  
+- `?demo=1` works **only on localhost**.
 
 ---
 
@@ -253,11 +262,7 @@ function saveProof_(proof, orderId) {
   var folder = DriveApp.getFolderById(PROOF_FOLDER_ID);
   var file = folder.createFile(blob);
   file.setName(orderId + '_' + sanitizeFileName_(name, orderId));
-  try {
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  } catch (shareErr) {
-    console.error('Share failed: ' + shareErr);
-  }
+  // Keep proofs private (owner / shared folder only). No "anyone with the link".
   return file.getUrl();
 }
 

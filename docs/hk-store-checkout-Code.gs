@@ -123,11 +123,7 @@ function saveProof_(proof, orderId) {
   var folder = DriveApp.getFolderById(PROOF_FOLDER_ID);
   var file = folder.createFile(blob);
   file.setName(orderId + '_' + sanitizeFileName_(name, orderId));
-  try {
-    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-  } catch (shareErr) {
-    console.error('Share failed: ' + shareErr);
-  }
+  // Keep proofs private (owner / shared folder only). Do not set "anyone with the link".
   return file.getUrl();
 }
 

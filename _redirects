@@ -1,2 +1,5 @@
+# Hide local CMS and setup docs from the public site
 /admin.html    /    404!
 /admin/*       /    404!
+/docs          /    404!
+/docs/*        /    404!

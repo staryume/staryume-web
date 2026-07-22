@@ -12,13 +12,14 @@ const storeConfig = {
     },
     /**
      * Hong Kong on-site checkout (bag → checkout.html → Sheets + Drive).
-     * Set enabled:true to test Add to Bag / checkout. Paste Apps Script URL into scriptUrl after deploy.
-     * See docs/hk-store-checkout-apps-script.md
+     * Production posts to Netlify edge /api/hk-order (rate-limited proxy).
+     * Localhost falls back to scriptUrlDirect (Apps Script) — see docs/hk-store-checkout-apps-script.md
      */
     "hkCheckout": {
         "enabled": true,
         "currency": "HKD",
-        "scriptUrl": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
+        "scriptUrl": "/api/hk-order",
+        "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
         "maxProofBytes": 6000000,
         "payment": {
