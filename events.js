@@ -4,7 +4,6 @@
 const eventUiStrings = {
     "jp": {
         "hint": "画像の商品をタップ／クリックで詳細を表示",
-        "listHeading": "商品一覧",
         "photos": "写真",
         "pages": "ページプレビュー",
         "specs": "仕様",
@@ -22,7 +21,6 @@ const eventUiStrings = {
     },
     "en": {
         "hint": "Tap / click a product on the image for details",
-        "listHeading": "Product List",
         "photos": "Photos",
         "pages": "Page Preview",
         "specs": "Specs",
@@ -40,7 +38,6 @@ const eventUiStrings = {
     },
     "zh": {
         "hint": "點擊圖上的商品查看詳細資訊",
-        "listHeading": "商品一覽",
         "photos": "照片",
         "pages": "內頁預覽",
         "specs": "規格",

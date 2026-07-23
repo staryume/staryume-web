@@ -346,32 +346,6 @@
                     </div>`;
             }).join('');
 
-            const order = event.productOrder || Object.keys(event.products || {});
-            const cards = order.map(id => {
-                const p = event.products[id];
-                if (!p) return '';
-                const title = t(p.title);
-                const price = t(p.price);
-                const cat = strings.category[p.category] || p.category;
-                const thumb = p.thumb || (p.gallery && p.gallery[0]) || '';
-                const badge = p.isNew
-                    ? `<span class="absolute top-0 left-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1 z-10 shadow-md">${strings.newBadge}</span>`
-                    : '';
-                return `
-                    <button type="button" onclick="openEventProduct('${id}')"
-                        class="group text-left cursor-pointer flex flex-col h-full bg-white border border-gray-100 hover:border-tech-purple hover:shadow-md transition-all rounded-lg overflow-hidden">
-                        <div class="aspect-square relative bg-gray-100 overflow-hidden">
-                            <img src="${thumb}" alt="" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
-                            ${badge}
-                            <div class="absolute bottom-0 left-0 bg-black/90 text-white text-xs font-bold px-2 py-1 font-mono">${price}</div>
-                        </div>
-                        <div class="p-3 flex flex-col flex-grow">
-                            <span class="text-[10px] font-mono text-gray-400 tracking-wider uppercase mb-1">${cat}</span>
-                            <h4 class="text-sm font-bold leading-snug group-hover:text-tech-purple transition-colors line-clamp-2">${title}</h4>
-                        </div>
-                    </button>`;
-            }).join('');
-
             root.innerHTML = `
                 <div class="bg-white border border-gray-200 shadow-sm rounded-sm overflow-hidden">
                     <div class="px-4 py-3 md:px-6 bg-black text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -384,15 +358,6 @@
                     </div>
                     <div class="p-4 md:p-8">
                         ${mapsHtml}
-                    </div>
-                </div>
-                <div class="mt-10 md:hidden">
-                    <h3 class="text-xl font-bold flex items-center gap-3 mb-6">
-                        <span class="w-1.5 h-6 bg-tech-purple block"></span>
-                        ${strings.listHeading}
-                    </h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        ${cards}
                     </div>
                 </div>`;
 
