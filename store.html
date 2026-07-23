@@ -226,6 +226,27 @@
         </div>
     </aside>
 
+    <!-- 裏 unlock modal (通關密碼) -->
+    <div id="ura-modal" class="fixed inset-0 z-[110] hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="ura-modal-title">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="closeUraModal()"></div>
+        <div class="relative z-10 bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 md:p-8">
+            <button type="button" onclick="closeUraModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full text-gray-400 hover:text-black hover:bg-gray-100" aria-label="Close">✕</button>
+            <p class="text-[10px] font-tech tracking-widest text-gray-400 uppercase mb-1">???</p>
+            <h2 id="ura-modal-title" class="text-xl font-bold mb-2">通關密碼</h2>
+            <p id="ura-modal-hint" class="text-sm text-gray-500 mb-5 leading-relaxed">輸入通關密碼以繼續。</p>
+            <label class="block text-sm font-bold mb-2" for="ura-passcode">通關密碼</label>
+            <input id="ura-passcode" type="text" autocomplete="off" spellcheck="false"
+                class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white font-mono tracking-wide"
+                placeholder="輸入通關密碼"
+                onkeydown="if(event.key==='Enter'){event.preventDefault();submitUraPasscode();}">
+            <p id="ura-error" class="hidden mt-3 text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-3 py-2"></p>
+            <button type="button" onclick="submitUraPasscode()"
+                class="mt-5 w-full py-3.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-tech-purple hover:text-black transition-colors">
+                解鎖
+            </button>
+        </div>
+    </div>
+
     <script>
         let currentRegion = 'TW';
         let currentLang = 'zh';
@@ -294,68 +315,181 @@
                 btn.className = "relative inline-flex h-5 w-9 items-center rounded-full bg-gray-300 transition-colors flex-shrink-0";
                 dot.className = "inline-block h-3 w-3 transform rounded-full bg-white transition shadow translate-x-1";
             }
+            renderCategories();
             renderAllSections();
+        }
+
+        function productPassesFilters(p) {
+            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            if (typeof isProductVisibleInStore === 'function') {
+                if (!isProductVisibleInStore(p, unlocked)) return false;
+            } else if ((p.hidden || p.contentRating === 'r18') && !unlocked) {
+                return false;
+            }
+            if (p.regions && !p.regions.includes(currentRegion)) return false;
+            if (!showOutOfStock && p.isSoldOut) return false;
+            if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
+            return true;
+        }
+
+        function isUraCatId(id) {
+            return id === 'ura' || id === 'ura-daki';
+        }
+
+        /** Single toolbar label: HK 失物認領 / TW R18商品 */
+        function uraToolbarLabel() {
+            const cat = storeConfig.categories.find((c) => c.id === 'ura');
+            if (cat && cat.nameByRegion && cat.nameByRegion[currentRegion]) {
+                const n = cat.nameByRegion[currentRegion];
+                return n[currentLang] || n.zh || n.en || n.jp || 'R18';
+            }
+            return currentRegion === 'HK' ? '失物認領' : 'R18商品';
+        }
+
+        /** Section titles under the R18 block */
+        function uraSectionLabel(cat) {
+            if (!cat) return '';
+            if (cat.id === 'ura') {
+                return cat.name[currentLang] || cat.name.zh || 'R18同人本';
+            }
+            if (cat.id === 'ura-daki') {
+                return cat.name[currentLang] || cat.name.zh || 'R18 抱枕套';
+            }
+            return cat.name[currentLang] || cat.name.en || cat.name.zh || cat.id;
+        }
+
+        function categoryHasVisibleItems(catId) {
+            return storeProducts.some(p => p.category && p.category.includes(catId) && productPassesFilters(p));
         }
 
         function renderCategories() {
             const container = document.getElementById('category-tabs');
-            container.innerHTML = storeConfig.categories.map(cat => {
+            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            const uraEnabled = storeConfig.ura && storeConfig.ura.enabled !== false;
+
+            // Public categories only on the toolbar (skip ura / ura-daki as separate tabs).
+            // Hide tabs with no currently visible products so clicks always land on a section.
+            let html = storeConfig.categories.map(cat => {
+                if (isUraCatId(cat.id)) return '';
+                if (!categoryHasVisibleItems(cat.id)) return '';
                 const catName = cat.name[currentLang] || cat.name.en || cat.name.zh || cat.id;
-                return `<button onclick="scrollToCategory('${cat.id}')" class="px-5 py-2 text-sm font-bold text-gray-500 hover:text-black hover:bg-gray-200 rounded-full transition-colors whitespace-nowrap">${catName}</button>`;
+                return `<button type="button" onclick="scrollToCategory('${cat.id}')" class="px-5 py-2 text-sm font-bold rounded-full transition-colors whitespace-nowrap text-gray-500 hover:text-black hover:bg-gray-200">${catName}</button>`;
             }).join('');
+
+            if (uraEnabled) {
+                if (unlocked) {
+                    // One R18 entry point → scrolls to all R18 sub-sections
+                    html += `<button type="button" onclick="scrollToCategory('ura')" class="px-5 py-2 text-sm font-bold rounded-full transition-colors whitespace-nowrap bg-pink-400 text-black hover:bg-pink-300">${uraToolbarLabel()}</button>`;
+                } else {
+                    html += `<button type="button" onclick="openUraModal()" class="px-5 py-2 text-sm font-bold text-gray-400 hover:text-black hover:bg-gray-200 rounded-full transition-colors whitespace-nowrap tracking-widest">???</button>`;
+                }
+            }
+            container.innerHTML = html;
         }
 
         function renderAllSections() {
             const container = document.getElementById('store-container');
-            container.innerHTML = ''; 
-            
+            container.innerHTML = '';
+            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+
+            // Public categories first
             storeConfig.categories.forEach(cat => {
-                const items = storeProducts.filter(p => {
-                    if (!p.category.includes(cat.id)) return false;
-                    if (p.regions && !p.regions.includes(currentRegion)) return false;
-                    if (!showOutOfStock && p.isSoldOut) return false;
-                    if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
-                    return true;
+                if (isUraCatId(cat.id)) return;
+                appendCategorySection(container, cat, false);
+            });
+
+            // After unlock: one R18 block with sub-categories (同人本 + 抱枕套)
+            if (unlocked && storeConfig.ura && storeConfig.ura.enabled !== false) {
+                const uraWrap = document.createElement('div');
+                uraWrap.id = 'cat-ura';
+                uraWrap.className = 'border-b border-gray-200 pb-6 last:border-0 space-y-10';
+
+                let anyUra = false;
+                storeConfig.categories.forEach(cat => {
+                    if (!isUraCatId(cat.id)) return;
+                    const items = storeProducts.filter(p => {
+                        if (!p.category.includes(cat.id)) return false;
+                        return productPassesFilters(p);
+                    });
+                    if (!items.length) return;
+                    anyUra = true;
+
+                    const sub = document.createElement('div');
+                    sub.id = `cat-${cat.id}`;
+                    sub.innerHTML = `
+                        <div class="flex justify-between items-center mb-6 px-2">
+                            <h3 class="text-2xl font-bold flex items-center gap-3">
+                                <span class="w-1.5 h-6 bg-pink-400 block"></span>
+                                ${uraSectionLabel(cat)}
+                            </h3>
+                        </div>`;
+
+                    const listId = `list-${cat.id}`;
+                    const list = document.createElement('div');
+                    list.id = listId;
+                    list.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 transition-all duration-500';
+                    list.innerHTML = items.map((product, index) => {
+                        const hiddenClass = index >= 4 ? 'hidden' : '';
+                        return renderCard(product, hiddenClass);
+                    }).join('');
+                    sub.appendChild(list);
+
+                    if (items.length > 4) {
+                        const btnContainer = document.createElement('div');
+                        btnContainer.className = 'flex justify-end mt-4';
+                        btnContainer.innerHTML = `
+                            <button type="button" onclick="revealItems('${listId}', this)"
+                                class="px-6 py-2 bg-tech-purple text-black text-sm font-tech font-bold border border-tech-purple hover:bg-white hover:text-purple transition-all shadow-sm">
+                                MORE 更多...
+                            </button>`;
+                        sub.appendChild(btnContainer);
+                    }
+                    uraWrap.appendChild(sub);
                 });
 
-                if (items.length === 0) return;
+                if (anyUra) container.appendChild(uraWrap);
+            }
+        }
 
-                const section = document.createElement('div');
-                section.id = `cat-${cat.id}`;
-                section.className = "border-b border-gray-200 pb-6 last:border-0";
-                
-                section.innerHTML = `
-                    <div class="flex justify-between items-center mb-6 px-2">
-                        <h3 class="text-2xl font-bold flex items-center gap-3">
-                            <span class="w-1.5 h-6 bg-tech-purple block"></span>
-                            ${cat.name[currentLang] || cat.name.en || cat.name.zh || cat.id}
-                        </h3>
-                    </div>`;
-
-                const listId = `list-${cat.id}`;
-                const list = document.createElement('div');
-                list.id = listId;
-                list.className = "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 transition-all duration-500";
-                
-                list.innerHTML = items.map((product, index) => {
-                    const hiddenClass = index >= 4 ? 'hidden' : ''; 
-                    return renderCard(product, hiddenClass);
-                }).join('');
-                
-                section.appendChild(list);
-
-                if (items.length > 4) { 
-                    const btnContainer = document.createElement('div');
-                    btnContainer.className = "flex justify-end mt-4"; 
-                    btnContainer.innerHTML = `
-                        <button onclick="revealItems('${listId}', this)" 
-                                class="px-6 py-2 bg-tech-purple text-black text-sm font-tech font-bold border border-tech-purple hover:bg-white hover:text-purple transition-all shadow-sm">
-                            MORE 更多...
-                        </button>`;
-                    section.appendChild(btnContainer);
-                }
-                container.appendChild(section);
+        function appendCategorySection(container, cat) {
+            const items = storeProducts.filter(p => {
+                if (!p.category.includes(cat.id)) return false;
+                return productPassesFilters(p);
             });
+            if (items.length === 0) return;
+
+            const section = document.createElement('div');
+            section.id = `cat-${cat.id}`;
+            section.className = 'border-b border-gray-200 pb-6 last:border-0';
+            section.innerHTML = `
+                <div class="flex justify-between items-center mb-6 px-2">
+                    <h3 class="text-2xl font-bold flex items-center gap-3">
+                        <span class="w-1.5 h-6 bg-tech-purple block"></span>
+                        ${cat.name[currentLang] || cat.name.en || cat.name.zh || cat.id}
+                    </h3>
+                </div>`;
+
+            const listId = `list-${cat.id}`;
+            const list = document.createElement('div');
+            list.id = listId;
+            list.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 transition-all duration-500';
+            list.innerHTML = items.map((product, index) => {
+                const hiddenClass = index >= 4 ? 'hidden' : '';
+                return renderCard(product, hiddenClass);
+            }).join('');
+            section.appendChild(list);
+
+            if (items.length > 4) {
+                const btnContainer = document.createElement('div');
+                btnContainer.className = 'flex justify-end mt-4';
+                btnContainer.innerHTML = `
+                    <button type="button" onclick="revealItems('${listId}', this)"
+                        class="px-6 py-2 bg-tech-purple text-black text-sm font-tech font-bold border border-tech-purple hover:bg-white hover:text-purple transition-all shadow-sm">
+                        MORE 更多...
+                    </button>`;
+                section.appendChild(btnContainer);
+            }
+            container.appendChild(section);
         }
 
         function renderCard(product, hiddenClass = '') {
@@ -365,7 +499,12 @@
             
             let badge = '';
             if (product.isSoldOut) badge = `<div class="absolute inset-0 bg-black/60 z-20 flex items-center justify-center"><span class="bg-black text-tech-purple -rotate-12 px-3 py-1 font-bold text-sm border-2 border-tech-purple shadow-lg">SOLD OUT</span></div>`;
-            else if (product.isNew) badge = `<div class="absolute top-0 left-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1 z-10 shadow-md">NEW</div>`;
+            else {
+                const bits = [];
+                if (product.contentRating === 'r18' || product.hidden) bits.push(`<div class="absolute top-0 left-0 bg-black text-tech-purple text-[10px] font-bold px-2 py-1 z-10 shadow-md">R18</div>`);
+                else if (product.isNew) bits.push(`<div class="absolute top-0 left-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1 z-10 shadow-md">NEW</div>`);
+                badge = bits.join('');
+            }
 
             return `
             <div onclick="openModal(${product.id})" class="group cursor-pointer flex flex-col h-full ${hiddenClass}">
@@ -388,8 +527,7 @@
         function handleSearch(query) {
             const container = document.getElementById('store-container');
             const results = storeProducts.filter(p => {
-                if (p.regions && !p.regions.includes(currentRegion)) return false;
-                if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
+                if (!productPassesFilters(p)) return false;
                 const hay = [p.title?.jp, p.title?.en, p.title?.zh].filter(Boolean).join(' ').toLowerCase();
                 return hay.includes(query.toLowerCase());
             });
@@ -405,6 +543,11 @@
         function openModal(id) {
             const product = storeProducts.find(p => p.id === id);
             if (!product) return;
+            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            if ((product.hidden || product.contentRating === 'r18') && !unlocked) {
+                openUraModal();
+                return;
+            }
             const modal = document.getElementById('product-modal');
             const price = (currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`;
             
@@ -419,6 +562,9 @@
             // --- UPDATED BADGES: ID REMOVED ---
             const badges = document.getElementById('modal-badges');
             badges.innerHTML = '';
+            if (product.contentRating === 'r18' || product.hidden) {
+                badges.innerHTML += `<span class="bg-black text-tech-purple text-xs font-bold px-2 py-1 rounded">R18</span>`;
+            }
             if(product.isNew) badges.innerHTML += `<span class="bg-tech-purple text-black text-xs font-bold px-2 py-1 rounded">NEW ARRIVAL</span>`;
             
             const actions = document.getElementById('modal-actions');
@@ -429,7 +575,11 @@
             } else if (product.isSoldOut) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
             } else if (currentRegion === 'TW') {
-                actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
+                if (product.linkTW) {
+                    actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
+                } else {
+                    actions.innerHTML = `<button type="button" disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">台灣通路未開放 · 請切換香港</button>`;
+                }
             } else {
                 const hkOn = storeConfig.hkCheckout && storeConfig.hkCheckout.enabled !== false;
                 if (hkOn) {
@@ -440,6 +590,65 @@
                 }
             }
             modal.classList.remove('hidden');
+        }
+
+        function openUraModal() {
+            const ura = storeConfig.ura;
+            if (!ura || ura.enabled === false) return;
+            const title = document.getElementById('ura-modal-title');
+            const hint = document.getElementById('ura-modal-hint');
+            if (title && ura.modalTitle) {
+                title.textContent = ura.modalTitle[currentLang] || ura.modalTitle.zh || '通關密碼';
+            }
+            if (hint && ura.modalHint) {
+                hint.textContent = ura.modalHint[currentLang] || ura.modalHint.zh || '';
+            }
+            const err = document.getElementById('ura-error');
+            if (err) { err.classList.add('hidden'); err.textContent = ''; }
+            const input = document.getElementById('ura-passcode');
+            if (input) input.value = '';
+            document.getElementById('ura-modal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => input && input.focus(), 50);
+        }
+
+        function closeUraModal() {
+            document.getElementById('ura-modal').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        function submitUraPasscode() {
+            const err = document.getElementById('ura-error');
+            const showErr = (msg) => {
+                if (!err) return;
+                err.textContent = msg;
+                err.classList.remove('hidden');
+            };
+            const input = document.getElementById('ura-passcode');
+            const code = input ? input.value : '';
+            if (typeof checkUraPasscode !== 'function' || !checkUraPasscode(code)) {
+                showErr('通關密碼不正確。');
+                return;
+            }
+            if (typeof unlockUra === 'function') unlockUra();
+            closeUraModal();
+            renderCategories();
+            renderAllSections();
+            scrollToCategory('ura');
+            // 抱枕套 section also appears after unlock (cat-ura-daki)
+        }
+
+        function lockUraStore() {
+            if (typeof lockUra === 'function') lockUra();
+            // Drop hidden items from cart so they don't linger after lock
+            Object.keys(cart).forEach((id) => {
+                const p = storeProducts.find((x) => String(x.id) === String(id));
+                if (p && (p.hidden || p.contentRating === 'r18')) delete cart[id];
+            });
+            if (typeof saveHkCart === 'function') saveHkCart(cart);
+            updateCartUI();
+            renderCategories();
+            renderAllSections();
         }
 
         function updateCarousel() {
@@ -471,6 +680,9 @@
 
         function setRegion(region) {
             currentRegion = region;
+
+            // Toolbar labels (e.g. 失物認領 vs R18商品) depend on region
+            renderCategories();
             
             // --- FIX: RENDER PRODUCTS FIRST (Ensures Price Updates) ---
             const searchVal = document.getElementById('store-search').value;

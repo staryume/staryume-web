@@ -112,8 +112,48 @@ const storeConfig = {
                 "en": "OTHER",
                 "zh": "其他"
             }
+        },
+        {
+            "id": "ura",
+            "name": {
+                "jp": "R18同人誌",
+                "en": "R18 Doujin",
+                "zh": "R18同人本"
+            },
+            "nameByRegion": {
+                "HK": { "jp": "失物認領", "en": "Lost & Found", "zh": "失物認領" },
+                "TW": { "jp": "R18商品", "en": "R18", "zh": "R18商品" }
+            }
+        },
+        {
+            "id": "ura-daki",
+            "name": {
+                "jp": "R18抱き枕カバー",
+                "en": "R18 Dakimakura",
+                "zh": "R18 抱枕套"
+            }
         }
-    ]
+    ],
+    /**
+     * 裏 store (R18) — unlock via ??? + 通關密碼 (Discord).
+     * Passcode is client-side only (obscurity for fans, not true secrecy).
+     * Rotate passcode and redeploy when Discord announces a new code.
+     */
+    "ura": {
+        "enabled": true,
+        "passcode": "STARYUME15TH",
+        "sessionKey": "staryume_ura_unlocked",
+        "modalTitle": {
+            "zh": "通關密碼",
+            "en": "Passcode",
+            "jp": "パスコード"
+        },
+        "modalHint": {
+            "zh": "輸入通關密碼以繼續。",
+            "en": "Enter the passcode to continue.",
+            "jp": "パスコードを入力してください。"
+        }
+    }
 };
 
 const storeProducts = [
@@ -172,8 +212,8 @@ const storeProducts = [
         "isSoldOut": false,
         "title": {
             "jp": null,
-            "en": "FF45 遊戲王 SET",
-            "zh": "FF45 遊戲王 SET"
+            "en": "2025 遊戲王 SET",
+            "zh": "2025 遊戲王 SET"
         },
         "priceTW": 400,
         "priceHK": 100,
@@ -444,8 +484,336 @@ const storeProducts = [
             "zh": true
         },
         "linkHK": null
+    },
+    {
+        "id": 500,
+        "category": [
+            "books"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
+        "isNew": true,
+        "isSoldOut": false,
+        "title": {
+            "jp": "Too many Seichi!",
+            "en": "Too many Seichi!",
+            "zh": "Too many Seichi!"
+        },
+        "priceTW": 180,
+        "priceHK": 70,
+        "imgs": [
+            "./blog/20260719/products/book-too-many-seichi/01.jpg",
+            "./blog/20251224/products/book-too-many-seichi/01.jpg",
+            "./blog/20251224/products/book-too-many-seichi/02.jpg",
+            "./blog/20251224/products/book-too-many-seichi/03.jpg"
+        ],
+        "desc": {
+            "jp": "フルカラーイラスト本。<br>20P / フルカラー",
+            "en": "Full-color artbook.<br>20P / full color",
+            "zh": "全彩插圖本。<br>20P / 全彩"
+        },
+        "linkTW": null,
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null
+    },
+    {
+        "id": 501,
+        "category": [
+            "books"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
+        "isNew": false,
+        "isSoldOut": false,
+        "title": {
+            "jp": "Overlay Magic Color 3",
+            "en": "Overlay Magic Color 3",
+            "zh": "Overlay Magic Color 3"
+        },
+        "priceTW": 150,
+        "priceHK": 60,
+        "imgs": [
+            "./blog/20260719/products/book-omc3/01.jpg",
+            "./blog/20251224/products/book-omc3/01.jpg",
+            "./blog/20251224/products/book-omc3/02.jpg",
+            "./blog/20251224/products/book-omc3/03.jpg",
+            "./blog/20251224/products/book-omc3/04.jpg",
+            "./blog/20251224/products/book-omc3/05.jpg"
+        ],
+        "desc": {
+            "jp": "Overlay Magic Color シリーズ既刊。<br>B5・20P・フルカラー",
+            "en": "Overlay Magic Color series catalog book.<br>B5, 20P, full color",
+            "zh": "既刊 Overlay Magic Color 3。<br>B5・20P・全彩插圖本"
+        },
+        "linkTW": null,
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null
+    },
+    {
+        "id": 502,
+        "category": [
+            "books"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
+        "isNew": false,
+        "isSoldOut": false,
+        "title": {
+            "jp": "Overlay Magic GALA",
+            "en": "Overlay Magic GALA",
+            "zh": "Overlay Magic GALA"
+        },
+        "priceTW": 150,
+        "priceHK": 60,
+        "imgs": [
+            "./blog/20260719/products/book-om-gala/01.jpg"
+        ],
+        "desc": {
+            "jp": "Overlay Magic GALA 既刊。<br>フルカラー / 32P",
+            "en": "Overlay Magic GALA catalog book.<br>Full color / 32P",
+            "zh": "既刊 Overlay Magic GALA。<br>全彩 / 32P"
+        },
+        "linkTW": null,
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null
+    },
+    {
+        "id": 603,
+        "category": ["ura"],
+        "regions": ["HK", "TW"],
+        "hidden": true,
+        "contentRating": "r18",
+        "isNew": true,
+        "isSoldOut": false,
+        "title": {
+            "jp": "君はそこがダメなんだよ、ぬるま湯くん",
+            "en": "That's What I Hate About You, Nukumizu-kun",
+            "zh": "你就是這點不行啦，溫水君"
+        },
+        "priceTW": 150,
+        "priceHK": 60,
+        "imgs": [
+            "./blog/20251224/products/book-nukumizu/01.jpg",
+            "./blog/20251224/products/book-nukumizu/02.jpg",
+            "./blog/20251224/products/book-nukumizu/03.jpg",
+            "./blog/20251224/products/book-nukumizu/04.jpg",
+            "./blog/20251224/products/book-nukumizu/05.jpg",
+            "./blog/20251224/products/book-nukumizu/06.jpg"
+        ],
+        "desc": {
+            "jp": "R18 同人誌。詳細は Discord 通關案内を参照。",
+            "en": "R18 doujinshi. See Discord unlock guide for details.",
+            "zh": "R18 同人誌。詳情請見 Discord 通關／失物認領公告。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 601,
+        "category": ["ura"],
+        "regions": ["HK", "TW"],
+        "hidden": true,
+        "contentRating": "r18",
+        "isNew": true,
+        "isSoldOut": false,
+        "title": {
+            "jp": "Overlay Magic 6",
+            "en": "Overlay Magic 6",
+            "zh": "Overlay Magic 6"
+        },
+        "priceTW": 150,
+        "priceHK": 60,
+        "imgs": [
+            "./blog/20251224/products/book-om6/01.jpg",
+            "./blog/20251224/products/book-om6/02.jpg",
+            "./blog/20251224/products/book-om6/03.jpg",
+            "./blog/20251224/products/book-om6/04.jpg",
+            "./blog/20251224/products/book-om6/05.jpg",
+            "./blog/20251224/products/book-om6/06.jpg"
+        ],
+        "desc": {
+            "jp": "R18 既刊。詳細は Discord 失物認領の案内を参照。",
+            "en": "R18 artbook. See Discord unlock guide for details.",
+            "zh": "R18 既刊。詳情請見 Discord 通關／失物認領公告。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 604,
+        "category": ["ura"],
+        "regions": ["HK", "TW"],
+        "hidden": true,
+        "contentRating": "r18",
+        "isNew": true,
+        "isSoldOut": false,
+        "title": {
+            "jp": "Overlay Magic 総集編2",
+            "en": "Overlay Magic Omnibus 2",
+            "zh": "Overlay Magic 總集篇2"
+        },
+        "priceTW": 300,
+        "priceHK": 120,
+        "imgs": [
+            "./blog/20251224/products/book-om-omnibus/01.jpg",
+            "./blog/20251224/products/book-om-omnibus/02.jpg",
+            "./blog/20251224/products/book-om-omnibus/03.jpg",
+            "./blog/20251224/products/book-om-omnibus/04.jpg",
+            "./blog/20251224/products/book-om-omnibus/05.jpg",
+            "./blog/20251224/products/book-om-omnibus/06.jpg"
+        ],
+        "desc": {
+            "jp": "R18 総集編。詳細は Discord 通關案内を参照。",
+            "en": "R18 omnibus. See Discord unlock guide for details.",
+            "zh": "R18 總集篇。詳情請見 Discord 通關／失物認領公告。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 602,
+        "category": ["ura-daki"],
+        "regions": ["HK", "TW"],
+        "hidden": true,
+        "contentRating": "r18",
+        "isNew": true,
+        "isSoldOut": false,
+        "title": {
+            "jp": "抱き枕カバー - ヴィヴィアン優衣",
+            "en": "Dakimakura cover - Vivian Yui",
+            "zh": "抱枕套 - 薇薇安優衣"
+        },
+        "priceTW": 2700,
+        "priceHK": 680,
+        "imgs": [
+            "./blog/20251224/products/daki-vivian/01.jpg",
+            "./blog/20251224/products/daki-vivian/02.jpg",
+            "./blog/20251224/products/daki-vivian/03.jpg",
+            "./blog/20251224/products/daki-vivian/04.jpg",
+            "./blog/20251224/products/daki-vivian/05.jpg"
+        ],
+        "desc": {
+            "jp": "R18 抱き枕カバー。詳細は Discord 通關案内を参照。",
+            "en": "R18 dakimakura cover. See Discord unlock guide for details.",
+            "zh": "R18 抱枕套。詳情請見 Discord 通關／失物認領公告。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 605,
+        "category": ["ura-daki"],
+        "regions": ["HK", "TW"],
+        "hidden": true,
+        "contentRating": "r18",
+        "isNew": true,
+        "isSoldOut": false,
+        "title": {
+            "jp": "抱き枕カバー - 優衣（星辰）",
+            "en": "Dakimakura cover - Yui (Star)",
+            "zh": "抱枕套 - 優衣 (星辰)"
+        },
+        "priceTW": 2700,
+        "priceHK": 680,
+        "imgs": [
+            "./blog/20251224/products/daki-yui-star/01.jpg",
+            "./blog/20251224/products/daki-yui-star/02.jpg",
+            "./blog/20251224/products/daki-yui-star/03.jpg",
+            "./blog/20251224/products/daki-yui-star/04.jpg",
+            "./blog/20251224/products/daki-yui-star/05.jpg"
+        ],
+        "desc": {
+            "jp": "R18 抱き枕カバー。詳細は Discord 通關案内を参照。",
+            "en": "R18 dakimakura cover. See Discord unlock guide for details.",
+            "zh": "R18 抱枕套。詳情請見 Discord 通關／失物認領公告。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
     }
 ];
+
+// ── 裏 store unlock (session only) ──────────────────────────────────────────
+function getUraConfig() {
+    return (typeof storeConfig !== "undefined" && storeConfig.ura) || null;
+}
+
+function isUraUnlocked() {
+    const ura = getUraConfig();
+    if (!ura || ura.enabled === false) return false;
+    try {
+        return sessionStorage.getItem(ura.sessionKey || "staryume_ura_unlocked") === "1";
+    } catch (e) {
+        return false;
+    }
+}
+
+function unlockUra() {
+    const ura = getUraConfig();
+    if (!ura) return false;
+    try {
+        sessionStorage.setItem(ura.sessionKey || "staryume_ura_unlocked", "1");
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function lockUra() {
+    const ura = getUraConfig();
+    if (!ura) return;
+    try {
+        sessionStorage.removeItem(ura.sessionKey || "staryume_ura_unlocked");
+    } catch (e) { /* ignore */ }
+}
+
+/** Normalize passcode for compare (trim, case-insensitive). */
+function normalizeUraPasscode(s) {
+    return String(s || "").trim().toLowerCase();
+}
+
+function checkUraPasscode(input) {
+    const ura = getUraConfig();
+    if (!ura || ura.enabled === false) return false;
+    const got = normalizeUraPasscode(input);
+    if (!got) return false;
+    if (ura.passcode && normalizeUraPasscode(ura.passcode) === got) return true;
+    if (Array.isArray(ura.passcodes)) {
+        return ura.passcodes.some((c) => normalizeUraPasscode(c) === got);
+    }
+    return false;
+}
+
+/** Whether a product may appear in the current catalog view. */
+function isProductVisibleInStore(product, unlocked) {
+    if (!product) return false;
+    if (product.hidden || product.contentRating === "r18") {
+        return !!unlocked;
+    }
+    return true;
+}
 
 // ── HK bag (shared by store.html + checkout.html) ───────────────────────────
 const HK_CART_STORAGE_KEY = "staryume_cart_hk";

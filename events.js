@@ -481,11 +481,7 @@ const eventCatalog = {
                     "./blog/20251224/products/book-too-many-seichi/02.jpg",
                     "./blog/20251224/products/book-too-many-seichi/03.jpg"
                 ],
-                "pages": [
-                    "./blog/20251224/products/book-too-many-seichi/page-01.jpg",
-                    "./blog/20251224/products/book-too-many-seichi/page-02.jpg",
-                    "./blog/20251224/products/book-too-many-seichi/page-03.jpg"
-                ],
+                "pages": [],
                 "thumb": "./blog/20251224/products/book-too-many-seichi/01.jpg",
                 "cta": null
             },
@@ -675,13 +671,12 @@ const eventCatalog = {
                 "gallery": [
                     "./blog/20251224/products/book-om6/01.jpg",
                     "./blog/20251224/products/book-om6/02.jpg",
-                    "./blog/20251224/products/book-om6/03.jpg"
+                    "./blog/20251224/products/book-om6/03.jpg",
+                    "./blog/20251224/products/book-om6/04.jpg",
+                    "./blog/20251224/products/book-om6/05.jpg",
+                    "./blog/20251224/products/book-om6/06.jpg"
                 ],
-                "pages": [
-                    "./blog/20251224/products/book-om6/page-01.jpg",
-                    "./blog/20251224/products/book-om6/page-02.jpg",
-                    "./blog/20251224/products/book-om6/page-03.jpg"
-                ],
+                "pages": [],
                 "thumb": "./blog/20251224/products/book-om6/01.jpg",
                 "cta": null
             },
@@ -712,13 +707,11 @@ const eventCatalog = {
                 "gallery": [
                     "./blog/20251224/products/book-omc3/01.jpg",
                     "./blog/20251224/products/book-omc3/02.jpg",
-                    "./blog/20251224/products/book-omc3/03.jpg"
+                    "./blog/20251224/products/book-omc3/03.jpg",
+                    "./blog/20251224/products/book-omc3/04.jpg",
+                    "./blog/20251224/products/book-omc3/05.jpg"
                 ],
-                "pages": [
-                    "./blog/20251224/products/book-omc3/page-01.jpg",
-                    "./blog/20251224/products/book-omc3/page-02.jpg",
-                    "./blog/20251224/products/book-omc3/page-03.jpg"
-                ],
+                "pages": [],
                 "thumb": "./blog/20251224/products/book-omc3/01.jpg",
                 "cta": null
             },
@@ -749,13 +742,12 @@ const eventCatalog = {
                 "gallery": [
                     "./blog/20251224/products/book-om-omnibus/01.jpg",
                     "./blog/20251224/products/book-om-omnibus/02.jpg",
-                    "./blog/20251224/products/book-om-omnibus/03.jpg"
+                    "./blog/20251224/products/book-om-omnibus/03.jpg",
+                    "./blog/20251224/products/book-om-omnibus/04.jpg",
+                    "./blog/20251224/products/book-om-omnibus/05.jpg",
+                    "./blog/20251224/products/book-om-omnibus/06.jpg"
                 ],
-                "pages": [
-                    "./blog/20251224/products/book-om-omnibus/page-01.jpg",
-                    "./blog/20251224/products/book-om-omnibus/page-02.jpg",
-                    "./blog/20251224/products/book-om-omnibus/page-03.jpg"
-                ],
+                "pages": [],
                 "thumb": "./blog/20251224/products/book-om-omnibus/01.jpg",
                 "cta": null
             }
@@ -986,7 +978,11 @@ const eventCatalog = {
                     "./blog/20260719/products/anni-15-set/03.jpg",
                     "./blog/20260719/products/anni-15-set/04.jpg",
                     "./blog/20260719/products/anni-15-set/05.jpg",
-                    "./blog/20260719/products/anni-15-set/06.jpg"
+                    "./blog/20260719/products/anni-15-set/06.jpg",
+                    "./blog/20260719/products/anni-15-set/07.jpg",
+                    "./blog/20260719/products/anni-15-set/08.jpg",
+                    "./blog/20260719/products/anni-15-set/09.jpg",
+                    "./blog/20260719/products/anni-15-set/10.jpg"
                 ],
                 "pages": [],
                 "thumb": "./blog/20260719/products/anni-15-set/01.jpg",
