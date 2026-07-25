@@ -16,3 +16,8 @@
 [[edge_functions]]
   function = "hk-order"
   path = "/api/hk-order"
+
+# Store region by visitor country (HK / TW)
+[[edge_functions]]
+  function = "geo"
+  path = "/api/geo"

@@ -248,7 +248,7 @@
     </div>
 
     <script>
-        let currentRegion = 'TW';
+        let currentRegion = 'HK';
         // Store UI supports EN / ZH (map site-wide JP → ZH for the button label)
         let currentLang = (() => {
             const saved = localStorage.getItem('siteLang') || 'zh';
@@ -264,7 +264,38 @@
             if (el) el.innerText = (currentLang || 'zh').toUpperCase();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        /**
+         * Pick store region for first paint / visit:
+         * 1) ?region=HK|TW (deep link / CTA) always wins
+         * 2) else Netlify /api/geo: TW → TW, HK and all others → HK
+         * 3) on failure (e.g. localhost) → HK
+         */
+        async function resolveInitialRegion() {
+            const regionParam = (new URLSearchParams(window.location.search).get('region') || '').toUpperCase();
+            if (regionParam === 'HK' || regionParam === 'TW') return regionParam;
+
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 2500);
+                const res = await fetch('/api/geo', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    signal: ctrl.signal,
+                    headers: { 'Accept': 'application/json' },
+                });
+                clearTimeout(timer);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && (data.region === 'TW' || data.country === 'TW')) return 'TW';
+                    if (data && (data.region === 'HK' || data.country === 'HK')) return 'HK';
+                }
+            } catch (e) {
+                /* offline / localhost / edge not available */
+            }
+            return 'HK';
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             if (typeof storeConfig === 'undefined') { alert("Error: store.js missing"); return; }
             window.toggleDesktopLang = () => document.getElementById('langMenuDesktop').classList.toggle('open');
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
@@ -281,8 +312,6 @@
 
             updateLangDisplay();
 
-            cart = typeof loadRegionCart === 'function' ? loadRegionCart(currentRegion) : (typeof loadHkCart === 'function' ? loadHkCart() : {});
-
             // --- CHECK SHOP STATUS ---
             if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
                 const banner = document.getElementById('shop-closed-banner');
@@ -293,9 +322,10 @@
                 }
             }
 
-            // Region from event CTA deep link (?region=HK|TW), else default TW
-            const regionParam = (new URLSearchParams(window.location.search).get('region') || '').toUpperCase();
-            const initialRegion = (regionParam === 'HK' || regionParam === 'TW') ? regionParam : 'TW';
+            // Geo / query-param region, then load the matching cart
+            const initialRegion = await resolveInitialRegion();
+            currentRegion = initialRegion;
+            cart = typeof loadRegionCart === 'function' ? loadRegionCart(currentRegion) : (typeof loadHkCart === 'function' ? loadHkCart() : {});
 
             renderCategories();
             setRegion(initialRegion);
