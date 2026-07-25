@@ -50,15 +50,68 @@ const storeConfig = {
                 "fields": ["phone", "sfCode"]
             },
             {
-                "id": "event_pickup",
-                "enabled": false,
+                "id": "palette_ring_11",
+                "enabled": true,
                 "label": {
-                    "zh": "活動現場取貨",
-                    "en": "Event on-site pickup"
+                    "zh": "9 月 Palette Ring 11 現場取貨",
+                    "en": "Palette Ring 11 (Sep) pickup"
                 },
                 "desc": {
-                    "zh": "特定商品可於指定活動攤位領取（請留意活動公告）。",
-                    "en": "Selected items may be picked up at the event booth (see event notice)."
+                    "zh": "於 Palette Ring 11 攤位現場領取（詳情留意 Discord／活動公告）。",
+                    "en": "Pickup at Palette Ring 11 booth (details via Discord / event notice)."
+                },
+                "fields": []
+            }
+        ]
+    },
+    /**
+     * Taiwan pre-order checkout (bag → checkout.html?region=TW).
+     * FF47 booth pickup only (Day 1 / Day 2). Reuses same order endpoint as HK.
+     */
+    "twCheckout": {
+        "enabled": true,
+        "currency": "TWD",
+        "scriptUrl": "/api/hk-order",
+        "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
+        "discordInvite": "https://discord.gg/staryume",
+        "maxProofBytes": 6000000,
+        "payment": {
+            "fps": {
+                "enabled": true,
+                "accountName": "",
+                "accountId": "5979018",
+                "qrImage": "./assets/store/fps-qr.jpg"
+            },
+            "payme": {
+                "enabled": true,
+                "linkOrPhone": "https://payme.hsbc/staryume",
+                "qrImage": "./assets/store/payme-qr.jpg"
+            }
+        },
+        "fulfillment": [
+            {
+                "id": "ff47_day1",
+                "enabled": true,
+                "label": {
+                    "zh": "FF47 現場取貨 · Day 1（8/21 五）",
+                    "en": "FF47 pickup · Day 1 (Fri 8/21)"
+                },
+                "desc": {
+                    "zh": "Fancy Frontier 47 第一天攤位領取。",
+                    "en": "Booth pickup on FF47 day 1 (Friday 8/21)."
+                },
+                "fields": []
+            },
+            {
+                "id": "ff47_day2",
+                "enabled": true,
+                "label": {
+                    "zh": "FF47 現場取貨 · Day 2（8/22 六）",
+                    "en": "FF47 pickup · Day 2 (Sat 8/22)"
+                },
+                "desc": {
+                    "zh": "Fancy Frontier 47 第二天攤位領取。",
+                    "en": "Booth pickup on FF47 day 2 (Saturday 8/22)."
                 },
                 "fields": []
             }
@@ -210,9 +263,12 @@ const storeProducts = [
         ],
         "isNew": false,
         "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
         "title": {
-            "jp": null,
-            "en": "2025 遊戲王 SET",
+            "jp": "2025遊戯王 SET",
+            "en": "2025 Yu-Gi-Oh! SET",
             "zh": "2025 遊戲王 SET"
         },
         "priceTW": 400,
@@ -225,13 +281,13 @@ const storeProducts = [
             "./blog/20260719/products/set-yugioh-2025/04.jpg"
         ],
         "desc": {
-            "jp": null,
-            "en": "A4 Size, 32 Pages.",
-            "zh": "商品敘述:<br>①新刊 Overlay Magic Color 3 <br>B5•20P•全彩插圖本<br>②文件夾 (A4尺寸) <br>③Omake折本 <br>A5•8P•全彩插圖本<br>④特典自製卡2枚組 金（UR）/白鑽（PSE）仕様隨機封入<br>連燙閃藍加工信封／真品証明書"
+            "jp": "2025 遊戯王関連セット商品。",
+            "en": "2025 Yu-Gi-Oh! related catalog set.",
+            "zh": "2025 遊戲王相關既有套組商品。<br>① Overlay Magic Color 3（B5•20P•全彩）<br>② 文件夾 (A4)<br>③ Omake折本<br>④ 特典自製卡2枚組"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": null,
         "langs": {
-            "jp": false,
+            "jp": true,
             "en": true,
             "zh": true
         },
@@ -486,16 +542,325 @@ const storeProducts = [
         "linkHK": null
     },
     {
-        "id": 500,
-        "category": [
-            "books"
-        ],
-        "regions": [
-            "TW",
-            "HK"
-        ],
+        "id": 103,
+        "category": ["featured", "set"],
+        "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "星夢亭15周年記念SET",
+            "en": "Hoshiyumetei 15th Anniversary SET",
+            "zh": "星夢亭15週年紀念SET"
+        },
+        "priceTW": 960,
+        "priceHK": 240,
+        "imgs": [
+            "./blog/20260719/products/anni-15-set/01.jpg",
+            "./blog/20260719/products/anni-15-set/02.jpg",
+            "./blog/20260719/products/anni-15-set/03.jpg",
+            "./blog/20260719/products/anni-15-set/04.jpg",
+            "./blog/20260719/products/anni-15-set/05.jpg",
+            "./blog/20260719/products/anni-15-set/06.jpg",
+            "./blog/20260719/products/anni-15-set/07.jpg",
+            "./blog/20260719/products/anni-15-set/08.jpg",
+            "./blog/20260719/products/anni-15-set/09.jpg",
+            "./blog/20260719/products/anni-15-set/10.jpg"
+        ],
+        "desc": {
+            "jp": "星夢亭15周年記念セット。<br>① 新刊 Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子",
+            "en": "15th anniversary set.<br>① New book Overlay Magic Color 4 (B5 20P full color / foil cover)<br>② Frosted tote bag<br>③ Large storage box<br>④ Acrylic field center card<br>⑤ Custom cards ×2 + cases ×2 + gift box<br>⑥ Warp Machina setting booklet",
+            "zh": "星夢亭15週年紀念套組。<br>① 新刊 - Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子<br>（自製卡有不同稀有度：UR / PSE / GMR）"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 104,
+        "category": ["set"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "負けヒロインが多すぎる！SET",
+            "en": "Too Many Losing Heroines! SET",
+            "zh": "敗北女角太多了!SET"
+        },
+        "priceTW": 600,
+        "priceHK": 150,
+        "imgs": [
+            "./blog/20260719/products/set-makeine/01.jpg",
+            "./blog/20260719/products/set-makeine/02.jpg",
+            "./blog/20260719/products/set-makeine/03.jpg",
+            "./blog/20260719/products/set-makeine/04.jpg",
+            "./blog/20260719/products/set-makeine/05.jpg",
+            "./blog/20260719/products/set-makeine/06.jpg"
+        ],
+        "desc": {
+            "jp": "敗北ヒロイン関連セット商品。",
+            "en": "Makeine-related catalog set.",
+            "zh": "敗北女角相關既有套組商品。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 206,
+        "category": ["sleeves"],
+        "regions": ["TW", "HK"],
+        "isNew": true,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "スリーブ ガガガガール",
+            "en": "Sleeves - Gagaga Girl",
+            "zh": "新作卡套 我我我女孩"
+        },
+        "priceTW": 300,
+        "priceHK": 80,
+        "imgs": ["./blog/20260719/products/sleeve-gagaga/01.jpg"],
+        "desc": {
+            "jp": "新作カードスリーブ。我我我女孩。遊戯王サイズ / 60枚。",
+            "en": "New card sleeves featuring Gagaga Girl. Yu-Gi-Oh! size / 60 pcs.",
+            "zh": "遊戲王尺寸、每包含60個／預購"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 207,
+        "category": ["sleeves"],
+        "regions": ["TW", "HK"],
+        "isNew": true,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "スリーブ ブラック・マジシャン・ガール (ver. 2026)",
+            "en": "Sleeves - Dark Magician Girl (ver. 2026)",
+            "zh": "新作卡套 黑魔導女孩 (ver. 2026)"
+        },
+        "priceTW": 300,
+        "priceHK": 80,
+        "imgs": ["./blog/20260719/products/sleeve-dmg-2026/01.jpg"],
+        "desc": {
+            "jp": "新作カードスリーブ。ブラック・マジシャン・ガール ver. 2026。遊戯王サイズ / 60枚。",
+            "en": "New card sleeves featuring Dark Magician Girl (ver. 2026). Yu-Gi-Oh! size / 60 pcs.",
+            "zh": "遊戲王尺寸、每包含60個／預購"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 208,
+        "category": ["sleeves"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "スリーブ ブラック・マジシャン・ガール 2025",
+            "en": "Sleeves - Dark Magician Girl 2025",
+            "zh": "卡套 黑魔導女孩 2025"
+        },
+        "priceTW": 300,
+        "priceHK": 80,
+        "imgs": ["./blog/20260719/products/sleeve-legacy/01.jpg"],
+        "desc": {
+            "jp": "既存スリーブ。ブラック・マジシャン・ガール 2025。遊戯王サイズ / 60枚。",
+            "en": "Catalog sleeves — Dark Magician Girl 2025. Yu-Gi-Oh! size / 60 pcs.",
+            "zh": "既存卡套 · 黑魔導女孩 2025。遊戲王尺寸、每包含60個。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 209,
+        "category": ["sleeves"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "スリーブ 閃刀姫－ゼロ",
+            "en": "Sleeves - Sky Striker Ace - Zero",
+            "zh": "卡套 閃刀姬 零"
+        },
+        "priceTW": 300,
+        "priceHK": 80,
+        "imgs": ["./blog/20260719/products/sleeve-legacy/02.jpg"],
+        "desc": {
+            "jp": "既存スリーブ。閃刀姫－ゼロ。遊戯王サイズ / 60枚。",
+            "en": "Catalog sleeves — Sky Striker Ace Zero. Yu-Gi-Oh! size / 60 pcs.",
+            "zh": "既存卡套 · 閃刀姬 零。遊戲王尺寸、每包含60個。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 302,
+        "category": ["featured", "tcg"],
+        "regions": ["TW", "HK"],
+        "isNew": true,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "プレイマット ブラック・マジシャン・ガール (ver. 2026)",
+            "en": "Playmat - Dark Magician Girl (ver. 2026)",
+            "zh": "新作遊戲墊 黑魔導女孩 (ver. 2026)"
+        },
+        "priceTW": 720,
+        "priceHK": 180,
+        "imgs": [
+            "./blog/20260719/products/mat-dmg-2026/01.jpg",
+            "./blog/20260719/products/mat-dmg-2026/02.jpg"
+        ],
+        "desc": {
+            "jp": "新作プレイマット。ブラック・マジシャン・ガール ver. 2026。",
+            "en": "New playmat featuring Dark Magician Girl (ver. 2026).",
+            "zh": "新作遊戲墊 - 黑魔導女孩 (ver. 2026)。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 303,
+        "category": ["tcg"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "既存プレイマット（八奈見）",
+            "en": "Legacy Playmat (Yanami)",
+            "zh": "既作遊戲墊 (八奈見)"
+        },
+        "priceTW": 720,
+        "priceHK": 180,
+        "imgs": ["./blog/20260719/products/mat-legacy/01.jpg"],
+        "desc": {
+            "jp": "既存プレイマット。八奈見杏菜。",
+            "en": "Legacy playmat featuring Yanami.",
+            "zh": "既作遊戲墊（八奈見）。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 402,
+        "category": ["other"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "レザーデッキケース",
+            "en": "Leather Card Deck Box",
+            "zh": "皮質卡片收納盒"
+        },
+        "priceTW": 880,
+        "priceHK": 220,
+        "imgs": ["./blog/20260719/products/goods-deckbox/01.jpg"],
+        "desc": {
+            "jp": "レザー素材のデッキケース／カード収納箱。",
+            "en": "Leather-style card deck box.",
+            "zh": "皮質卡片收納盒。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 403,
+        "category": ["other"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "収納箱 Dream Card Box 2025",
+            "en": "Dream Card Box 2025",
+            "zh": "收納盒 Dream Card Box 2025"
+        },
+        "priceTW": 200,
+        "priceHK": 50,
+        "imgs": [
+            "./blog/20260719/products/goods-cardbox/01.jpg",
+            "./blog/20260719/products/goods-cardbox/02.jpg",
+            "./blog/20260719/products/goods-cardbox/03.jpg"
+        ],
+        "desc": {
+            "jp": "Dream Card Box 2025 収納箱。",
+            "en": "Dream Card Box 2025 storage box.",
+            "zh": "Dream Card Box 2025 收納盒。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 404,
+        "category": ["other"],
+        "regions": ["TW", "HK"],
+        "isNew": false,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
+        "title": {
+            "jp": "アクキー 天愛星 + 八奈見杏菜",
+            "en": "Acrylic Keychains - Tenaisei + Yanami",
+            "zh": "敗北女角!天愛星+八奈見 亞加力匙扣"
+        },
+        "priceTW": 200,
+        "priceHK": 50,
+        "imgs": ["./blog/20260719/products/goods-akkey/01.jpg"],
+        "desc": {
+            "jp": "敗北ヒロイン関連アクリルキーホルダー。",
+            "en": "Makeine acrylic keychain set.",
+            "zh": "敗北女角太多了!<br>天愛星 + 八奈見 亞加力匙扣。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+    {
+        "id": 500,
+        "category": ["books"],
+        "regions": ["TW", "HK"],
+        "isNew": true,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
         "title": {
             "jp": "Too many Seichi!",
             "en": "Too many Seichi!",
@@ -515,24 +880,18 @@ const storeProducts = [
             "zh": "全彩插圖本。<br>20P / 全彩"
         },
         "linkTW": null,
-        "langs": {
-            "jp": true,
-            "en": true,
-            "zh": true
-        },
+        "langs": { "jp": true, "en": true, "zh": true },
         "linkHK": null
     },
     {
         "id": 501,
-        "category": [
-            "books"
-        ],
-        "regions": [
-            "TW",
-            "HK"
-        ],
+        "category": ["books"],
+        "regions": ["TW", "HK"],
         "isNew": false,
         "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
         "title": {
             "jp": "Overlay Magic Color 3",
             "en": "Overlay Magic Color 3",
@@ -554,24 +913,18 @@ const storeProducts = [
             "zh": "既刊 Overlay Magic Color 3。<br>B5・20P・全彩插圖本"
         },
         "linkTW": null,
-        "langs": {
-            "jp": true,
-            "en": true,
-            "zh": true
-        },
+        "langs": { "jp": true, "en": true, "zh": true },
         "linkHK": null
     },
     {
         "id": 502,
-        "category": [
-            "books"
-        ],
-        "regions": [
-            "TW",
-            "HK"
-        ],
+        "category": ["books"],
+        "regions": ["TW", "HK"],
         "isNew": false,
         "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "acghk2026",
         "title": {
             "jp": "Overlay Magic GALA",
             "en": "Overlay Magic GALA",
@@ -579,20 +932,14 @@ const storeProducts = [
         },
         "priceTW": 150,
         "priceHK": 60,
-        "imgs": [
-            "./blog/20260719/products/book-om-gala/01.jpg"
-        ],
+        "imgs": ["./blog/20260719/products/book-om-gala/01.jpg"],
         "desc": {
             "jp": "Overlay Magic GALA 既刊。<br>フルカラー / 32P",
             "en": "Overlay Magic GALA catalog book.<br>Full color / 32P",
             "zh": "既刊 Overlay Magic GALA。<br>全彩 / 32P"
         },
         "linkTW": null,
-        "langs": {
-            "jp": true,
-            "en": true,
-            "zh": true
-        },
+        "langs": { "jp": true, "en": true, "zh": true },
         "linkHK": null
     },
     {
@@ -815,12 +1162,48 @@ function isProductVisibleInStore(product, unlocked) {
     return true;
 }
 
-// ── HK bag (shared by store.html + checkout.html) ───────────────────────────
+// ── Regional bag (HK + TW) shared by store.html + checkout.html ─────────────
 const HK_CART_STORAGE_KEY = "staryume_cart_hk";
+const TW_CART_STORAGE_KEY = "staryume_cart_tw";
 
-function loadHkCart() {
+function normalizeStoreRegion(region) {
+    return region === "TW" ? "TW" : "HK";
+}
+
+function cartStorageKey(region) {
+    return normalizeStoreRegion(region) === "TW" ? TW_CART_STORAGE_KEY : HK_CART_STORAGE_KEY;
+}
+
+function getCheckoutConfig(region) {
+    const r = normalizeStoreRegion(region);
+    if (r === "TW") return (storeConfig && storeConfig.twCheckout) || null;
+    return (storeConfig && storeConfig.hkCheckout) || null;
+}
+
+function productUnitPrice(product, region) {
+    if (!product) return 0;
+    if (normalizeStoreRegion(region) === "TW") {
+        return typeof product.priceTW === "number" ? product.priceTW : 0;
+    }
+    return typeof product.priceHK === "number" ? product.priceHK : 0;
+}
+
+function formatStoreMoney(amount, region) {
+    const n = Number(amount) || 0;
+    return normalizeStoreRegion(region) === "TW" ? ("NT$ " + n) : ("HKD$ " + n);
+}
+
+/** TW pre-order cart products (FF47); others may still use Myship via linkTW. */
+function productUsesTwCart(product) {
+    if (!product) return false;
+    if (product.useTwCart === true) return true;
+    if (product.eventSource === "acghk2026") return true;
+    return false;
+}
+
+function loadRegionCart(region) {
     try {
-        const raw = localStorage.getItem(HK_CART_STORAGE_KEY);
+        const raw = localStorage.getItem(cartStorageKey(region));
         if (!raw) return {};
         const parsed = JSON.parse(raw);
         if (!parsed || typeof parsed !== "object") return {};
@@ -835,40 +1218,41 @@ function loadHkCart() {
     }
 }
 
-function saveHkCart(cart) {
+function saveRegionCart(region, cart) {
     try {
-        localStorage.setItem(HK_CART_STORAGE_KEY, JSON.stringify(cart || {}));
+        localStorage.setItem(cartStorageKey(region), JSON.stringify(cart || {}));
     } catch (e) { /* quota / private mode */ }
 }
 
-function clearHkCart() {
-    saveHkCart({});
+function clearRegionCart(region) {
+    saveRegionCart(region, {});
 }
 
-function getHkCartCount(cart) {
+function getRegionCartCount(cart) {
     return Object.keys(cart || {}).reduce((n, id) => n + (cart[id] || 0), 0);
 }
 
-function getHkCartTotal(cart, products) {
+function getRegionCartTotal(cart, products, region) {
     const list = products || (typeof storeProducts !== "undefined" ? storeProducts : []);
     let total = 0;
     Object.keys(cart || {}).forEach((id) => {
         const item = list.find((p) => String(p.id) === String(id));
-        if (item && typeof item.priceHK === "number") total += item.priceHK * cart[id];
+        if (item) total += productUnitPrice(item, region) * cart[id];
     });
     return total;
 }
 
-function getHkCartLines(cart, products, lang) {
+function getRegionCartLines(cart, products, lang, region) {
     const list = products || (typeof storeProducts !== "undefined" ? storeProducts : []);
     const L = lang || "zh";
+    const r = normalizeStoreRegion(region);
     return Object.keys(cart || {}).map((id) => {
         const item = list.find((p) => String(p.id) === String(id));
         if (!item) return null;
         const qty = cart[id];
         const title = item.title[L] || item.title.zh || item.title.en || item.title.jp || ("#" + id);
         const thumb = (item.imgs && item.imgs[0]) || item.img || "";
-        const unit = item.priceHK || 0;
+        const unit = productUnitPrice(item, r);
         return {
             id: item.id,
             qty,
@@ -882,28 +1266,55 @@ function getHkCartLines(cart, products, lang) {
     }).filter(Boolean);
 }
 
-/** Fulfillment methods allowed for every line in the cart (intersection). */
-function getAvailableHkFulfillment(cart, products, config) {
-    const hk = (config || storeConfig).hkCheckout;
-    if (!hk || !hk.fulfillment) return [];
-    const globalEnabled = hk.fulfillment.filter((f) => f.enabled);
-    const lines = getHkCartLines(cart, products);
+/**
+ * Fulfillment methods for a region, filtered by cart intersection.
+ * product.hkFulfillment still limits HK methods when set; TW uses product.twFulfillment.
+ */
+function resolveCheckoutConfig(region, config) {
+    const r = normalizeStoreRegion(region);
+    if (config && Array.isArray(config.fulfillment)) return config;
+    if (config && r === "TW" && config.twCheckout) return config.twCheckout;
+    if (config && r === "HK" && config.hkCheckout) return config.hkCheckout;
+    return getCheckoutConfig(r) || {};
+}
+
+function getAvailableRegionFulfillment(cart, products, region, config) {
+    const r = normalizeStoreRegion(region);
+    const cfg = resolveCheckoutConfig(r, config);
+    if (!cfg.fulfillment) return [];
+    const globalEnabled = cfg.fulfillment.filter((f) => f.enabled);
+    const lines = getRegionCartLines(cart, products, "zh", r);
     if (!lines.length) return globalEnabled;
 
     return globalEnabled.filter((method) =>
         lines.every((line) => {
-            const allowed = line.product.hkFulfillment;
+            const allowed = r === "TW"
+                ? (line.product.twFulfillment || line.product.hkFulfillment)
+                : line.product.hkFulfillment;
             if (!allowed || !allowed.length) return true;
             return allowed.includes(method.id);
         })
     );
 }
 
-function generateHkOrderId() {
+function generateRegionOrderId(region) {
     const d = new Date();
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
     const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-    return "HK-" + y + m + day + "-" + rand;
+    const prefix = normalizeStoreRegion(region) === "TW" ? "TW" : "HK";
+    return prefix + "-" + y + m + day + "-" + rand;
 }
+
+// ── Back-compat aliases (HK) ────────────────────────────────────────────────
+function loadHkCart() { return loadRegionCart("HK"); }
+function saveHkCart(cart) { saveRegionCart("HK", cart); }
+function clearHkCart() { clearRegionCart("HK"); }
+function getHkCartCount(cart) { return getRegionCartCount(cart); }
+function getHkCartTotal(cart, products) { return getRegionCartTotal(cart, products, "HK"); }
+function getHkCartLines(cart, products, lang) { return getRegionCartLines(cart, products, lang, "HK"); }
+function getAvailableHkFulfillment(cart, products, config) {
+    return getAvailableRegionFulfillment(cart, products, "HK", config || storeConfig);
+}
+function generateHkOrderId() { return generateRegionOrderId("HK"); }

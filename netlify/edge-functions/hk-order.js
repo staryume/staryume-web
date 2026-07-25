@@ -63,9 +63,12 @@ export default async (request) => {
     return json({ ok: false, error: "invalid_payload" }, 400);
   }
 
-  if (!data.orderId || !data.email || !data.name || data.totalHkd == null) {
+  const totalOk = data.totalHkd != null || data.total != null;
+  if (!data.orderId || !data.email || !data.name || !totalOk) {
     return json({ ok: false, error: "missing_fields" }, 400);
   }
+  // Normalize total for Apps Script (legacy field totalHkd = amount in order currency)
+  if (data.totalHkd == null && data.total != null) data.totalHkd = data.total;
 
   if (!data.proof || !data.proof.dataUrl || typeof data.proof.dataUrl !== "string") {
     return json({ ok: false, error: "missing_proof" }, 400);

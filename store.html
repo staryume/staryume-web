@@ -261,7 +261,7 @@
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
             window.switchLang = (l) => { currentLang = l; renderCategories(); renderAllSections(); renderBagDrawer(); document.getElementById('langMenuDesktop').classList.remove('open'); };
 
-            cart = typeof loadHkCart === 'function' ? loadHkCart() : {};
+            cart = typeof loadRegionCart === 'function' ? loadRegionCart(currentRegion) : (typeof loadHkCart === 'function' ? loadHkCart() : {});
 
             // --- CHECK SHOP STATUS ---
             if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
@@ -502,6 +502,7 @@
             else {
                 const bits = [];
                 if (product.contentRating === 'r18' || product.hidden) bits.push(`<div class="absolute top-0 left-0 bg-black text-tech-purple text-[10px] font-bold px-2 py-1 z-10 shadow-md">R18</div>`);
+                else if (product.isPreorder) bits.push(`<div class="absolute top-0 left-0 bg-black text-tech-purple text-[10px] font-bold px-2 py-1 z-10 shadow-md">PRE-ORDER</div>`);
                 else if (product.isNew) bits.push(`<div class="absolute top-0 left-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1 z-10 shadow-md">NEW</div>`);
                 badge = bits.join('');
             }
@@ -565,7 +566,8 @@
             if (product.contentRating === 'r18' || product.hidden) {
                 badges.innerHTML += `<span class="bg-black text-tech-purple text-xs font-bold px-2 py-1 rounded">R18</span>`;
             }
-            if(product.isNew) badges.innerHTML += `<span class="bg-tech-purple text-black text-xs font-bold px-2 py-1 rounded">NEW ARRIVAL</span>`;
+            if (product.isPreorder) badges.innerHTML += `<span class="bg-black text-tech-purple text-xs font-bold px-2 py-1 rounded">PRE-ORDER / 預購</span>`;
+            else if (product.isNew) badges.innerHTML += `<span class="bg-tech-purple text-black text-xs font-bold px-2 py-1 rounded">NEW ARRIVAL</span>`;
             
             const actions = document.getElementById('modal-actions');
             
@@ -575,7 +577,12 @@
             } else if (product.isSoldOut) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
             } else if (currentRegion === 'TW') {
-                if (product.linkTW) {
+                const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
+                const useCart = typeof productUsesTwCart === 'function' ? productUsesTwCart(product) : !!product.useTwCart;
+                if (useCart && twOn) {
+                    actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車 · FF47 預購</button>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">Fancy Frontier 47 現場取貨 · PayMe / FPS</p>`;
+                } else if (product.linkTW) {
                     actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
                 } else {
                     actions.innerHTML = `<button type="button" disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">台灣通路未開放 · 請切換香港</button>`;
@@ -584,7 +591,7 @@
                 const hkOn = storeConfig.hkCheckout && storeConfig.hkCheckout.enabled !== false;
                 if (hkOn) {
                     actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車</button>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">PayMe · FPS</p>`;
+                    <p class="text-[11px] text-gray-400 text-center mt-2">PayMe · FPS · 順豐到付 / Palette Ring 11</p>`;
                 } else {
                     actions.innerHTML = `<button type="button" disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">HK checkout closed</button>`;
                 }
@@ -694,24 +701,28 @@
             const notice = document.getElementById('region-notice');
             const shipText = document.getElementById('shipping-text');
 
+            // Swap cart when region changes (HK / TW bags are separate)
+            cart = typeof loadRegionCart === 'function' ? loadRegionCart(region) : {};
+
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
-                if(notice) notice.innerText = "PAYMENT: 7-11 MYSHIP / 賣貨便到付";
-                if(shipText) shipText.innerText = "Taiwan orders: Shipped via 7-11 Myship.";
-                closeBagDrawer();
+                if(notice) notice.innerText = "PRE-ORDER: FF47 取貨 · 7-11 MYSHIP";
+                if(shipText) shipText.innerText = "Taiwan: ACGHK 預購 → FF47 現場取貨；其他商品可走 7-11 Myship。";
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(notice) notice.innerText = "PAYMENT: PAYME · FPS";
-                if(shipText) shipText.innerText = "Hong Kong: PayMe / FPS.";
+                if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
             }
 
             updateCartUI();
         }
 
         function openBagDrawer() {
-            if (currentRegion !== 'HK') return;
+            const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
+            if (currentRegion === 'TW' && !twOn) return;
+            if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
             document.getElementById('bag-overlay').classList.add('open');
             document.getElementById('bag-drawer').classList.add('open');
             document.body.style.overflow = 'hidden';
@@ -727,10 +738,13 @@
         function renderBagDrawer() {
             const container = document.getElementById('bag-lines');
             if (!container) return;
-            const lines = getHkCartLines(cart, storeProducts, currentLang);
-            const count = getHkCartCount(cart);
+            const lines = typeof getRegionCartLines === 'function'
+                ? getRegionCartLines(cart, storeProducts, currentLang, currentRegion)
+                : getHkCartLines(cart, storeProducts, currentLang);
+            const count = typeof getRegionCartCount === 'function' ? getRegionCartCount(cart) : getHkCartCount(cart);
             const headerCount = document.getElementById('bag-header-count');
             if (headerCount) headerCount.textContent = count ? `(${count})` : '';
+            const money = (n) => typeof formatStoreMoney === 'function' ? formatStoreMoney(n, currentRegion) : (`HKD$ ${n}`);
 
             if (!lines.length) {
                 container.innerHTML = `
@@ -741,14 +755,18 @@
                 return;
             }
 
-            container.innerHTML = lines.map((line) => `
+            const hint = currentRegion === 'TW'
+                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">台灣預購：僅限 Fancy Frontier 47 現場取貨（8/21 或 8/22）。</p>'
+                : '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">香港：順豐到付 或 9 月 Palette Ring 11 現場取貨。</p>';
+
+            container.innerHTML = hint + lines.map((line) => `
                 <div class="flex gap-3 items-start border-b border-gray-50 pb-4">
                     <div class="w-20 h-20 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
                         ${line.thumb ? `<img src="${line.thumb}" alt="" class="w-full h-full object-cover">` : ''}
                     </div>
                     <div class="flex-1 min-w-0">
                         <p class="text-sm font-bold leading-snug line-clamp-2">${line.title}</p>
-                        <p class="text-xs font-mono text-gray-500 mt-1">HKD$ ${line.unit}</p>
+                        <p class="text-xs font-mono text-gray-500 mt-1">${money(line.unit)}</p>
                         ${line.soldOut ? '<p class="text-[10px] text-red-500 font-bold mt-1">SOLD OUT — 請移除</p>' : ''}
                         <div class="flex items-center gap-2 mt-2">
                             <button type="button" onclick="setCartQty(${line.id}, ${(line.qty) - 1})" class="w-8 h-8 rounded-full border border-gray-200 text-sm font-bold hover:border-black" aria-label="Decrease">−</button>
@@ -759,7 +777,7 @@
                             </button>
                         </div>
                     </div>
-                    <p class="text-sm font-mono font-bold whitespace-nowrap">HKD$ ${line.lineTotal}</p>
+                    <p class="text-sm font-mono font-bold whitespace-nowrap">${money(line.lineTotal)}</p>
                 </div>
             `).join('');
         }
@@ -768,7 +786,8 @@
             const key = String(id);
             if (!cart[key]) cart[key] = 0;
             cart[key]++;
-            saveHkCart(cart);
+            if (typeof saveRegionCart === 'function') saveRegionCart(currentRegion, cart);
+            else saveHkCart(cart);
             updateCartUI();
             closeModal();
             openBagDrawer();
@@ -779,29 +798,38 @@
             const n = parseInt(qty, 10);
             if (!n || n < 1) delete cart[key];
             else cart[key] = Math.min(n, 99);
-            saveHkCart(cart);
+            if (typeof saveRegionCart === 'function') saveRegionCart(currentRegion, cart);
+            else saveHkCart(cart);
             updateCartUI();
         }
 
         function clearCart() {
-            if (getHkCartCount(cart) && !confirm('清空購物車？')) return;
+            const count = typeof getRegionCartCount === 'function' ? getRegionCartCount(cart) : getHkCartCount(cart);
+            if (count && !confirm('清空購物車？')) return;
             cart = {};
-            clearHkCart();
+            if (typeof clearRegionCart === 'function') clearRegionCart(currentRegion);
+            else clearHkCart();
             updateCartUI();
             closeBagDrawer();
         }
 
         function updateCartUI() {
-            const total = getHkCartTotal(cart, storeProducts);
-            const count = getHkCartCount(cart);
+            const total = typeof getRegionCartTotal === 'function'
+                ? getRegionCartTotal(cart, storeProducts, currentRegion)
+                : getHkCartTotal(cart, storeProducts);
+            const count = typeof getRegionCartCount === 'function' ? getRegionCartCount(cart) : getHkCartCount(cart);
             const totalEl = document.getElementById('cart-total');
-            if (totalEl) totalEl.innerText = `HKD$ ${total}`;
+            if (totalEl) {
+                totalEl.innerText = typeof formatStoreMoney === 'function'
+                    ? formatStoreMoney(total, currentRegion)
+                    : `HKD$ ${total}`;
+            }
 
             const fab = document.getElementById('bag-fab');
             const fabCount = document.getElementById('bag-fab-count');
             if (fabCount) fabCount.textContent = String(count);
             if (fab) {
-                if (currentRegion === 'HK' && count > 0) fab.classList.remove('hidden-fab');
+                if (count > 0) fab.classList.remove('hidden-fab');
                 else fab.classList.add('hidden-fab');
             }
 
@@ -812,13 +840,14 @@
         }
 
         function checkoutHK() {
-            if (currentRegion !== 'HK') {
-                setRegion('HK');
-            }
-            const total = getHkCartTotal(cart, storeProducts);
-            if (total <= 0 || getHkCartCount(cart) === 0) return;
-            saveHkCart(cart);
-            window.location.href = 'checkout.html';
+            const count = typeof getRegionCartCount === 'function' ? getRegionCartCount(cart) : getHkCartCount(cart);
+            const total = typeof getRegionCartTotal === 'function'
+                ? getRegionCartTotal(cart, storeProducts, currentRegion)
+                : getHkCartTotal(cart, storeProducts);
+            if (total <= 0 || count === 0) return;
+            if (typeof saveRegionCart === 'function') saveRegionCart(currentRegion, cart);
+            else saveHkCart(cart);
+            window.location.href = 'checkout.html?region=' + encodeURIComponent(currentRegion === 'TW' ? 'TW' : 'HK');
         }
     </script>
 </body>

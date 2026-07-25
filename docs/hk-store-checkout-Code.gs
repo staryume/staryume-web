@@ -22,18 +22,22 @@ function doPost(e) {
         return (it.title || it.id) + ' x' + it.qty + ' @ HKD$' + it.unit;
       }).join('\n');
     }
-    var total = data.totalHkd != null ? data.totalHkd : '';
+    var total = data.totalHkd != null ? data.totalHkd : (data.total != null ? data.total : '');
+    var region = String(data.region || 'HK').toUpperCase();
+    var currency = String(data.currency || (region === 'TW' ? 'TWD' : 'HKD'));
     var name = data.name || '';
     var email = (data.email || '').trim();
     var phone = data.phone || '';
     var snsType = data.snsType || '';
     var snsContact = data.snsContact || '';
     var fulfillment = data.fulfillmentLabel || data.fulfillmentId || '';
+    fulfillment = region + ' · ' + currency + (fulfillment ? (' · ' + fulfillment) : '');
     var sfCode = data.sfCode || '';
     var payment = paymentLabel_(data.paymentMethod || '');
     var notes = data.notes || '';
 
     // Sheet FIRST — order is never lost if Drive fails
+    // Columns: Timestamp, Order ID, Items, Total, Name, Email, Phone, SNS Type, SNS Contact, Fulfillment(+region), SF Code, Payment, Proof URL, Notes, Status
     sheet.appendRow([
       new Date(),
       orderId,
@@ -74,6 +78,8 @@ function doPost(e) {
           orderId: orderId,
           itemsText: itemsText,
           total: total,
+          currency: currency,
+          region: region,
           fulfillment: fulfillment,
           sfCode: sfCode,
           payment: payment,
@@ -134,14 +140,19 @@ function sanitizeFileName_(name, orderId) {
 }
 
 function sendOrderEmail_(info) {
+  var region = String(info.region || 'HK').toUpperCase();
+  var currency = String(info.currency || (region === 'TW' ? 'TWD' : 'HKD'));
+  var moneyMark = currency === 'TWD' ? 'NT$' : 'HKD$';
+  var regionLabel = region === 'TW' ? '台灣預購（FF47）' : '香港商店';
   var lines = [];
   lines.push(info.name ? (info.name + ' 你好，') : '你好，');
   lines.push('');
-  lines.push('感謝你在 staryu.me 完成香港商店訂單。');
+  lines.push('感謝你在 staryu.me 完成' + regionLabel + '訂單。');
   lines.push('我們已收到你的訂單與付款證明，核對後會安排出貨／取貨。');
   lines.push('');
   lines.push('【訂單編號】 ' + info.orderId);
-  lines.push('【合計】 HKD$ ' + info.total);
+  lines.push('【地區】 ' + region);
+  lines.push('【合計】 ' + moneyMark + ' ' + info.total);
   lines.push('【付款方式】 ' + info.payment);
   lines.push('【取貨方式】 ' + info.fulfillment);
   if (info.sfCode) lines.push('【順豐取貨資料】 ' + info.sfCode);
@@ -162,7 +173,7 @@ function sendOrderEmail_(info) {
 
   MailApp.sendEmail({
     to: info.email,
-    subject: '【staryume】香港商店訂單確認 · ' + info.orderId,
+    subject: '【staryume】' + regionLabel + '訂單確認 · ' + info.orderId,
     body: lines.join('\n')
   });
 }

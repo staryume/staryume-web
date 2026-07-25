@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Checkout · 香港結帳 | STARYUME</title>
+  <title>Checkout · 結帳 | STARYUME</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="STARYUME 香港商店站內結帳 — FPS / PayMe">
+  <meta name="description" content="STARYUME 商店站內結帳 — FPS / PayMe · 預購取貨">
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
   <script>
@@ -56,10 +56,10 @@
 <body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
 
   <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
-    <a href="./store.html?region=HK" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
+    <a id="hdr-logo" href="./store.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
       <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
     </a>
-    <a href="./store.html?region=HK" class="text-xs font-bold text-gray-500 hover:text-black transition-colors">← 返回商店</a>
+    <a id="hdr-back" href="./store.html" class="text-xs font-bold text-gray-500 hover:text-black transition-colors">← 返回商店</a>
   </header>
 
   <!-- Success -->
@@ -68,8 +68,8 @@
       <div class="w-16 h-16 mx-auto mb-5 rounded-full bg-tech-purple/40 flex items-center justify-center text-3xl">✓</div>
       <p class="text-[10px] font-tech tracking-widest text-gray-400 mb-2">ORDER PLACED</p>
       <h1 class="text-2xl md:text-3xl font-bold mb-2">訂單已提交</h1>
-      <p class="text-sm text-gray-500 mb-6 leading-relaxed">
-        已收到你的香港訂單與付款證明。<br>
+      <p id="successBlurb" class="text-sm text-gray-500 mb-6 leading-relaxed">
+        已收到你的訂單與付款證明。<br>
         我們會核對後再安排出貨／取貨。
       </p>
       <div class="bg-tech-gray rounded-xl p-4 text-left mb-6">
@@ -82,7 +82,7 @@
         class="inline-flex items-center justify-center w-full py-3 bg-[#5865F2] text-white font-bold rounded-xl hover:opacity-90 transition text-sm mb-3">
         有問題？加入 Discord
       </a>
-      <a href="./store.html?region=HK" class="inline-block text-sm font-bold underline decoration-tech-purple underline-offset-4 hover:text-gray-600">
+      <a id="success-back" href="./store.html" class="inline-block text-sm font-bold underline decoration-tech-purple underline-offset-4 hover:text-gray-600">
         返回商店
       </a>
     </div>
@@ -91,7 +91,7 @@
   <!-- Checkout flow -->
   <div id="checkoutFlow" class="max-w-6xl mx-auto px-4 py-8 md:py-12">
     <div class="mb-8 md:mb-10">
-      <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">HONG KONG ONLINE STORE</p>
+      <p id="checkoutEyebrow" class="text-xs font-tech tracking-widest text-gray-400 mb-1">ONLINE STORE</p>
       <h1 class="text-3xl md:text-4xl font-bold font-tech tracking-tight">Checkout</h1>
     </div>
 
@@ -149,6 +149,7 @@
 
     let stepIndex = 0;
     let cart = {};
+    let checkoutRegion = 'HK';
     let state = {
       name: '',
       email: '',
@@ -166,12 +167,49 @@
       r18AgeConfirmed: false,
     };
 
-    function cartHasR18() {
-      const lines = getHkCartLines(cart, storeProducts, 'zh');
-      return lines.some((l) => l.product && (l.product.hidden || l.product.contentRating === 'r18'));
+    function detectRegion() {
+      const q = (new URLSearchParams(location.search).get('region') || '').toUpperCase();
+      return q === 'TW' ? 'TW' : 'HK';
     }
 
-    const hk = () => (storeConfig && storeConfig.hkCheckout) || {};
+    function storeHref() {
+      return 'store.html?region=' + encodeURIComponent(checkoutRegion);
+    }
+
+    function money(n) {
+      return typeof formatStoreMoney === 'function'
+        ? formatStoreMoney(n, checkoutRegion)
+        : ((checkoutRegion === 'TW' ? 'NT$ ' : 'HKD$ ') + (Number(n) || 0));
+    }
+
+    function cartLines() {
+      return typeof getRegionCartLines === 'function'
+        ? getRegionCartLines(cart, storeProducts, 'zh', checkoutRegion)
+        : getHkCartLines(cart, storeProducts, 'zh');
+    }
+
+    function cartTotal() {
+      return typeof getRegionCartTotal === 'function'
+        ? getRegionCartTotal(cart, storeProducts, checkoutRegion)
+        : getHkCartTotal(cart, storeProducts);
+    }
+
+    function cartCount() {
+      return typeof getRegionCartCount === 'function'
+        ? getRegionCartCount(cart)
+        : getHkCartCount(cart);
+    }
+
+    function cartHasR18() {
+      return cartLines().some((l) => l.product && (l.product.hidden || l.product.contentRating === 'r18'));
+    }
+
+    const checkoutCfg = () => {
+      if (typeof getCheckoutConfig === 'function') return getCheckoutConfig(checkoutRegion) || {};
+      if (checkoutRegion === 'TW') return (storeConfig && storeConfig.twCheckout) || {};
+      return (storeConfig && storeConfig.hkCheckout) || {};
+    };
+    const hk = () => checkoutCfg(); // legacy name used below
 
     function t(obj, fallback) {
       if (!obj) return fallback || '';
@@ -190,24 +228,49 @@
       el.classList.remove('hidden');
     }
 
+    function applyRegionChrome() {
+      const store = storeHref();
+      ['hdr-logo', 'hdr-back', 'success-back'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('href', store);
+      });
+      const eyebrow = document.getElementById('checkoutEyebrow');
+      if (eyebrow) {
+        eyebrow.textContent = checkoutRegion === 'TW'
+          ? 'TAIWAN PRE-ORDER · FF47'
+          : 'HONG KONG ONLINE STORE';
+      }
+      const blurb = document.getElementById('successBlurb');
+      if (blurb) {
+        blurb.innerHTML = checkoutRegion === 'TW'
+          ? '已收到你的台灣預購訂單與付款證明。<br>我們會核對後再於 Fancy Frontier 47 安排現場取貨。'
+          : '已收到你的香港訂單與付款證明。<br>我們會核對後再安排出貨／取貨。';
+      }
+      document.title = checkoutRegion === 'TW'
+        ? 'Checkout · 台灣預購 | STARYUME'
+        : 'Checkout · 香港結帳 | STARYUME';
+    }
+
     function redirectIfEmpty() {
-      cart = loadHkCart();
-      if (!getHkCartCount(cart)) {
-        window.location.replace('store.html?region=HK');
+      checkoutRegion = detectRegion();
+      applyRegionChrome();
+      cart = typeof loadRegionCart === 'function' ? loadRegionCart(checkoutRegion) : loadHkCart();
+      if (!cartCount()) {
+        window.location.replace(storeHref());
         return true;
       }
-      if (hk().enabled === false) {
-        alert('香港站內結帳暫時關閉。');
-        window.location.replace('store.html?region=HK');
+      if (checkoutCfg().enabled === false) {
+        alert(checkoutRegion === 'TW' ? '台灣站內結帳暫時關閉。' : '香港站內結帳暫時關閉。');
+        window.location.replace(storeHref());
         return true;
       }
       return false;
     }
 
     function renderSummary() {
-      const lines = getHkCartLines(cart, storeProducts, 'zh');
-      const total = getHkCartTotal(cart, storeProducts);
-      document.getElementById('summaryTotal').textContent = 'HKD$ ' + total;
+      const lines = cartLines();
+      const total = cartTotal();
+      document.getElementById('summaryTotal').textContent = money(total);
       document.getElementById('summaryLines').innerHTML = lines.map((line) => `
         <div class="flex gap-3 items-center">
           <div class="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
@@ -217,7 +280,7 @@
             <p class="text-xs font-bold line-clamp-2">${line.title}</p>
             <p class="text-[10px] text-gray-400 font-mono">×${line.qty}</p>
           </div>
-          <p class="text-xs font-mono font-bold">HKD$ ${line.lineTotal}</p>
+          <p class="text-xs font-mono font-bold">${money(line.lineTotal)}</p>
         </div>
       `).join('');
     }
@@ -241,9 +304,10 @@
       const n = parseInt(qty, 10);
       if (!n || n < 1) delete cart[key];
       else cart[key] = Math.min(n, 99);
-      saveHkCart(cart);
-      if (!getHkCartCount(cart)) {
-        window.location.href = 'store.html?region=HK';
+      if (typeof saveRegionCart === 'function') saveRegionCart(checkoutRegion, cart);
+      else saveHkCart(cart);
+      if (!cartCount()) {
+        window.location.href = storeHref();
         return;
       }
       renderSummary();
@@ -251,6 +315,9 @@
     }
 
     function availableFulfillment() {
+      if (typeof getAvailableRegionFulfillment === 'function') {
+        return getAvailableRegionFulfillment(cart, storeProducts, checkoutRegion, storeConfig);
+      }
       return getAvailableHkFulfillment(cart, storeProducts, storeConfig);
     }
 
@@ -265,10 +332,10 @@
     function renderPanel() {
       const panel = document.getElementById('stepPanels');
       const id = STEPS[stepIndex].id;
-      const total = getHkCartTotal(cart, storeProducts);
+      const total = cartTotal();
 
       if (id === 'bag') {
-        const lines = getHkCartLines(cart, storeProducts, 'zh');
+        const lines = cartLines();
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">檢視購物車</h2>
           <p class="text-sm text-gray-500 mb-6">確認商品與數量後繼續。</p>
@@ -288,11 +355,11 @@
                     <button type="button" data-remove="${line.id}" class="remove-btn ml-2 text-[10px] font-bold text-gray-400 hover:text-red-600">移除</button>
                   </div>
                 </div>
-                <p class="font-mono font-bold text-sm">HKD$ ${line.lineTotal}</p>
+                <p class="font-mono font-bold text-sm">${money(line.lineTotal)}</p>
               </div>
             `).join('')}
           </div>
-          <a href="store.html?region=HK" class="inline-block mt-6 text-sm font-bold underline decoration-tech-purple underline-offset-4">← 繼續選購</a>
+          <a href="${storeHref()}" class="inline-block mt-6 text-sm font-bold underline decoration-tech-purple underline-offset-4">← 繼續選購</a>
         `;
         panel.querySelectorAll('.qty-btn').forEach((btn) => {
           btn.addEventListener('click', () => {
@@ -424,7 +491,7 @@
           <p class="text-sm text-gray-500 mb-4">請完成轉帳／支付，並上載付款成功截圖。</p>
           <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
             <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Amount due</p>
-            <p class="text-3xl font-bold font-mono" id="pay-amount">HKD$ ${total}</p>
+            <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
           </div>
           ${!opts.length ? '<p class="text-sm text-red-600">尚未設定付款方式，請聯絡賣家。</p>' : `
           <div class="space-y-3 mb-6">
@@ -450,7 +517,7 @@
           </div>
           <label class="flex items-start gap-3 mt-6 p-4 border border-gray-200 rounded-xl cursor-pointer">
             <input type="checkbox" id="c-paid" class="mt-1 accent-black" ${state.paidConfirmed ? 'checked' : ''}>
-            <span class="text-sm"><span class="font-bold">我已完成付款並已上載付款成功截圖</span><span class="text-gray-500">（金額 HKD$ ${total}）</span></span>
+            <span class="text-sm"><span class="font-bold">我已完成付款並已上載付款成功截圖</span><span class="text-gray-500">（金額 ${money(total)}）</span></span>
           </label>
           `}
         `;
@@ -481,7 +548,7 @@
               <p>付款：${state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'}</p>
               <p>取貨：${escapeHtml(fulfillmentLabel(state.fulfillmentId))}</p>
               <p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>
-              <p class="font-mono font-bold text-black pt-1">合計 HKD$ ${total}</p>
+              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}</p>
             </div>
             <div>
               <label class="block text-sm font-bold mb-2" for="c-notes">想對我說的話 <span class="text-gray-400 font-normal">(非必填)</span></label>
@@ -589,7 +656,7 @@
     function validateStep() {
       readContactFromDom();
       const id = STEPS[stepIndex].id;
-      const lines = getHkCartLines(cart, storeProducts, 'zh');
+      const lines = cartLines();
 
       if (id === 'bag') {
         if (!lines.length) return '購物車是空的。';
@@ -724,7 +791,10 @@
       const honeypot = document.getElementById('website');
       if (honeypot && honeypot.value) {
         // Silent fake success for bots
-        showSuccess(generateHkOrderId());
+        const fakeId = typeof generateRegionOrderId === 'function'
+          ? generateRegionOrderId(checkoutRegion)
+          : generateHkOrderId();
+        showSuccess(fakeId);
         return;
       }
 
@@ -736,11 +806,15 @@
         isLocal && new URLSearchParams(location.search).get('demo') === '1';
 
       const scriptUrl = resolveOrderEndpoint();
-      const lines = getHkCartLines(cart, storeProducts, 'zh');
-      const total = getHkCartTotal(cart, storeProducts);
-      const orderId = generateHkOrderId();
+      const lines = cartLines();
+      const total = cartTotal();
+      const orderId = typeof generateRegionOrderId === 'function'
+        ? generateRegionOrderId(checkoutRegion)
+        : generateHkOrderId();
+      const currency = checkoutRegion === 'TW' ? 'TWD' : 'HKD';
+      const moneyMark = checkoutRegion === 'TW' ? 'NT$' : 'HKD$';
 
-      const itemsText = lines.map((l) => `${l.title} ×${l.qty} @ HKD$${l.unit} = HKD$${l.lineTotal}`).join('\n');
+      const itemsText = lines.map((l) => `${l.title} ×${l.qty} @ ${moneyMark}${l.unit} = ${moneyMark}${l.lineTotal}`).join('\n');
       const itemsJson = lines.map((l) => ({
         id: l.id,
         title: l.title,
@@ -752,9 +826,12 @@
       const hasUra = lines.some((l) => l.product && (l.product.hidden || l.product.contentRating === 'r18'));
       const payload = {
         orderId,
+        region: checkoutRegion,
+        currency,
         items: itemsJson,
         itemsText,
-        totalHkd: total,
+        totalHkd: total, // legacy field name; value is in `currency`
+        total,
         name: state.name,
         email: state.email,
         phone: state.phone,
@@ -782,7 +859,8 @@
       // Demo mode: localhost only (?demo=1) — never on production
       if (isDemo) {
         console.warn('[checkout] demo mode — not sent to backend', payload);
-        clearHkCart();
+        if (typeof clearRegionCart === 'function') clearRegionCart(checkoutRegion);
+        else clearHkCart();
         cart = {};
         showSuccess(orderId, total);
         return;
@@ -838,7 +916,8 @@
           return;
         }
 
-        clearHkCart();
+        if (typeof clearRegionCart === 'function') clearRegionCart(checkoutRegion);
+        else clearHkCart();
         cart = {};
         showSuccess(orderId, total);
       } catch (e) {
@@ -851,7 +930,8 @@
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(payload),
             });
-            clearHkCart();
+            if (typeof clearRegionCart === 'function') clearRegionCart(checkoutRegion);
+            else clearHkCart();
             cart = {};
             showSuccess(orderId, total);
             return;
@@ -895,7 +975,7 @@
       document.getElementById('successView').classList.remove('hidden');
       document.getElementById('successOrderId').textContent = orderId;
       if (total != null) {
-        document.getElementById('successTotal').textContent = '合計 HKD$ ' + total;
+        document.getElementById('successTotal').textContent = '合計 ' + money(total);
       }
       const discord = hk().discordInvite;
       if (discord) document.getElementById('successDiscord').href = discord;

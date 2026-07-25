@@ -768,12 +768,12 @@ const eventCatalog = {
         },
         "defaultCta": {
             "label": {
-                "jp": "BOOTHで購入",
-                "en": "Buy on BOOTH",
+                "jp": "ストアで予約",
+                "en": "Pre-order on Store",
                 "zh": "前往網店預購"
             },
-            "url": "https://staryume.booth.pm",
-            "external": true,
+            "url": "store.html?region=HK",
+            "external": false,
             "boothUrl": "https://staryume.booth.pm",
             "storeUrl": "store.html",
             "storeRegion": "HK"
@@ -984,7 +984,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/anni-15-set/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1019,7 +1019,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-gagaga/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1054,7 +1054,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-dmg-2026/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1090,7 +1090,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1125,7 +1125,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1165,7 +1165,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/set-makeine/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1203,7 +1203,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/set-yugioh-2025/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1243,7 +1243,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-legacy/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1278,7 +1278,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-akkey/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1313,7 +1313,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/mat-legacy/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1350,7 +1350,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-cardbox/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1385,7 +1385,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-too-many-seichi/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1420,7 +1420,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-omc3/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1455,7 +1455,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-om-gala/01.jpg",
                 "cta": {
-                    "enabled": false,
+                    "enabled": true,
                     "urlOverride": null,
                     "label": null
                 }
