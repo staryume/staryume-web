@@ -93,8 +93,8 @@ const storeConfig = {
                 "id": "ff47_day1",
                 "enabled": true,
                 "label": {
-                    "zh": "FF47 取貨 · 花博爭豔館會場首日（8/21 五） U-36 / U-36 星夢亭",
-                    "en": "FF47 pickup · Day 1 Expo Hall (Fri 8/21) U-36 / U-36 STARYUME"
+                    "zh": "FF47 首日取貨 ·（8/21 五） 花博爭豔館會場 U-36 / U-36 星夢亭攤位上取貨",
+                    "en": "FF47 Day 1 pickup · (Fri 8/21) Expo Hall booth U-36 / U-36 STARYUME"
                 },
                 "desc": {
                     "zh": "Fancy Frontier 47 第一天攤位上領取預約商品並付款。",
@@ -106,8 +106,8 @@ const storeConfig = {
                 "id": "ff47_day2",
                 "enabled": true,
                 "label": {
-                    "zh": "FF47 取貨 · 花博會場附近的EZ空間取貨",
-                    "en": "FF47 pickup · EZ Space near the Expo venue"
+                    "zh": "FF47 次日取貨 ·（8/22 六） 花博會場附近的EZ空間星夢亭攤位上取貨",
+                    "en": "FF47 Day 2 pickup · (Sat 8/22) EZ Space near Expo · STARYUME booth"
                 },
                 "desc": {
                     "zh": "這次沒有參加 Fancy Frontier 47 第二天，故此可在場外空間領取預約商品並付款。",
