@@ -249,17 +249,37 @@
 
     <script>
         let currentRegion = 'TW';
-        let currentLang = 'zh';
+        // Store UI supports EN / ZH (map site-wide JP → ZH for the button label)
+        let currentLang = (() => {
+            const saved = localStorage.getItem('siteLang') || 'zh';
+            return (saved === 'en' || saved === 'zh') ? saved : 'zh';
+        })();
         let cart = {};
         let currentImgIndex = 0;
         let currentProductImgs = [];
-        let showOutOfStock = true; 
+        let showOutOfStock = true;
+
+        function updateLangDisplay() {
+            const el = document.getElementById('currentLangDisplay');
+            if (el) el.innerText = (currentLang || 'zh').toUpperCase();
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof storeConfig === 'undefined') { alert("Error: store.js missing"); return; }
             window.toggleDesktopLang = () => document.getElementById('langMenuDesktop').classList.toggle('open');
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
-            window.switchLang = (l) => { currentLang = l; renderCategories(); renderAllSections(); renderBagDrawer(); document.getElementById('langMenuDesktop').classList.remove('open'); };
+            window.switchLang = (l) => {
+                currentLang = (l === 'en' || l === 'zh') ? l : 'zh';
+                try { localStorage.setItem('siteLang', currentLang); } catch (e) { /* ignore */ }
+                updateLangDisplay();
+                renderCategories();
+                renderAllSections();
+                renderBagDrawer();
+                const menu = document.getElementById('langMenuDesktop');
+                if (menu) menu.classList.remove('open');
+            };
+
+            updateLangDisplay();
 
             cart = typeof loadRegionCart === 'function' ? loadRegionCart(currentRegion) : (typeof loadHkCart === 'function' ? loadHkCart() : {});
 
@@ -330,6 +350,15 @@
             if (!showOutOfStock && p.isSoldOut) return false;
             if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
             return true;
+        }
+
+        /** Keep in-stock first; SOLD OUT always at the bottom (stable for ties). */
+        function sortProductsForDisplay(items) {
+            return items.slice().sort((a, b) => {
+                const aOut = a.isSoldOut ? 1 : 0;
+                const bOut = b.isSoldOut ? 1 : 0;
+                return aOut - bOut;
+            });
         }
 
         function isUraCatId(id) {
@@ -407,10 +436,10 @@
                 let anyUra = false;
                 storeConfig.categories.forEach(cat => {
                     if (!isUraCatId(cat.id)) return;
-                    const items = storeProducts.filter(p => {
+                    const items = sortProductsForDisplay(storeProducts.filter(p => {
                         if (!p.category.includes(cat.id)) return false;
                         return productPassesFilters(p);
-                    });
+                    }));
                     if (!items.length) return;
                     anyUra = true;
 
@@ -429,12 +458,12 @@
                     list.id = listId;
                     list.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 transition-all duration-500';
                     list.innerHTML = items.map((product, index) => {
-                        const hiddenClass = index >= 4 ? 'hidden' : '';
+                        const hiddenClass = index >= 5 ? 'hidden' : '';
                         return renderCard(product, hiddenClass);
                     }).join('');
                     sub.appendChild(list);
 
-                    if (items.length > 4) {
+                    if (items.length > 5) {
                         const btnContainer = document.createElement('div');
                         btnContainer.className = 'flex justify-end mt-4';
                         btnContainer.innerHTML = `
@@ -452,10 +481,10 @@
         }
 
         function appendCategorySection(container, cat) {
-            const items = storeProducts.filter(p => {
+            const items = sortProductsForDisplay(storeProducts.filter(p => {
                 if (!p.category.includes(cat.id)) return false;
                 return productPassesFilters(p);
-            });
+            }));
             if (items.length === 0) return;
 
             const section = document.createElement('div');
@@ -474,12 +503,12 @@
             list.id = listId;
             list.className = 'grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-10 transition-all duration-500';
             list.innerHTML = items.map((product, index) => {
-                const hiddenClass = index >= 4 ? 'hidden' : '';
+                const hiddenClass = index >= 5 ? 'hidden' : '';
                 return renderCard(product, hiddenClass);
             }).join('');
             section.appendChild(list);
 
-            if (items.length > 4) {
+            if (items.length > 5) {
                 const btnContainer = document.createElement('div');
                 btnContainer.className = 'flex justify-end mt-4';
                 btnContainer.innerHTML = `
@@ -495,7 +524,21 @@
         function renderCard(product, hiddenClass = '') {
             const price = (currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`;
             const title = product.title[currentLang] || product.title.en || product.title.zh || product.title.jp || '';
-            const thumb = (product.imgs && product.imgs.length > 0) ? product.imgs[0] : product.img; 
+            const thumb = (product.imgs && product.imgs.length > 0) ? product.imgs[0] : product.img;
+            // object-cover crops to fill the square; position keeps preferred edge/corner
+            const pos = (product.thumbPosition || 'center').toLowerCase();
+            const posMap = {
+                left: 'object-left',
+                right: 'object-right',
+                top: 'object-top',
+                bottom: 'object-bottom',
+                center: 'object-center',
+                'top-left': 'object-left-top',
+                'top-right': 'object-right-top',
+                'bottom-left': 'object-left-bottom',
+                'bottom-right': 'object-right-bottom',
+            };
+            const posClass = posMap[pos] || 'object-center';
             
             let badge = '';
             if (product.isSoldOut) badge = `<div class="absolute inset-0 bg-black/60 z-20 flex items-center justify-center"><span class="bg-black text-tech-purple -rotate-12 px-3 py-1 font-bold text-sm border-2 border-tech-purple shadow-lg">SOLD OUT</span></div>`;
@@ -510,7 +553,7 @@
             return `
             <div onclick="openModal(${product.id})" class="group cursor-pointer flex flex-col h-full ${hiddenClass}">
                 <div class="aspect-square relative bg-gray-100 rounded-lg overflow-hidden mb-3 shadow-sm hover:shadow-md transition-shadow">
-                    <img src="${thumb}" loading="lazy" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                    <img src="${thumb}" loading="lazy" class="w-full h-full object-cover ${posClass} transition-transform duration-500 group-hover:scale-110">
                     ${badge}
                     <div class="absolute bottom-0 left-0 bg-black/90 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-tr-lg z-10 font-mono">${price}</div>
                 </div>
@@ -527,11 +570,11 @@
 
         function handleSearch(query) {
             const container = document.getElementById('store-container');
-            const results = storeProducts.filter(p => {
+            const results = sortProductsForDisplay(storeProducts.filter(p => {
                 if (!productPassesFilters(p)) return false;
                 const hay = [p.title?.jp, p.title?.en, p.title?.zh].filter(Boolean).join(' ').toLowerCase();
                 return hay.includes(query.toLowerCase());
-            });
+            }));
             container.innerHTML = `
                 <div class="py-8">
                     <h3 class="text-xl font-bold mb-6">Results for "${query}"</h3>
