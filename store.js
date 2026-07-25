@@ -228,7 +228,7 @@ const storeProducts = [
             "en": "Hoshiyumetei 15th Anniversary SET",
             "zh": "星夢亭15週年紀念SET"
         },
-        "priceTW": 960,
+        "priceTW": 900,
         "priceHK": 240,
         "imgs": [
             "./blog/20260719/products/anni-15-set/00.jpg",
@@ -360,7 +360,7 @@ const storeProducts = [
             "en": "Leather Card Deck Box",
             "zh": "皮質卡片收納盒"
         },
-        "priceTW": 880,
+        "priceTW": 800,
         "priceHK": 220,
         "imgs": ["./blog/20260719/products/goods-deckbox/01.jpg"],
         "desc": {
