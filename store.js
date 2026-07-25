@@ -496,7 +496,7 @@ const storeProducts = [
             "TW",
             "HK"
         ],
-        "isNew": true,
+        "isNew": false,
         "isSoldOut": false,
         "title": {
             "jp": null,
@@ -532,7 +532,7 @@ const storeProducts = [
             "TW",
             "HK"
         ],
-        "isNew": true,
+        "isNew": false,
         "isSoldOut": false,
         "title": {
             "jp": null,
@@ -568,7 +568,7 @@ const storeProducts = [
             "TW",
             "HK"
         ],
-        "isNew": true,
+        "isNew": false,
         "isSoldOut": false,
         "title": {
             "jp": null,
@@ -604,7 +604,7 @@ const storeProducts = [
             "TW",
             "HK"
         ],
-        "isNew": true,
+        "isNew": false,
         "isSoldOut": false,
         "title": {
             "jp": null,
