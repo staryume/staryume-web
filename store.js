@@ -53,12 +53,12 @@ const storeConfig = {
                 "id": "palette_ring_11",
                 "enabled": true,
                 "label": {
-                    "zh": "9 月 Palette Ring 11 現場取貨",
-                    "en": "Palette Ring 11 (Sep) pickup"
+                    "zh": "同人活動 Palette Ring 11 現場取貨",
+                    "en": "Event pickup — Palette Ring 11"
                 },
                 "desc": {
-                    "zh": "於 Palette Ring 11 攤位現場領取（詳情留意 Discord／活動公告）。",
-                    "en": "Pickup at Palette Ring 11 booth (details via Discord / event notice)."
+                    "zh": "於 9/19-9/20 <a href=\"https://www.palette-ring.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Palette Ring 11</a> 攤位現場領取（詳情留意 Discord／活動公告）。",
+                    "en": "Pickup at the booth on 9/19–9/20 at <a href=\"https://www.palette-ring.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Palette Ring 11</a> (details via Discord / event notice)."
                 },
                 "fields": []
             }
