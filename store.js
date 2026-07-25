@@ -328,7 +328,7 @@ const storeProducts = [
             "en": "Playmat - Dark Magician Girl (ver. 2026)",
             "zh": "新作遊戲墊 黑魔導女孩 (ver. 2026)"
         },
-        "priceTW": 720,
+        "priceTW": 600,
         "priceHK": 180,
         "imgs": [
             "./blog/20260719/products/mat-dmg-2026/01.jpg",
@@ -797,7 +797,7 @@ const storeProducts = [
             "en": "Legacy Playmat (Yanami)",
             "zh": "既作遊戲墊 (八奈見)"
         },
-        "priceTW": 720,
+        "priceTW": 600,
         "priceHK": 180,
         "imgs": ["./blog/20260719/products/mat-legacy/01.jpg"],
         "desc": {
