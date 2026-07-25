@@ -918,7 +918,7 @@ const storeProducts = [
             "en": "Too many Seichi!",
             "zh": "Too many Seichi!"
         },
-        "priceTW": 180,
+        "priceTW": 200,
         "priceHK": 70,
         "imgs": [
             "./blog/20260719/products/book-too-many-seichi/01.jpg",
