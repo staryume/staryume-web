@@ -647,7 +647,7 @@ const storeProducts = [
             "en": "K9－17 Izuna",
             "zh": "K9－17號 飯綱"
         },
-        "priceTW": 250,
+        "priceTW": 300,
         "priceHK": 60,
         "imgs": [
             "./assets/store/sleeve-k9-17-izuna.jpg"
