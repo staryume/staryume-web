@@ -429,6 +429,7 @@ const storeProducts = [
         "priceTW": 600,
         "priceHK": 150,
         "imgs": [
+            "./blog/20260719/products/set-makeine/00.jpg",
             "./blog/20260719/products/set-makeine/01.jpg",
             "./blog/20260719/products/set-makeine/02.jpg",
             "./blog/20260719/products/set-makeine/03.jpg",
