@@ -254,6 +254,12 @@
     function redirectIfEmpty() {
       checkoutRegion = detectRegion();
       applyRegionChrome();
+      // Shop closed to public — block checkout even if cart exists
+      if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
+        alert('商店目前關閉中 · Store is closed for maintenance.');
+        window.location.replace(storeHref());
+        return true;
+      }
       cart = typeof loadRegionCart === 'function' ? loadRegionCart(checkoutRegion) : loadHkCart();
       if (!cartCount()) {
         window.location.replace(storeHref());

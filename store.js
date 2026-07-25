@@ -2,8 +2,8 @@
 
 const storeConfig = {
     "shopStatus": {
-        "isOpen": true,
-        "nextOpenDate": ""
+        "isOpen": false,
+        "nextOpenDate": "PRE-ORDER 準備中 · 稍後開放 / COMING SOON"
     },
     "banner": {
         "img": "",
@@ -16,7 +16,7 @@ const storeConfig = {
      * Localhost falls back to scriptUrlDirect (Apps Script) — see docs/hk-store-checkout-apps-script.md
      */
     "hkCheckout": {
-        "enabled": true,
+        "enabled": false,
         "currency": "HKD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
@@ -69,7 +69,7 @@ const storeConfig = {
      * FF47 booth pickup only (Day 1 / Day 2). Reuses same order endpoint as HK.
      */
     "twCheckout": {
-        "enabled": true,
+        "enabled": false,
         "currency": "TWD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
