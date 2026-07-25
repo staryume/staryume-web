@@ -143,12 +143,17 @@
       { id: 'bag', label: 'Cart', labelZh: '購物車' },
       { id: 'contact', label: 'Contact', labelZh: '聯絡' },
       { id: 'fulfill', label: 'Pickup', labelZh: '取貨' },
-      { id: 'pay', label: 'Pledge', labelZh: '預約承諾' },
+      { id: 'pay', label: 'Pay', labelZh: '付款' }, // TW: shown as 預約承諾 in step nav
       { id: 'proof', label: 'Confirm', labelZh: '確認並提交' },
     ];
 
-    /** Pre-order mode: no online payment; customer pays at pickup. */
-    const PREORDER_ONLY = true;
+    /**
+     * TW (FF47) only: pledge / pay at pickup, no online payment proof.
+     * HK: original FPS / PayMe + screenshot flow.
+     */
+    function isPreorderCheckout() {
+      return checkoutRegion === 'TW';
+    }
 
     let stepIndex = 0;
     let cart = {};
@@ -161,9 +166,9 @@
       snsContact: '',
       fulfillmentId: '',
       sfCode: '',
-      paymentMethod: 'preorder_on_site',
+      paymentMethod: '',
       paidConfirmed: false,
-      /** Pre-order pledge checkboxes */
+      /** Pre-order pledge checkboxes (TW only) */
       pledgeAttend: false,
       pledgeBlacklist: false,
       pledgeDiscord: false,
@@ -250,8 +255,8 @@
       const blurb = document.getElementById('successBlurb');
       if (blurb) {
         blurb.innerHTML = checkoutRegion === 'TW'
-          ? '已收到你的台灣預購登記。<br>請依所選時段到場取貨並付款；如需更改／取消請聯絡 Discord 客服。'
-          : '已收到你的香港預購登記。<br>請依所選方式取貨並付款；如需更改／取消請聯絡 Discord 客服。';
+          ? '已收到你的台灣 FF47 預購登記。<br>請依所選時段到場取貨並付款；如需更改／取消請聯絡 Discord 客服。'
+          : '已收到你的香港訂單與付款證明。<br>我們會核對後再安排出貨／取貨。';
       }
       document.title = checkoutRegion === 'TW'
         ? 'Checkout · 台灣預購 | STARYUME'
@@ -303,10 +308,12 @@
         let cls = 'step-dot w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-gray-200 text-gray-500';
         if (i === stepIndex) cls += ' active';
         else if (i < stepIndex) cls += ' done';
+        let labelZh = s.labelZh;
+        if (s.id === 'pay' && isPreorderCheckout()) labelZh = '預約承諾';
         return `
           <div class="flex items-center gap-2 ${i < STEPS.length - 1 ? 'mr-1' : ''}">
             <div class="${cls}">${i < stepIndex ? '✓' : (i + 1)}</div>
-            <span class="text-xs font-bold ${i === stepIndex ? 'text-black' : 'text-gray-400'} hidden sm:inline">${s.labelZh}</span>
+            <span class="text-xs font-bold ${i === stepIndex ? 'text-black' : 'text-gray-400'} hidden sm:inline">${labelZh}</span>
             ${i < STEPS.length - 1 ? '<span class="w-4 sm:w-8 h-px bg-gray-200 mx-1"></span>' : ''}
           </div>`;
       }).join('');
@@ -496,12 +503,12 @@
       }
 
       if (id === 'pay') {
-        if (PREORDER_ONLY) {
+        if (isPreorderCheckout()) {
           state.paymentMethod = 'preorder_on_site';
           const discord = (checkoutCfg().discordInvite || 'https://discord.gg/staryume');
           panel.innerHTML = `
-            <h2 class="text-xl font-bold mb-1">預約承諾</h2>
-            <p class="text-sm text-gray-500 mb-4 leading-relaxed">本商店目前為<strong class="text-black">預購登記</strong>流程：現階段<strong class="text-black">無需即時付款</strong>。請於你所選的取貨日期／方式到場，再完成付款並領取商品。</p>
+            <h2 class="text-xl font-bold mb-1">預約承諾（台灣 FF47 預購）</h2>
+            <p class="text-sm text-gray-500 mb-4 leading-relaxed">台灣站目前為<strong class="text-black">FF47 預購登記</strong>：現階段<strong class="text-black">無需即時付款</strong>。請於你所選的取貨方式到場，再完成付款並領取商品。<br><span class="text-xs text-gray-400">（香港站仍為線上 FPS／PayMe 付款。）</span></p>
             <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
               <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">應付金額（取貨時支付）</p>
               <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
@@ -603,21 +610,21 @@
 
       if (id === 'proof') {
         const hasR18 = cartHasR18();
-        const payLabel = PREORDER_ONLY
-          ? '現場取貨時付款（預購）'
+        const payLabel = isPreorderCheckout()
+          ? '現場取貨時付款（FF47 預購）'
           : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS');
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">確認並提交</h2>
-          <p class="text-sm text-gray-500 mb-6">請確認預購內容後提交。</p>
+          <p class="text-sm text-gray-500 mb-6">${isPreorderCheckout() ? '請確認預購內容後提交。' : '請確認訂單內容後提交。'}</p>
           <div class="space-y-4">
             <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
-              <p class="font-bold text-black text-sm mb-2">預購摘要</p>
+              <p class="font-bold text-black text-sm mb-2">${isPreorderCheckout() ? '預購摘要' : '訂單摘要'}</p>
               <p>姓名：${escapeHtml(state.name)}</p>
               <p>電郵：${escapeHtml(state.email)}</p>
               <p>付款：${escapeHtml(payLabel)}</p>
               <p>取貨：${escapeHtml(fulfillmentLabel(state.fulfillmentId))}</p>
-              ${PREORDER_ONLY ? '<p>付款截圖：不適用（預購）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
-              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}（取貨時支付）</p>
+              ${isPreorderCheckout() ? '<p>付款截圖：不適用（預購）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
+              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}${isPreorderCheckout() ? '（取貨時支付）' : ''}</p>
             </div>
             <div>
               <label class="block text-sm font-bold mb-2" for="c-notes">想對我說的話 <span class="text-gray-400 font-normal">(非必填)</span></label>
@@ -711,7 +718,7 @@
         if (sf) state.sfCode = sf.value.trim();
       }
       if (STEPS[stepIndex].id === 'pay') {
-        if (PREORDER_ONLY) {
+        if (isPreorderCheckout()) {
           state.pledgeAttend = !!document.getElementById('c-pledge-attend')?.checked;
           state.pledgeBlacklist = !!document.getElementById('c-pledge-blacklist')?.checked;
           state.pledgeDiscord = !!document.getElementById('c-pledge-discord')?.checked;
@@ -757,7 +764,7 @@
         return '';
       }
       if (id === 'pay') {
-        if (PREORDER_ONLY) {
+        if (isPreorderCheckout()) {
           if (!state.pledgeAttend) return '請勾選：承諾會到場取貨並付款。';
           if (!state.pledgeBlacklist) return '請勾選：明白缺席／不付款的後果。';
           if (!state.pledgeDiscord) return '請勾選：知悉更改／取消請聯絡 Discord。';
@@ -770,8 +777,8 @@
         return '';
       }
       if (id === 'proof') {
-        if (!PREORDER_ONLY && !state.proofDataUrl) return '請返回上一步上載付款截圖。';
-        if (PREORDER_ONLY && !state.paidConfirmed) return '請返回上一步完成預約承諾勾選。';
+        if (!isPreorderCheckout() && !state.proofDataUrl) return '請返回上一步上載付款截圖。';
+        if (isPreorderCheckout() && !state.paidConfirmed) return '請返回上一步完成預約承諾勾選。';
         if (cartHasR18() && !state.r18AgeConfirmed) {
           return '請確認已滿 18 歲且可合法購買此訂單內容。';
         }
@@ -834,7 +841,7 @@
       back.style.visibility = stepIndex === 0 ? 'hidden' : 'visible';
       const last = stepIndex === STEPS.length - 1;
       next.textContent = last
-        ? (PREORDER_ONLY ? '提交預購 · Place pre-order' : '提交訂單 · Place order')
+        ? (isPreorderCheckout() ? '提交預購 · Place pre-order' : '提交訂單 · Place order')
         : '繼續';
     }
 
@@ -910,7 +917,8 @@
       }));
 
       const hasUra = lines.some((l) => l.product && (l.product.hidden || l.product.contentRating === 'r18'));
-      const isPreorder = PREORDER_ONLY || state.paymentMethod === 'preorder_on_site';
+      // Only Taiwan FF47 uses pledge / pay-on-pickup; never treat HK as preorder
+      const isPreorder = isPreorderCheckout();
       const payload = {
         orderId,
         region: checkoutRegion,
@@ -929,7 +937,9 @@
         fulfillmentLabel: fulfillmentLabel(state.fulfillmentId),
         sfCode: state.sfCode || '',
         paymentMethod: isPreorder ? 'preorder_on_site' : state.paymentMethod,
-        paymentLabel: isPreorder ? '預購·現場付款' : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'),
+        paymentLabel: isPreorder
+          ? '預購·FF47現場付款'
+          : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'),
         notes: state.notes || '',
         catalog: hasUra ? 'ura' : 'public',
         preorderPledge: isPreorder ? {
