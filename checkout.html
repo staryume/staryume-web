@@ -143,9 +143,12 @@
       { id: 'bag', label: 'Cart', labelZh: '購物車' },
       { id: 'contact', label: 'Contact', labelZh: '聯絡' },
       { id: 'fulfill', label: 'Pickup', labelZh: '取貨' },
-      { id: 'pay', label: 'Pay', labelZh: '付款' },
+      { id: 'pay', label: 'Pledge', labelZh: '預約承諾' },
       { id: 'proof', label: 'Confirm', labelZh: '確認並提交' },
     ];
+
+    /** Pre-order mode: no online payment; customer pays at pickup. */
+    const PREORDER_ONLY = true;
 
     let stepIndex = 0;
     let cart = {};
@@ -158,8 +161,12 @@
       snsContact: '',
       fulfillmentId: '',
       sfCode: '',
-      paymentMethod: '',
+      paymentMethod: 'preorder_on_site',
       paidConfirmed: false,
+      /** Pre-order pledge checkboxes */
+      pledgeAttend: false,
+      pledgeBlacklist: false,
+      pledgeDiscord: false,
       notes: '',
       proofDataUrl: '',
       proofName: '',
@@ -243,8 +250,8 @@
       const blurb = document.getElementById('successBlurb');
       if (blurb) {
         blurb.innerHTML = checkoutRegion === 'TW'
-          ? '已收到你的台灣預購訂單與付款證明。<br>我們會核對後再於 Fancy Frontier 47 安排現場取貨。'
-          : '已收到你的香港訂單與付款證明。<br>我們會核對後再安排出貨／取貨。';
+          ? '已收到你的台灣預購登記。<br>請依所選時段到場取貨並付款；如需更改／取消請聯絡 Discord 客服。'
+          : '已收到你的香港預購登記。<br>請依所選方式取貨並付款；如需更改／取消請聯絡 Discord 客服。';
       }
       document.title = checkoutRegion === 'TW'
         ? 'Checkout · 台灣預購 | STARYUME'
@@ -489,72 +496,128 @@
       }
 
       if (id === 'pay') {
-        const opts = paymentOptions();
-        if (!state.paymentMethod && opts.length) state.paymentMethod = opts[0].id;
-        const selected = opts.find((o) => o.id === state.paymentMethod) || opts[0];
-        panel.innerHTML = `
-          <h2 class="text-xl font-bold mb-1">付款</h2>
-          <p class="text-sm text-gray-500 mb-4">請完成轉帳／支付，並上載付款成功截圖。</p>
-          <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
-            <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Amount due</p>
-            <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
-          </div>
-          ${!opts.length ? '<p class="text-sm text-red-600">尚未設定付款方式，請聯絡賣家。</p>' : `
-          <div class="space-y-3 mb-6">
-            ${opts.map((o) => `
-              <label class="option-card flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer">
-                <input type="radio" name="payMethod" value="${o.id}" class="accent-black" ${state.paymentMethod === o.id ? 'checked' : ''}>
-                <span class="font-bold text-sm">${o.label}</span>
-              </label>
-            `).join('')}
-          </div>
-          <div id="pay-details" class="border border-gray-100 rounded-xl p-5 space-y-3">
-            ${renderPayDetails(selected)}
-          </div>
-          <div class="mt-8 pt-6 border-t border-gray-100 space-y-3">
-            <h3 class="text-sm font-bold">付款截圖 <span class="text-red-500">*</span></h3>
-            <p class="text-xs text-gray-500">上載 FPS / PayMe 成功截圖。</p>
-            <input id="c-proof" type="file" accept="image/*"
-              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-black file:text-white file:font-bold file:text-xs hover:file:bg-tech-purple hover:file:text-black">
-            <div id="proof-preview" class="mt-2 ${state.proofDataUrl ? '' : 'hidden'}">
-              <img id="proof-img" src="${state.proofDataUrl || ''}" alt="Proof preview" class="max-h-48 rounded-xl border border-gray-100">
-              <p id="proof-name" class="text-xs text-gray-400 mt-1 font-mono">${escapeHtml(state.proofName || '')}</p>
+        if (PREORDER_ONLY) {
+          state.paymentMethod = 'preorder_on_site';
+          const discord = (checkoutCfg().discordInvite || 'https://discord.gg/staryume');
+          panel.innerHTML = `
+            <h2 class="text-xl font-bold mb-1">預約承諾</h2>
+            <p class="text-sm text-gray-500 mb-4 leading-relaxed">本商店目前為<strong class="text-black">預購登記</strong>流程：現階段<strong class="text-black">無需即時付款</strong>。請於你所選的取貨日期／方式到場，再完成付款並領取商品。</p>
+            <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
+              <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">應付金額（取貨時支付）</p>
+              <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
+              <p class="text-xs text-gray-500 mt-2">金額僅供預覽，請於現場以約定方式結清</p>
             </div>
-          </div>
-          <label class="flex items-start gap-3 mt-6 p-4 border border-gray-200 rounded-xl cursor-pointer">
-            <input type="checkbox" id="c-paid" class="mt-1 accent-black" ${state.paidConfirmed ? 'checked' : ''}>
-            <span class="text-sm"><span class="font-bold">我已完成付款並已上載付款成功截圖</span><span class="text-gray-500">（金額 ${money(total)}）</span></span>
-          </label>
-          `}
-        `;
-        panel.querySelectorAll('input[name="payMethod"]').forEach((radio) => {
-          radio.addEventListener('change', () => {
-            const paid = document.getElementById('c-paid');
-            if (paid) state.paidConfirmed = !!paid.checked;
-            state.paymentMethod = radio.value;
-            renderPanel();
+            <div class="rounded-xl border border-tech-purple/40 bg-tech-purple/10 p-4 mb-6 text-sm text-gray-700 leading-relaxed space-y-2">
+              <p class="font-bold text-black">重要說明</p>
+              <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
+                <li>提交預購即代表你已預留庫存；請務必依所選時段到場取貨並付款。</li>
+                <li>若需<strong>更改或取消</strong>預購，請盡早透過
+                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>
+                  聯絡我們。</li>
+                <li>無故缺席、不取貨或不付款者，將被<strong>永久列入黑名單</strong>，日後無法再使用本網站商店服務。</li>
+              </ul>
+            </div>
+            <div class="space-y-3">
+              <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
+                <input type="checkbox" id="c-pledge-attend" class="mt-1 accent-black" ${state.pledgeAttend ? 'checked' : ''}>
+                <span class="text-sm leading-relaxed"><span class="font-bold text-black">我承諾會到場取貨並付款</span><br>
+                <span class="text-xs text-gray-500">我確認將於所選取貨日期／方式，親身到場領取商品，並於現場完成全額付款（應付金額 ${money(total)}）。</span></span>
+              </label>
+              <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
+                <input type="checkbox" id="c-pledge-blacklist" class="mt-1 accent-black" ${state.pledgeBlacklist ? 'checked' : ''}>
+                <span class="text-sm leading-relaxed"><span class="font-bold text-black">我明白缺席的後果</span><br>
+                <span class="text-xs text-gray-500">我明白若無故缺席、拒絕取貨或不付款，店方有權將我<strong>永久列入黑名單</strong>，之後無法再使用 staryu.me 商店預購／購物服務。</span></span>
+              </label>
+              <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
+                <input type="checkbox" id="c-pledge-discord" class="mt-1 accent-black" ${state.pledgeDiscord ? 'checked' : ''}>
+                <span class="text-sm leading-relaxed"><span class="font-bold text-black">更改／取消請聯絡 Discord</span><br>
+                <span class="text-xs text-gray-500">我知悉若需更改取貨時段、商品內容或取消訂單，應透過
+                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服頻道</a>
+                  與我們聯絡，而非直接缺席。</span></span>
+              </label>
+            </div>
+          `;
+          ['c-pledge-attend', 'c-pledge-blacklist', 'c-pledge-discord'].forEach((cid) => {
+            const el = document.getElementById(cid);
+            if (!el) return;
+            el.addEventListener('change', () => {
+              state.pledgeAttend = !!document.getElementById('c-pledge-attend')?.checked;
+              state.pledgeBlacklist = !!document.getElementById('c-pledge-blacklist')?.checked;
+              state.pledgeDiscord = !!document.getElementById('c-pledge-discord')?.checked;
+              state.paidConfirmed = state.pledgeAttend && state.pledgeBlacklist && state.pledgeDiscord;
+            });
           });
-        });
-        const fileInput = document.getElementById('c-proof');
-        if (fileInput) {
-          fileInput.addEventListener('change', () => handleProofFile(fileInput.files && fileInput.files[0]));
+        } else {
+          const opts = paymentOptions();
+          if (!state.paymentMethod && opts.length) state.paymentMethod = opts[0].id;
+          const selected = opts.find((o) => o.id === state.paymentMethod) || opts[0];
+          panel.innerHTML = `
+            <h2 class="text-xl font-bold mb-1">付款</h2>
+            <p class="text-sm text-gray-500 mb-4">請完成轉帳／支付，並上載付款成功截圖。</p>
+            <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
+              <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Amount due</p>
+              <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
+            </div>
+            ${!opts.length ? '<p class="text-sm text-red-600">尚未設定付款方式，請聯絡賣家。</p>' : `
+            <div class="space-y-3 mb-6">
+              ${opts.map((o) => `
+                <label class="option-card flex items-center gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer">
+                  <input type="radio" name="payMethod" value="${o.id}" class="accent-black" ${state.paymentMethod === o.id ? 'checked' : ''}>
+                  <span class="font-bold text-sm">${o.label}</span>
+                </label>
+              `).join('')}
+            </div>
+            <div id="pay-details" class="border border-gray-100 rounded-xl p-5 space-y-3">
+              ${renderPayDetails(selected)}
+            </div>
+            <div class="mt-8 pt-6 border-t border-gray-100 space-y-3">
+              <h3 class="text-sm font-bold">付款截圖 <span class="text-red-500">*</span></h3>
+              <p class="text-xs text-gray-500">上載 FPS / PayMe 成功截圖。</p>
+              <input id="c-proof" type="file" accept="image/*"
+                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-black file:text-white file:font-bold file:text-xs hover:file:bg-tech-purple hover:file:text-black">
+              <div id="proof-preview" class="mt-2 ${state.proofDataUrl ? '' : 'hidden'}">
+                <img id="proof-img" src="${state.proofDataUrl || ''}" alt="Proof preview" class="max-h-48 rounded-xl border border-gray-100">
+                <p id="proof-name" class="text-xs text-gray-400 mt-1 font-mono">${escapeHtml(state.proofName || '')}</p>
+              </div>
+            </div>
+            <label class="flex items-start gap-3 mt-6 p-4 border border-gray-200 rounded-xl cursor-pointer">
+              <input type="checkbox" id="c-paid" class="mt-1 accent-black" ${state.paidConfirmed ? 'checked' : ''}>
+              <span class="text-sm"><span class="font-bold">我已完成付款並已上載付款成功截圖</span><span class="text-gray-500">（金額 ${money(total)}）</span></span>
+            </label>
+            `}
+          `;
+          panel.querySelectorAll('input[name="payMethod"]').forEach((radio) => {
+            radio.addEventListener('change', () => {
+              const paid = document.getElementById('c-paid');
+              if (paid) state.paidConfirmed = !!paid.checked;
+              state.paymentMethod = radio.value;
+              renderPanel();
+            });
+          });
+          const fileInput = document.getElementById('c-proof');
+          if (fileInput) {
+            fileInput.addEventListener('change', () => handleProofFile(fileInput.files && fileInput.files[0]));
+          }
         }
       }
 
       if (id === 'proof') {
         const hasR18 = cartHasR18();
+        const payLabel = PREORDER_ONLY
+          ? '現場取貨時付款（預購）'
+          : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS');
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">確認並提交</h2>
-          <p class="text-sm text-gray-500 mb-6">請確認訂單內容後提交。</p>
+          <p class="text-sm text-gray-500 mb-6">請確認預購內容後提交。</p>
           <div class="space-y-4">
             <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
-              <p class="font-bold text-black text-sm mb-2">訂單摘要</p>
+              <p class="font-bold text-black text-sm mb-2">預購摘要</p>
               <p>姓名：${escapeHtml(state.name)}</p>
               <p>電郵：${escapeHtml(state.email)}</p>
-              <p>付款：${state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'}</p>
+              <p>付款：${escapeHtml(payLabel)}</p>
               <p>取貨：${escapeHtml(fulfillmentLabel(state.fulfillmentId))}</p>
-              <p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>
-              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}</p>
+              ${PREORDER_ONLY ? '<p>付款截圖：不適用（預購）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
+              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}（取貨時支付）</p>
             </div>
             <div>
               <label class="block text-sm font-bold mb-2" for="c-notes">想對我說的話 <span class="text-gray-400 font-normal">(非必填)</span></label>
@@ -648,8 +711,16 @@
         if (sf) state.sfCode = sf.value.trim();
       }
       if (STEPS[stepIndex].id === 'pay') {
-        const paid = document.getElementById('c-paid');
-        state.paidConfirmed = !!(paid && paid.checked);
+        if (PREORDER_ONLY) {
+          state.pledgeAttend = !!document.getElementById('c-pledge-attend')?.checked;
+          state.pledgeBlacklist = !!document.getElementById('c-pledge-blacklist')?.checked;
+          state.pledgeDiscord = !!document.getElementById('c-pledge-discord')?.checked;
+          state.paidConfirmed = state.pledgeAttend && state.pledgeBlacklist && state.pledgeDiscord;
+          state.paymentMethod = 'preorder_on_site';
+        } else {
+          const paid = document.getElementById('c-paid');
+          state.paidConfirmed = !!(paid && paid.checked);
+        }
       }
       if (STEPS[stepIndex].id === 'proof') {
         const notes = document.getElementById('c-notes');
@@ -686,6 +757,12 @@
         return '';
       }
       if (id === 'pay') {
+        if (PREORDER_ONLY) {
+          if (!state.pledgeAttend) return '請勾選：承諾會到場取貨並付款。';
+          if (!state.pledgeBlacklist) return '請勾選：明白缺席／不付款的後果。';
+          if (!state.pledgeDiscord) return '請勾選：知悉更改／取消請聯絡 Discord。';
+          return '';
+        }
         if (!paymentOptions().length) return '尚未設定付款方式。';
         if (!state.paymentMethod) return '請選擇付款方式。';
         if (!state.proofDataUrl) return '請上載付款截圖。';
@@ -693,7 +770,8 @@
         return '';
       }
       if (id === 'proof') {
-        if (!state.proofDataUrl) return '請返回上一步上載付款截圖。';
+        if (!PREORDER_ONLY && !state.proofDataUrl) return '請返回上一步上載付款截圖。';
+        if (PREORDER_ONLY && !state.paidConfirmed) return '請返回上一步完成預約承諾勾選。';
         if (cartHasR18() && !state.r18AgeConfirmed) {
           return '請確認已滿 18 歲且可合法購買此訂單內容。';
         }
@@ -755,7 +833,9 @@
       const next = document.getElementById('btnNext');
       back.style.visibility = stepIndex === 0 ? 'hidden' : 'visible';
       const last = stepIndex === STEPS.length - 1;
-      next.textContent = last ? '提交訂單 · Place order' : '繼續';
+      next.textContent = last
+        ? (PREORDER_ONLY ? '提交預購 · Place pre-order' : '提交訂單 · Place order')
+        : '繼續';
     }
 
     function goNext() {
@@ -830,10 +910,12 @@
       }));
 
       const hasUra = lines.some((l) => l.product && (l.product.hidden || l.product.contentRating === 'r18'));
+      const isPreorder = PREORDER_ONLY || state.paymentMethod === 'preorder_on_site';
       const payload = {
         orderId,
         region: checkoutRegion,
         currency,
+        orderType: isPreorder ? 'preorder' : 'paid',
         items: itemsJson,
         itemsText,
         totalHkd: total, // legacy field name; value is in `currency`
@@ -846,14 +928,22 @@
         fulfillmentId: state.fulfillmentId,
         fulfillmentLabel: fulfillmentLabel(state.fulfillmentId),
         sfCode: state.sfCode || '',
-        paymentMethod: state.paymentMethod,
+        paymentMethod: isPreorder ? 'preorder_on_site' : state.paymentMethod,
+        paymentLabel: isPreorder ? '預購·現場付款' : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'),
         notes: state.notes || '',
         catalog: hasUra ? 'ura' : 'public',
-        proof: {
-          name: state.proofName || 'proof.jpg',
-          mimeType: state.proofMime || 'image/jpeg',
-          dataUrl: state.proofDataUrl,
-        },
+        preorderPledge: isPreorder ? {
+          attend: !!state.pledgeAttend,
+          blacklistAck: !!state.pledgeBlacklist,
+          discordAck: !!state.pledgeDiscord,
+        } : null,
+        proof: isPreorder
+          ? null
+          : {
+              name: state.proofName || 'proof.jpg',
+              mimeType: state.proofMime || 'image/jpeg',
+              dataUrl: state.proofDataUrl,
+            },
         // Timestamp helps backend auditing (optional)
         clientTs: Date.now(),
       };

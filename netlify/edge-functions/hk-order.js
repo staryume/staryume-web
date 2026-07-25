@@ -70,12 +70,21 @@ export default async (request) => {
   // Normalize total for Apps Script (legacy field totalHkd = amount in order currency)
   if (data.totalHkd == null && data.total != null) data.totalHkd = data.total;
 
-  if (!data.proof || !data.proof.dataUrl || typeof data.proof.dataUrl !== "string") {
-    return json({ ok: false, error: "missing_proof" }, 400);
-  }
+  // Pre-order mode: pay at pickup — no payment screenshot required
+  const isPreorder =
+    data.orderType === "preorder" ||
+    data.paymentMethod === "preorder_on_site";
 
-  if (!String(data.proof.dataUrl).startsWith("data:image/")) {
-    return json({ ok: false, error: "invalid_proof_type" }, 400);
+  if (!isPreorder) {
+    if (!data.proof || !data.proof.dataUrl || typeof data.proof.dataUrl !== "string") {
+      return json({ ok: false, error: "missing_proof" }, 400);
+    }
+
+    if (!String(data.proof.dataUrl).startsWith("data:image/")) {
+      return json({ ok: false, error: "invalid_proof_type" }, 400);
+    }
+  } else if (data.proof && !data.proof.dataUrl) {
+    data.proof = null;
   }
 
   // Strip honeypot-ish keys before forward

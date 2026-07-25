@@ -33,8 +33,12 @@ function doPost(e) {
     var fulfillment = data.fulfillmentLabel || data.fulfillmentId || '';
     fulfillment = region + ' · ' + currency + (fulfillment ? (' · ' + fulfillment) : '');
     var sfCode = data.sfCode || '';
-    var payment = paymentLabel_(data.paymentMethod || '');
+    var payment = data.paymentLabel || paymentLabel_(data.paymentMethod || '');
+    if (data.orderType === 'preorder' && !payment) payment = '預購·現場付款';
     var notes = data.notes || '';
+    if (data.orderType === 'preorder') {
+      notes = (notes ? (notes + '\n') : '') + '[PREORDER] pay at pickup; pledge OK';
+    }
 
     // Sheet FIRST — order is never lost if Drive fails
     // Columns: Timestamp, Order ID, Items, Total, Name, Email, Phone, SNS Type, SNS Contact, Fulfillment(+region), SF Code, Payment, Proof URL, Notes, Status
@@ -106,6 +110,7 @@ function paymentLabel_(method) {
   var m = String(method || '').toLowerCase();
   if (m === 'fps') return 'FPS 轉數快';
   if (m === 'payme') return 'PayMe';
+  if (m === 'preorder_on_site' || m === 'preorder') return '預購·現場付款';
   return method || '';
 }
 
