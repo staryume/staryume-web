@@ -9,6 +9,7 @@ Orders do **not** use Google Forms. Flow:
 2. Apps Script writes a **Sheet row**  
 3. Payment screenshot goes into a **Drive folder**  
 4. Customer gets a **confirmation email** (from your Google account)  
+5. You also get a **seller alert** at `staryume@gmail.com` (see `SELLER_NOTIFY_EMAIL` in Code.gs)  
 
 ---
 
