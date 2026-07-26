@@ -81,10 +81,10 @@
       <div id="successPreorderManage" class="hidden mb-4 p-4 rounded-xl border border-tech-purple/40 bg-tech-purple/10 text-left text-xs text-gray-700 leading-relaxed">
         <p class="font-bold text-black text-sm mb-1">可管理預購至 FF47 前 24 小時</p>
         <p class="mb-2">在 <strong>2026/8/20 00:00（台北）</strong> 前，可修改取貨日／聯絡資料或取消預購（需訂單編號 + 下單電郵）。</p>
-        <p class="mb-3 text-gray-500">請妥善保存訂單編號；也可從商店台灣頁「管理預購」進入。</p>
+        <p class="mb-3 text-gray-500">請妥善保存訂單編號；也可從商店台灣頁「管理訂單」進入。</p>
         <a id="successManageLink" href="./preorder.html"
           class="inline-flex items-center justify-center w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-tech-purple hover:text-black transition text-sm">
-          管理我的 FF47 預購
+          管理訂單
         </a>
       </div>
       <a id="successDiscord" href="https://discord.gg/staryume" target="_blank" rel="noopener noreferrer"
@@ -264,7 +264,7 @@
       const blurb = document.getElementById('successBlurb');
       if (blurb) {
         blurb.innerHTML = checkoutRegion === 'TW'
-          ? '已收到你的台灣 FF47 預購登記。<br>請依所選時段到場取貨並付款；如需更改／取消請聯絡 Discord 客服。'
+          ? '已收到你的台灣 FF47 預購登記。<br>請依所選時段到場取貨並付款。<br>如需修改取貨日／聯絡資料或取消，請至「管理訂單」頁（訂單編號 + 電郵），截止 2026/8/20 00:00 台北時間。'
           : '已收到你的香港訂單與付款證明。<br>我們會核對後再安排出貨／取貨。';
       }
       document.title = checkoutRegion === 'TW'
@@ -527,9 +527,11 @@
               <p class="font-bold text-black">重要說明</p>
               <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
                 <li>提交預購即代表你已預留庫存；請務必依所選時段到場取貨並付款。</li>
-                <li>若需<strong>更改或取消</strong>預購，請盡早透過
-                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>
-                  聯絡我們。</li>
+                <li>若需<strong>修改取貨日／聯絡資料或取消預購</strong>，請在 <strong>2026/8/20 00:00（台北）</strong> 前使用
+                  <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
+                  頁（訂單編號 + 下單電郵）。亦可從商店台灣頁「管理訂單」進入。</li>
+                <li>線上<strong>無法更改商品內容／數量</strong>；截止後或其他問題請透過
+                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>。</li>
                 <li>無故缺席、不取貨或不付款者，將被<strong>永久列入黑名單</strong>，日後無法再使用本網站商店服務。</li>
               </ul>
             </div>
@@ -546,10 +548,11 @@
               </label>
               <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
                 <input type="checkbox" id="c-pledge-discord" class="mt-1 accent-black" ${state.pledgeDiscord ? 'checked' : ''}>
-                <span class="text-sm leading-relaxed"><span class="font-bold text-black">更改／取消請聯絡 Discord</span><br>
-                <span class="text-xs text-gray-500">我知悉若需更改取貨時段、商品內容或取消訂單，應透過
-                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服頻道</a>
-                  與我們聯絡，而非直接缺席。</span></span>
+                <span class="text-sm leading-relaxed"><span class="font-bold text-black">我知悉如何修改／取消預購</span><br>
+                <span class="text-xs text-gray-500">我知悉可在期限內使用
+                  <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
+                  修改取貨日／聯絡資料或取消預購；截止後或需改商品內容請聯絡
+                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>，而非直接缺席。</span></span>
               </label>
             </div>
           `;
@@ -622,9 +625,18 @@
         const payLabel = isPreorderCheckout()
           ? '現場取貨時付款（FF47 預購）'
           : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS');
+        const twManageNote = isPreorderCheckout() ? `
+            <div class="rounded-xl border border-gray-200 p-4 text-xs text-gray-600 leading-relaxed space-y-2">
+              <p class="font-bold text-black text-sm">提交後如何修改／取消？</p>
+              <p>在 <strong>2026/8/20 00:00（台北）</strong> 前，請至
+                <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
+                （訂單編號 + 下單電郵），可修改取貨日／聯絡資料或取消預購。</p>
+              <p>亦可從商店台灣頁的「<strong>管理訂單</strong>」按鈕進入。線上無法更改商品內容；截止後請聯絡 Discord 客服。</p>
+            </div>
+          ` : '';
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">確認並提交</h2>
-          <p class="text-sm text-gray-500 mb-6">${isPreorderCheckout() ? '請確認預購內容後提交。' : '請確認訂單內容後提交。'}</p>
+          <p class="text-sm text-gray-500 mb-6">${isPreorderCheckout() ? '請確認預購內容後提交。提交成功後可使用「管理訂單」頁修改或取消（期限內）。' : '請確認訂單內容後提交。'}</p>
           <div class="space-y-4">
             <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
               <p class="font-bold text-black text-sm mb-2">${isPreorderCheckout() ? '預購摘要' : '訂單摘要'}</p>
@@ -635,6 +647,7 @@
               ${isPreorderCheckout() ? '<p>付款截圖：不適用（預購）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
               <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}${isPreorderCheckout() ? '（取貨時支付）' : ''}</p>
             </div>
+            ${twManageNote}
             <div>
               <label class="block text-sm font-bold mb-2" for="c-notes">想對我說的話 <span class="text-gray-400 font-normal">(非必填)</span></label>
               <textarea id="c-notes" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white resize-y"
@@ -776,7 +789,7 @@
         if (isPreorderCheckout()) {
           if (!state.pledgeAttend) return '請勾選：承諾會到場取貨並付款。';
           if (!state.pledgeBlacklist) return '請勾選：明白缺席／不付款的後果。';
-          if (!state.pledgeDiscord) return '請勾選：知悉更改／取消請聯絡 Discord。';
+          if (!state.pledgeDiscord) return '請勾選：知悉如何使用「管理訂單」修改／取消預購。';
           return '';
         }
         if (!paymentOptions().length) return '尚未設定付款方式。';

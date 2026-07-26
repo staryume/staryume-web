@@ -592,7 +592,7 @@ function sendOrderEmail_(info) {
     lines.push('Fancy Frontier 47 開始前 24 小時（2026/8/20 00:00 台北時間）為止。');
     lines.push('管理頁（訂單編號 + 下單電郵）：');
     lines.push('https://staryu.me/preorder.html?orderId=' + encodeURIComponent(info.orderId || ''));
-    lines.push('或從商店台灣頁「管理預購」進入。');
+    lines.push('或從商店台灣頁「管理訂單」進入。');
   } else {
     lines.push('感謝你在 staryu.me 完成' + regionLabel + '訂單。');
     lines.push('我們已收到你的訂單與付款證明，核對後會安排出貨／取貨。');
