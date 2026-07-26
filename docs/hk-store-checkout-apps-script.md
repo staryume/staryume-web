@@ -21,12 +21,31 @@ Orders do **not** use Google Forms. Flow:
 3. On **Sheet1**, set **row 1** (headers) exactly like this (copy-paste into A1):
 
 ```text
-Timestamp	Order ID	Items	Total HKD	Name	Email	Phone	SNS Type	SNS Contact	Fulfillment	SF Code	Payment	Proof URL	Notes	Status
+Timestamp	Order ID	Items	Total	Name	Email	Phone	SNS Type	SNS Contact	Fulfillment	SF Code	Payment	Proof URL	Notes	Status	Region	OrderType	FulfillmentId	ItemsJson	UpdatedAt
 ```
 
-(Or type one header per column A→O.)
+(Or type one header per column A→T. Older sheets with `Total HKD` still work; script adds P–T columns as needed.)
 
 4. Keep this tab as the **first** sheet (the script always uses the first sheet).
+
+### Daily backups (recommended)
+
+1. After pasting the new `Code.gs`, run once: select function **`dailyOrderBackup_`** → Run (authorize Drive).  
+2. **Triggers** (clock icon) → Add trigger:  
+   - Function: `dailyOrderBackup_`  
+   - Event: Time-driven → Day timer → 3am–4am  
+3. Backups appear in Drive folder **`STARYUME Store Order Backups`** next to the spreadsheet (or set `BACKUP_FOLDER_ID` in Code.gs).  
+4. Retention: 90 days (configurable via `BACKUP_RETENTION_DAYS`).
+
+Google Sheet **File → Version history** is also available for accidental undos.
+
+### TW pre-order manage
+
+- Customer page: **`https://staryu.me/preorder.html`**  
+- Lookup: Order ID + email  
+- Edit/cancel window: **24 hours** after order  
+- Same email cannot create another TW pre-order within **24 hours**  
+- New TW pre-orders freeze from **2026-08-20 00:00 +08** (`NEW_TW_PREORDER_UNTIL_ISO` in Code.gs)
 
 ---
 

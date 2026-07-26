@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理 FF47 預購 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="查詢、修改或取消台灣 FF47 預購（下單後 24 小時內）">
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20978566');
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script src="store.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    .option-card:has(input:checked) {
+      border-color: #0a0a0a;
+      background: rgba(216, 180, 254, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
+    <a href="./store.html?region=TW" class="flex items-center gap-3 hover:opacity-80">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+    </a>
+    <a href="./store.html?region=TW" class="text-xs font-bold text-gray-500 hover:text-black">← 返回商店</a>
+  </header>
+
+  <main class="max-w-xl mx-auto px-4 py-10 md:py-14">
+    <p class="text-[10px] font-tech tracking-widest text-gray-400 mb-2">TAIWAN FF47 PRE-ORDER</p>
+    <h1 class="text-3xl font-bold font-tech tracking-tight mb-2">管理預購</h1>
+    <p class="text-sm text-gray-500 mb-8 leading-relaxed">
+      使用確認電郵中的<strong>訂單編號</strong>與下單<strong>電郵</strong>查詢。提交後 <strong>24 小時內</strong>可修改取貨日／聯絡資料或取消預購。無法更改商品內容。
+    </p>
+
+    <div id="alert" class="hidden mb-6 text-sm rounded-xl px-4 py-3 border"></div>
+
+    <!-- Lookup -->
+    <section id="lookupCard" class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 space-y-4 mb-8">
+      <h2 class="text-lg font-bold">查詢訂單</h2>
+      <div>
+        <label class="block text-sm font-bold mb-2" for="orderId">訂單編號 <span class="text-red-500">*</span></label>
+        <input id="orderId" type="text" autocomplete="off" placeholder="例如 TW-20260725-ABCD"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 font-mono focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-2" for="email">下單電郵 <span class="text-red-500">*</span></label>
+        <input id="email" type="email" autocomplete="email" placeholder="name@example.com"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+      </div>
+      <button type="button" id="btnLookup"
+        class="w-full py-3.5 bg-black text-white font-bold rounded-xl hover:bg-tech-purple hover:text-black transition-colors">
+        查詢
+      </button>
+    </section>
+
+    <!-- Manage form (hidden until loaded) -->
+    <section id="manageCard" class="hidden bg-white rounded-2xl border border-gray-100 shadow-sm p-6 md:p-8 space-y-6">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Order ID</p>
+          <p id="m-orderId" class="font-mono font-bold text-lg">—</p>
+        </div>
+        <div class="text-right">
+          <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase">Status</p>
+          <p id="m-status" class="text-sm font-bold">—</p>
+          <p id="m-deadline" class="text-xs text-gray-500 mt-1"></p>
+        </div>
+      </div>
+
+      <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 whitespace-pre-wrap font-mono leading-relaxed" id="m-items">—</div>
+      <p id="m-total" class="text-right font-mono font-bold text-lg">—</p>
+
+      <div id="editBlock" class="space-y-5 border-t border-gray-100 pt-6">
+        <h3 class="text-sm font-bold">取貨方式</h3>
+        <div id="fulfillOptions" class="space-y-3"></div>
+
+        <h3 class="text-sm font-bold pt-2">聯絡資料</h3>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1" for="m-name">姓名</label>
+            <input id="m-name" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1" for="m-phone">電話</label>
+            <input id="m-phone" type="tel" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1" for="m-snsType">SNS 類型</label>
+              <select id="m-snsType" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple">
+                <option value="facebook">Facebook</option>
+                <option value="instagram">Instagram</option>
+                <option value="whatsapp">WhatsApp</option>
+                <option value="discord">Discord</option>
+                <option value="other">其他</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-gray-500 mb-1" for="m-snsContact">SNS 帳號</label>
+              <input id="m-snsContact" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+            </div>
+          </div>
+          <p class="text-[11px] text-gray-400">電郵無法在此更改（用於驗證身份）。</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button type="button" id="btnSave"
+            class="flex-1 py-3.5 bg-black text-white font-bold rounded-xl hover:bg-tech-purple hover:text-black transition-colors">
+            儲存變更
+          </button>
+          <button type="button" id="btnCancel"
+            class="flex-1 py-3.5 border-2 border-red-500 text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors">
+            取消預購
+          </button>
+        </div>
+      </div>
+
+      <div id="readonlyBlock" class="hidden border-t border-gray-100 pt-6 text-sm text-gray-600 leading-relaxed">
+        <p id="readonlyMsg">此預購已無法線上修改。</p>
+        <a id="readonlyDiscord" href="https://discord.gg/staryume" target="_blank" rel="noopener noreferrer"
+          class="inline-flex mt-4 text-sm font-bold underline decoration-tech-purple underline-offset-4">聯絡 Discord 客服</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const DISCORD = (typeof storeConfig !== 'undefined' && storeConfig.twCheckout && storeConfig.twCheckout.discordInvite)
+      || 'https://discord.gg/staryume';
+
+    let currentOrder = null;
+    let lookupEmail = '';
+
+    function fulfillOptionsFromConfig() {
+      const tw = (typeof storeConfig !== 'undefined' && storeConfig.twCheckout) || {};
+      return (tw.fulfillment || []).filter((f) => f.enabled !== false);
+    }
+
+    function tLabel(obj, fallback) {
+      if (!obj) return fallback || '';
+      if (typeof obj === 'string') return obj;
+      return obj.zh || obj.en || fallback || '';
+    }
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('alert');
+      if (!msg) {
+        el.classList.add('hidden');
+        el.textContent = '';
+        return;
+      }
+      el.textContent = msg;
+      el.classList.remove('hidden', 'bg-red-50', 'border-red-100', 'text-red-700', 'bg-emerald-50', 'border-emerald-100', 'text-emerald-800');
+      if (type === 'ok') {
+        el.classList.add('bg-emerald-50', 'border-emerald-100', 'text-emerald-800');
+      } else {
+        el.classList.add('bg-red-50', 'border-red-100', 'text-red-700');
+      }
+    }
+
+    function resolveEndpoint() {
+      const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1' || location.hostname === '[::1]';
+      const tw = (typeof storeConfig !== 'undefined' && storeConfig.twCheckout) || {};
+      if (isLocal) return (tw.scriptUrlDirect || tw.scriptUrl || '').trim();
+      return (tw.scriptUrl || '/api/hk-order').trim() || '/api/hk-order';
+    }
+
+    async function api(body) {
+      const url = resolveEndpoint();
+      if (!url) throw new Error('後端尚未設定');
+      const useProxy = url.startsWith('/') || url.includes('/api/hk-order');
+      const res = await fetch(url, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: {
+          'Content-Type': useProxy
+            ? 'application/json;charset=utf-8'
+            : 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify(body),
+      });
+      const text = await res.text();
+      let data = null;
+      try {
+        if (text && text.trim().startsWith('{')) data = JSON.parse(text);
+      } catch (e) { data = null; }
+      if (!data) throw new Error('伺服器無回應，請稍後再試');
+      return data;
+    }
+
+    function fillForm(order) {
+      currentOrder = order;
+      document.getElementById('manageCard').classList.remove('hidden');
+      document.getElementById('m-orderId').textContent = order.orderId || '—';
+      document.getElementById('m-items').textContent = order.itemsText || '—';
+      const total = order.total != null ? order.total : '—';
+      document.getElementById('m-total').textContent = '合計 NT$ ' + total + '（取貨時支付）';
+
+      const cancelled = order.status === 'cancelled';
+      const editable = !!order.editable && !cancelled;
+      document.getElementById('m-status').textContent = cancelled ? '已取消' : (editable ? '可修改' : '已鎖定');
+      document.getElementById('m-status').className = 'text-sm font-bold ' + (cancelled ? 'text-red-600' : (editable ? 'text-emerald-700' : 'text-gray-500'));
+
+      if (order.editableUntil) {
+        const d = new Date(order.editableUntil);
+        document.getElementById('m-deadline').textContent = editable
+          ? ('修改期限：' + d.toLocaleString('zh-TW', { hour12: false }))
+          : ('已於 ' + d.toLocaleString('zh-TW', { hour12: false }) + ' 截止');
+      } else {
+        document.getElementById('m-deadline').textContent = '';
+      }
+
+      document.getElementById('m-name').value = order.name || '';
+      document.getElementById('m-phone').value = order.phone || '';
+      document.getElementById('m-snsType').value = order.snsType || 'discord';
+      document.getElementById('m-snsContact').value = order.snsContact || '';
+
+      const box = document.getElementById('fulfillOptions');
+      const opts = fulfillOptionsFromConfig();
+      const selected = order.fulfillmentId || (opts[0] && opts[0].id) || 'ff47_day1';
+      box.innerHTML = opts.map((m) => `
+        <label class="option-card flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer ${editable ? '' : 'opacity-60 pointer-events-none'}">
+          <input type="radio" name="fulfillment" value="${m.id}" class="mt-1 accent-black" ${m.id === selected ? 'checked' : ''} ${editable ? '' : 'disabled'}>
+          <span>
+            <span class="block font-bold text-sm">${tLabel(m.label, m.id)}</span>
+            <span class="block text-xs text-gray-500 mt-1 leading-relaxed">${tLabel(m.desc, '')}</span>
+          </span>
+        </label>
+      `).join('') || '<p class="text-sm text-red-600">無法載入取貨選項</p>';
+
+      document.getElementById('editBlock').classList.toggle('hidden', !editable);
+      document.getElementById('readonlyBlock').classList.toggle('hidden', editable);
+      document.getElementById('readonlyDiscord').href = DISCORD;
+      if (!editable) {
+        document.getElementById('readonlyMsg').textContent = cancelled
+          ? '此預購已取消。如有疑問請聯絡 Discord 客服。'
+          : '已超過 24 小時修改期限，無法再線上更改。請聯絡 Discord 客服。';
+      }
+
+      // disable inputs when locked
+      ['m-name', 'm-phone', 'm-snsType', 'm-snsContact'].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = !editable;
+      });
+    }
+
+    async function doLookup() {
+      showAlert('');
+      const orderId = document.getElementById('orderId').value.trim();
+      const email = document.getElementById('email').value.trim();
+      if (!orderId || !email) {
+        showAlert('請填寫訂單編號與電郵。');
+        return;
+      }
+      lookupEmail = email;
+      const btn = document.getElementById('btnLookup');
+      btn.disabled = true;
+      btn.textContent = '查詢中…';
+      try {
+        const data = await api({ action: 'get', orderId, email });
+        if (!data.ok) {
+          showAlert(data.message || data.error || '查詢失敗');
+          document.getElementById('manageCard').classList.add('hidden');
+          return;
+        }
+        fillForm(data.order);
+        showAlert('已載入訂單。', 'ok');
+      } catch (e) {
+        showAlert(e.message || '查詢失敗');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '查詢';
+      }
+    }
+
+    async function doSave() {
+      if (!currentOrder) return;
+      showAlert('');
+      const fulfillmentEl = document.querySelector('input[name="fulfillment"]:checked');
+      const fulfillmentId = fulfillmentEl ? fulfillmentEl.value : '';
+      const opts = fulfillOptionsFromConfig();
+      const m = opts.find((x) => x.id === fulfillmentId);
+      const payload = {
+        action: 'update',
+        orderId: currentOrder.orderId,
+        email: lookupEmail,
+        name: document.getElementById('m-name').value.trim(),
+        phone: document.getElementById('m-phone').value.trim(),
+        snsType: document.getElementById('m-snsType').value,
+        snsContact: document.getElementById('m-snsContact').value.trim(),
+        fulfillmentId,
+        fulfillmentLabel: tLabel(m && m.label, fulfillmentId),
+      };
+      const btn = document.getElementById('btnSave');
+      btn.disabled = true;
+      btn.textContent = '儲存中…';
+      try {
+        const data = await api(payload);
+        if (!data.ok) {
+          showAlert(data.message || data.error || '儲存失敗');
+          return;
+        }
+        fillForm(data.order);
+        showAlert('已儲存變更，確認信將寄至你的電郵。', 'ok');
+      } catch (e) {
+        showAlert(e.message || '儲存失敗');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '儲存變更';
+      }
+    }
+
+    async function doCancel() {
+      if (!currentOrder) return;
+      if (!confirm('確定要取消這筆預購嗎？取消後無法復原（24 小時內可再重新下單，仍受規則限制）。')) return;
+      showAlert('');
+      const btn = document.getElementById('btnCancel');
+      btn.disabled = true;
+      try {
+        const data = await api({
+          action: 'cancel',
+          orderId: currentOrder.orderId,
+          email: lookupEmail,
+        });
+        if (!data.ok) {
+          showAlert(data.message || data.error || '取消失敗');
+          return;
+        }
+        showAlert('預購已取消。', 'ok');
+        // reload
+        const again = await api({ action: 'get', orderId: currentOrder.orderId, email: lookupEmail });
+        if (again.ok) fillForm(again.order);
+        else document.getElementById('manageCard').classList.add('hidden');
+      } catch (e) {
+        showAlert(e.message || '取消失敗');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(location.search);
+      const oid = params.get('orderId');
+      if (oid) document.getElementById('orderId').value = oid;
+      document.getElementById('btnLookup').addEventListener('click', doLookup);
+      document.getElementById('btnSave').addEventListener('click', doSave);
+      document.getElementById('btnCancel').addEventListener('click', doCancel);
+      document.getElementById('readonlyDiscord').href = DISCORD;
+    });
+  </script>
+</body>
+</html>

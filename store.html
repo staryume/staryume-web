@@ -780,8 +780,8 @@
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
-                if(notice) notice.innerText = "PRE-ORDER: FF47 取貨 · 7-11 MYSHIP";
-                if(shipText) shipText.innerText = "Taiwan: ACGHK 預購 → FF47 現場取貨；其他商品可走 7-11 Myship。";
+                if(notice) notice.innerHTML = 'PRE-ORDER: FF47 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理預購</a>';
+                if(shipText) shipText.innerText = "Taiwan: FF47 預購（現場付款）；下單後 24 小時內可修改／取消。";
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
