@@ -41,11 +41,11 @@ Google Sheet **File → Version history** is also available for accidental undos
 
 ### TW pre-order manage
 
-- Customer page: **`https://staryu.me/preorder.html`**  
-- Lookup: Order ID + email  
-- Edit/cancel window: **24 hours** after order  
-- Same email cannot create another TW pre-order within **24 hours**  
-- New TW pre-orders freeze from **2026-08-20 00:00 +08** (`NEW_TW_PREORDER_UNTIL_ISO` in Code.gs)
+- Customer page: **`https://staryu.me/preorder.html`** (also linked from Taiwan store bar + checkout success)  
+- Lookup: Order ID + email (URL may include `?orderId=TW-…`)  
+- **Edit / cancel until:** 24 hours **before** FF47 Day 1 → **`2026-08-20 00:00 +08`** (`TW_PREORDER_DEADLINE_ISO` in Code.gs)  
+- Same email cannot create another TW pre-order within **24 hours** of a previous one  
+- New TW pre-orders also freeze at the same deadline
 
 ---
 

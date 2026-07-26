@@ -139,6 +139,20 @@
             </div>
         </div>
 
+        <!-- TW only: manage pre-order entry -->
+        <div id="tw-preorder-bar" class="hidden w-full bg-tech-purple/20 border-b border-tech-purple/40">
+            <div class="max-w-6xl mx-auto px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div class="text-sm text-gray-800 leading-snug">
+                    <p class="font-bold text-black">已有台灣 FF47 預購？</p>
+                    <p class="text-xs text-gray-600 mt-0.5">可修改取貨日／聯絡資料或取消，直到活動開始前 24 小時（2026/8/20 00:00 台北）。需訂單編號 + 下單電郵。</p>
+                </div>
+                <a href="preorder.html"
+                    class="inline-flex items-center justify-center px-5 py-2.5 bg-black text-white text-xs font-bold rounded-full hover:bg-white hover:text-black border border-black transition-colors whitespace-nowrap shadow-sm">
+                    管理預購／取消訂單 →
+                </a>
+            </div>
+        </div>
+
         <div id="shop-closed-banner" class="hidden w-full bg-black text-white text-center py-4 border-b-4 border-tech-purple">
             <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-center gap-2">
                 <span class="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">SHOP CLOSED</span>
@@ -777,16 +791,19 @@
             // Swap cart when region changes (HK / TW bags are separate)
             cart = typeof loadRegionCart === 'function' ? loadRegionCart(region) : {};
 
+            const twBar = document.getElementById('tw-preorder-bar');
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(notice) notice.innerHTML = 'PRE-ORDER: FF47 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理預購</a>';
-                if(shipText) shipText.innerText = "Taiwan: FF47 預購（現場付款）；下單後 24 小時內可修改／取消。";
+                if(shipText) shipText.innerText = "Taiwan: FF47 預購（現場付款）；可管理至 2026/8/20 00:00（活動前 24 小時）。";
+                if(twBar) twBar.classList.remove('hidden');
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(notice) notice.innerText = "PAYMENT: PAYME · FPS";
                 if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
+                if(twBar) twBar.classList.add('hidden');
             }
 
             updateCartUI();

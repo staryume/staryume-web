@@ -79,8 +79,9 @@
       </div>
       <p class="text-xs text-gray-500 mb-4">確認電郵（如有填寫）可能稍後送達，請檢查垃圾郵件匣。</p>
       <div id="successPreorderManage" class="hidden mb-4 p-4 rounded-xl border border-tech-purple/40 bg-tech-purple/10 text-left text-xs text-gray-700 leading-relaxed">
-        <p class="font-bold text-black text-sm mb-1">24 小時內可管理預購</p>
-        <p class="mb-3">可修改取貨日／聯絡資料，或取消預購（需訂單編號 + 下單電郵）。</p>
+        <p class="font-bold text-black text-sm mb-1">可管理預購至 FF47 前 24 小時</p>
+        <p class="mb-2">在 <strong>2026/8/20 00:00（台北）</strong> 前，可修改取貨日／聯絡資料或取消預購（需訂單編號 + 下單電郵）。</p>
+        <p class="mb-3 text-gray-500">請妥善保存訂單編號；也可從商店台灣頁「管理預購」進入。</p>
         <a id="successManageLink" href="./preorder.html"
           class="inline-flex items-center justify-center w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-tech-purple hover:text-black transition text-sm">
           管理我的 FF47 預購
@@ -1084,12 +1085,12 @@
         invalid_json: '訂單格式錯誤，請重新整理後再試。',
         proxy_failed: '伺服器暫時無法連線，請稍後再試。',
         upstream_error: '訂單系統暫時忙碌，請稍後再試。',
-        preorder_closed: '台灣 FF47 預購已截止，無法再建立新預購。',
+        preorder_closed: '台灣 FF47 預購已截止（活動前 24 小時起），無法再建立新預購。',
         preorder_cooldown: '同一電郵 24 小時內只能建立一筆預購。請先管理既有訂單。',
       };
       if (result && result.message) return result.message;
       if (code === 'preorder_cooldown' && result && result.orderId) {
-        return '同一電郵 24 小時內只能建立一筆預購。請管理訂單 ' + result.orderId + '：preorder.html';
+        return '同一電郵 24 小時內只能建立一筆預購。請管理訂單：preorder.html?orderId=' + result.orderId;
       }
       return map[code] || code || '請稍後再試，或聯絡賣家。';
     }

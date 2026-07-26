@@ -12,10 +12,15 @@ var MAX_PROOF_BYTES = 6000000;
 var STORE_NAME = 'staryume';
 var SELLER_NOTIFY_EMAIL = 'staryume@gmail.com';
 
-var EDIT_WINDOW_HOURS = 24;
+/** Same email cannot place another TW pre-order within this many hours. */
 var NEW_ORDER_COOLDOWN_HOURS = 24;
-/** Stop NEW Taiwan pre-orders from this instant (Taipei / +08). 24h before FF47 Day1 2026-08-21. */
-var NEW_TW_PREORDER_UNTIL_ISO = '2026-08-20T00:00:00+08:00';
+/**
+ * Deadline for BOTH:
+ *  - creating NEW Taiwan FF47 pre-orders
+ *  - customer edit / cancel of existing TW pre-orders
+ * = 24 hours before FF47 Day 1 (2026-08-21) → 2026-08-20 00:00 Taipei (+08)
+ */
+var TW_PREORDER_DEADLINE_ISO = '2026-08-20T00:00:00+08:00';
 
 var HEADERS = [
   'Timestamp', 'Order ID', 'Items', 'Total', 'Name', 'Email', 'Phone',
@@ -87,12 +92,12 @@ function handleCreate_(data) {
 
   // TW pre-order gates
   if (region === 'TW' && orderType === 'preorder') {
-    var closed = twNewOrdersClosed_();
+    var closed = twDeadlinePassed_();
     if (closed) {
       return jsonOut_({
         ok: false,
         error: 'preorder_closed',
-        message: '台灣 FF47 預購已截止，無法再建立新預購。如已有訂單請使用管理頁修改／取消。'
+        message: '台灣 FF47 預購已截止（活動前 24 小時起），無法再建立新預購。如已有訂單且仍在期限內，請至管理頁修改／取消。'
       });
     }
     var cool = findRecentTwPreorderByEmail_(email);
@@ -181,7 +186,7 @@ function handleCreate_(data) {
     proofUrl: proofUrl || null,
     proofError: proofError || null,
     editableUntil: orderType === 'preorder' && region === 'TW'
-      ? new Date(now.getTime() + EDIT_WINDOW_HOURS * 3600 * 1000).toISOString()
+      ? twDeadlineDate_().toISOString()
       : null
   });
 }
@@ -198,7 +203,11 @@ function handleUpdate_(data) {
   var found = findTwPreorder_(data.orderId, data.email);
   if (!found.ok) return jsonOut_(found);
   if (!found.editable) {
-    return jsonOut_({ ok: false, error: 'edit_window_closed', message: '已超過 24 小時修改期限。' });
+    return jsonOut_({
+      ok: false,
+      error: 'edit_window_closed',
+      message: '已超過可修改期限（Fancy Frontier 47 開始前 24 小時截止）。請聯絡 Discord 客服。'
+    });
   }
   if (found.values[col_('Status') - 1] === 'cancelled') {
     return jsonOut_({ ok: false, error: 'cancelled', message: '此預購已取消。' });
@@ -245,7 +254,11 @@ function handleCancel_(data) {
   var found = findTwPreorder_(data.orderId, data.email);
   if (!found.ok) return jsonOut_(found);
   if (!found.editable) {
-    return jsonOut_({ ok: false, error: 'edit_window_closed', message: '已超過 24 小時取消期限。' });
+    return jsonOut_({
+      ok: false,
+      error: 'edit_window_closed',
+      message: '已超過可取消期限（Fancy Frontier 47 開始前 24 小時截止）。請聯絡 Discord 客服。'
+    });
   }
   if (found.values[col_('Status') - 1] === 'cancelled') {
     return jsonOut_({ ok: false, error: 'cancelled', message: '此預購已取消。' });
@@ -271,12 +284,12 @@ function handleCancel_(data) {
 function handleCheck_(data) {
   var email = normalizeEmail_(data.email);
   if (!email) return jsonOut_({ ok: false, error: 'missing_fields' });
-  if (twNewOrdersClosed_()) {
+  if (twDeadlinePassed_()) {
     return jsonOut_({
       ok: true,
       canCreate: false,
       reason: 'preorder_closed',
-      message: '台灣 FF47 預購已截止。'
+      message: '台灣 FF47 預購已截止（活動前 24 小時起）。'
     });
   }
   var cool = findRecentTwPreorderByEmail_(email);
@@ -377,13 +390,17 @@ function normalizeEmail_(e) {
   return String(e || '').trim().toLowerCase();
 }
 
-function twNewOrdersClosed_() {
+function twDeadlineDate_() {
   try {
-    var until = new Date(NEW_TW_PREORDER_UNTIL_ISO);
-    return new Date() >= until;
+    return new Date(TW_PREORDER_DEADLINE_ISO);
   } catch (e) {
-    return false;
+    return new Date('2026-08-20T00:00:00+08:00');
   }
+}
+
+/** After this instant: no new TW pre-orders; no customer edit/cancel. */
+function twDeadlinePassed_() {
+  return new Date() >= twDeadlineDate_();
 }
 
 function findRecentTwPreorderByEmail_(email) {
@@ -447,15 +464,14 @@ function findTwPreorder_(orderId, email) {
     var status = String(rowVals[col_('Status') - 1] || '');
     var ts = rowVals[col_('Timestamp') - 1];
     var t = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
-    var editable = status.toLowerCase().indexOf('cancel') < 0 &&
-      t && !isNaN(t) &&
-      (Date.now() - t) <= EDIT_WINDOW_HOURS * 3600 * 1000;
+    var cancelled = status.toLowerCase().indexOf('cancel') >= 0;
+    var editable = !cancelled && !twDeadlinePassed_();
     return {
       ok: true,
       row: i + 2,
       values: rowVals,
       editable: editable,
-      editableUntil: t ? new Date(t + EDIT_WINDOW_HOURS * 3600 * 1000).toISOString() : null
+      editableUntil: twDeadlineDate_().toISOString()
     };
   }
   return { ok: false, error: 'not_found', message: '找不到訂單。' };
@@ -466,8 +482,7 @@ function publicOrder_(row, values) {
   var t = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
   var status = String(values[col_('Status') - 1] || 'new');
   var cancelled = status.toLowerCase().indexOf('cancel') >= 0;
-  var editable = !cancelled && t && !isNaN(t) &&
-    (Date.now() - t) <= EDIT_WINDOW_HOURS * 3600 * 1000;
+  var editable = !cancelled && !twDeadlinePassed_();
   return {
     orderId: String(values[col_('Order ID') - 1] || ''),
     itemsText: String(values[col_('Items') - 1] || ''),
@@ -484,7 +499,7 @@ function publicOrder_(row, values) {
     orderType: 'preorder',
     createdAt: t ? new Date(t).toISOString() : null,
     editable: editable,
-    editableUntil: t ? new Date(t + EDIT_WINDOW_HOURS * 3600 * 1000).toISOString() : null
+    editableUntil: twDeadlineDate_().toISOString()
   };
 }
 
@@ -573,9 +588,11 @@ function sendOrderEmail_(info) {
     lines.push('感謝你在 staryu.me 完成' + regionLabel + '登記。');
     lines.push('我們已收到你的預購；請依所選時段到場取貨並付款。');
     lines.push('');
-    lines.push('【重要】提交後 24 小時內可修改取貨日／聯絡資料或取消：');
+    lines.push('【重要】可修改取貨日／聯絡資料或取消預購，截止時間：');
+    lines.push('Fancy Frontier 47 開始前 24 小時（2026/8/20 00:00 台北時間）為止。');
+    lines.push('管理頁（訂單編號 + 下單電郵）：');
     lines.push('https://staryu.me/preorder.html?orderId=' + encodeURIComponent(info.orderId || ''));
-    lines.push('（需使用下單時的電郵驗證）');
+    lines.push('或從商店台灣頁「管理預購」進入。');
   } else {
     lines.push('感謝你在 staryu.me 完成' + regionLabel + '訂單。');
     lines.push('我們已收到你的訂單與付款證明，核對後會安排出貨／取貨。');

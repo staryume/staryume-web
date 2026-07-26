@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>管理 FF47 預購 | STARYUME</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="查詢、修改或取消台灣 FF47 預購（下單後 24 小時內）">
+  <meta name="description" content="查詢、修改或取消台灣 FF47 預購（活動開始前 24 小時內可管理）">
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
   <script>
@@ -58,7 +58,9 @@
     <p class="text-[10px] font-tech tracking-widest text-gray-400 mb-2">TAIWAN FF47 PRE-ORDER</p>
     <h1 class="text-3xl font-bold font-tech tracking-tight mb-2">管理預購</h1>
     <p class="text-sm text-gray-500 mb-8 leading-relaxed">
-      使用確認電郵中的<strong>訂單編號</strong>與下單<strong>電郵</strong>查詢。提交後 <strong>24 小時內</strong>可修改取貨日／聯絡資料或取消預購。無法更改商品內容。
+      使用確認電郵中的<strong>訂單編號</strong>與下單<strong>電郵</strong>查詢。
+      可修改取貨日／聯絡資料或取消預購，直到 <strong>Fancy Frontier 47 開始前 24 小時</strong>
+      （<strong>2026/8/20 00:00</strong> 台北時間）為止。無法更改商品內容。
     </p>
 
     <div id="alert" class="hidden mb-6 text-sm rounded-xl px-4 py-3 border"></div>
@@ -262,7 +264,7 @@
       if (!editable) {
         document.getElementById('readonlyMsg').textContent = cancelled
           ? '此預購已取消。如有疑問請聯絡 Discord 客服。'
-          : '已超過 24 小時修改期限，無法再線上更改。請聯絡 Discord 客服。';
+          : '已超過可修改期限（FF47 開始前 24 小時截止），無法再線上更改。請聯絡 Discord 客服。';
       }
 
       // disable inputs when locked
@@ -340,7 +342,7 @@
 
     async function doCancel() {
       if (!currentOrder) return;
-      if (!confirm('確定要取消這筆預購嗎？取消後無法復原（24 小時內可再重新下單，仍受規則限制）。')) return;
+      if (!confirm('確定要取消這筆預購嗎？取消後無法復原。若仍在活動前 24 小時截止前，可用同一電郵重新下單（仍受 24 小時一筆預購限制）。')) return;
       showAlert('');
       const btn = document.getElementById('btnCancel');
       btn.disabled = true;
