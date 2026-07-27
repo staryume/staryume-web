@@ -1,0 +1,12 @@
+{
+  "name": "staryume-web",
+  "private": true,
+  "description": "Static staryu.me site — test harness for pure store helpers",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

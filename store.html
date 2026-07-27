@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>STORE | STARYUME WEB</title>
-    
+    <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -174,7 +175,7 @@
         <footer class="bg-black text-white py-12 px-6 border-t-4 border-tech-purple mt-auto">
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-6 md:mb-0"><h2 class="text-2xl font-tech font-bold">STARYUME WEB</h2><p class="text-xs text-gray-500 font-mono mt-1">SYSTEM ONLINE // ALL RIGHTS RESERVED 2026</p></div>
-                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="#" class="hover:text-tech-purple transition-colors">X</a><a href="#" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="#" class="hover:text-tech-purple transition-colors">MAIL</a></div>
+                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" class="hover:text-tech-purple transition-colors">MAIL</a></div>
             </div>
         </footer>
     </div>
@@ -219,7 +220,7 @@
     <aside id="bag-drawer" class="fixed top-0 right-0 h-full w-full max-w-md bg-white z-[100] shadow-2xl flex flex-col transform translate-x-full transition-transform duration-300 ease-out" aria-label="Shopping bag">
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
-                <p class="text-[10px] font-tech tracking-widest text-gray-400 uppercase">Hong Kong Online Store</p>
+                <p id="bag-region-label" class="text-[10px] font-tech tracking-widest text-gray-400 uppercase">Hong Kong Online Store</p>
                 <h2 class="text-lg font-bold">購物車 <span id="bag-header-count" class="text-gray-400 font-mono text-sm font-normal"></span></h2>
             </div>
             <button type="button" onclick="closeBagDrawer()" class="w-10 h-10 rounded-full hover:bg-gray-100 text-gray-500 hover:text-black transition-colors text-xl" aria-label="Close bag">✕</button>
@@ -668,7 +669,7 @@
                 const useCart = typeof productUsesTwCart === 'function' ? productUsesTwCart(product) : !!product.useTwCart;
                 if (useCart && twOn) {
                     actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車 · FF47 預購</button>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">Fancy Frontier 47 現場取貨 · PayMe / FPS</p>`;
+                    <p class="text-[11px] text-gray-400 text-center mt-2">Fancy Frontier 47 現場取貨 · 到場付款（預購無需線上轉帳）</p>`;
                 } else if (product.linkTW) {
                     actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
                 } else {
@@ -739,7 +740,9 @@
                 const p = storeProducts.find((x) => String(x.id) === String(id));
                 if (p && (p.hidden || p.contentRating === 'r18')) delete cart[id];
             });
-            if (typeof saveHkCart === 'function') saveHkCart(cart);
+            // Always save the *current* region bag (HK and TW carts are separate)
+            if (typeof saveRegionCart === 'function') saveRegionCart(currentRegion, cart);
+            else if (typeof saveHkCart === 'function') saveHkCart(cart);
             updateCartUI();
             renderCategories();
             renderAllSections();
@@ -792,18 +795,21 @@
             cart = typeof loadRegionCart === 'function' ? loadRegionCart(region) : {};
 
             const twBar = document.getElementById('tw-preorder-bar');
+            const bagRegionLabel = document.getElementById('bag-region-label');
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(notice) notice.innerHTML = 'PRE-ORDER: FF47 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>';
                 if(shipText) shipText.innerText = "Taiwan: FF47 預購（現場付款）；可管理至 2026/8/20 00:00（活動前 24 小時）。";
                 if(twBar) twBar.classList.remove('hidden');
+                if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan Pre-order · FF47';
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(notice) notice.innerText = "PAYMENT: PAYME · FPS";
                 if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
                 if(twBar) twBar.classList.add('hidden');
+                if(bagRegionLabel) bagRegionLabel.textContent = 'Hong Kong Online Store';
             }
 
             updateCartUI();

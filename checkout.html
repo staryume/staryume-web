@@ -16,7 +16,7 @@
   </script>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
@@ -134,7 +134,7 @@
             <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Total</span>
             <span id="summaryTotal" class="text-2xl font-bold font-mono">HKD$ 0</span>
           </div>
-          <p class="text-[11px] text-gray-400 mt-3 leading-relaxed">價格以港幣 HKD 計算。送出訂單前請確認商品與數量。</p>
+          <p id="summaryCurrencyNote" class="text-[11px] text-gray-400 mt-3 leading-relaxed">價格以港幣 HKD 計算。送出訂單前請確認商品與數量。</p>
         </div>
       </aside>
     </div>
@@ -270,6 +270,12 @@
       document.title = checkoutRegion === 'TW'
         ? 'Checkout · 台灣預購 | STARYUME'
         : 'Checkout · 香港結帳 | STARYUME';
+      const currencyNote = document.getElementById('summaryCurrencyNote');
+      if (currencyNote) {
+        currencyNote.textContent = checkoutRegion === 'TW'
+          ? '價格以新台幣 TWD 計算。預購於 FF47 現場取貨付款；送出前請確認商品與數量。'
+          : '價格以港幣 HKD 計算。送出訂單前請確認商品與數量。';
+      }
     }
 
     function redirectIfEmpty() {
@@ -759,14 +765,14 @@
       }
     }
 
-    function validateStep() {
-      readContactFromDom();
-      const id = STEPS[stepIndex].id;
+    /** Validate a single step by id (does not change stepIndex). */
+    function validateStepById(id) {
       const lines = cartLines();
 
       if (id === 'bag') {
         if (!lines.length) return '購物車是空的。';
         if (lines.some((l) => l.soldOut)) return '購物車含完售商品，請先移除。';
+        if (cartTotal() <= 0) return '訂單金額無效，請返回商店重新加入商品。';
         return '';
       }
       if (id === 'contact') {
@@ -805,6 +811,21 @@
           return '請確認已滿 18 歲且可合法購買此訂單內容。';
         }
         return '';
+      }
+      return '';
+    }
+
+    function validateStep() {
+      readContactFromDom();
+      return validateStepById(STEPS[stepIndex].id);
+    }
+
+    /** Full gauntlet before final submit (all steps, not only the last panel). */
+    function validateAllSteps() {
+      readContactFromDom();
+      for (let i = 0; i < STEPS.length; i++) {
+        const err = validateStepById(STEPS[i].id);
+        if (err) return err;
       }
       return '';
     }
@@ -897,7 +918,7 @@
 
     async function submitOrder() {
       readContactFromDom();
-      const err = validateStep();
+      const err = validateAllSteps();
       if (err) {
         showError(err);
         return;
@@ -1041,6 +1062,15 @@
           return;
         }
 
+        // Paid HK: never treat proof upload failure as success (keep cart)
+        if (result && result.proofError && !isPreorder) {
+          console.error('[checkout] proof error', result.proofError);
+          showError(humanizeOrderError('proof_upload_failed', result));
+          next.disabled = false;
+          next.textContent = '提交訂單 · Place order';
+          return;
+        }
+
         if (!res.ok && !result) {
           showError('提交失敗（伺服器 ' + res.status + '），請稍後再試。');
           next.disabled = false;
@@ -1094,7 +1124,11 @@
         rate_limited: '提交過於頻繁，請稍後再試。',
         body_too_large: '付款截圖過大，請換較小的圖片。',
         missing_proof: '請上載付款截圖。',
+        proof_upload_failed: '付款截圖上載失敗，訂單尚未完成，請換圖或稍後再試。',
+        invalid_proof_type: '付款截圖格式無效，請上載圖片檔。',
         missing_fields: '訂單資料不完整，請返回檢查。',
+        missing_items: '購物車沒有有效商品，請返回商店。',
+        invalid_total: '訂單金額無效，請返回檢查購物車。',
         invalid_json: '訂單格式錯誤，請重新整理後再試。',
         proxy_failed: '伺服器暫時無法連線，請稍後再試。',
         upstream_error: '訂單系統暫時忙碌，請稍後再試。',

@@ -6,6 +6,7 @@ Disallow: /admin.html
 Disallow: /admin/
 Disallow: /docs/
 Disallow: /checkout.html
+Disallow: /preorder.html
 Disallow: /hk-form.html
 Disallow: /api/
 

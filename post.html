@@ -30,7 +30,7 @@
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
-    <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">    
+    <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
@@ -192,7 +192,7 @@
         <footer class="bg-black text-white py-12 px-6 border-t-4 border-tech-purple mt-auto">
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-6 md:mb-0"><h2 class="text-2xl font-tech font-bold">STARYUME WEB</h2><p class="text-xs text-gray-500 font-mono mt-1">SYSTEM ONLINE // ALL RIGHTS RESERVED 2026</p></div>
-                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" target="_blank" class="hover:text-tech-purple transition-colors">MAIL</a></div>
+                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" class="hover:text-tech-purple transition-colors">MAIL</a></div>
             </div>
         </footer>
 
@@ -251,8 +251,29 @@
                 : eventUiStrings.jp;
         }
 
+        function htmlLangFor(lang) {
+            if (lang === 'en') return 'en';
+            if (lang === 'zh') return 'zh-Hant';
+            return 'ja';
+        }
+
+        function applyStoreLinksForLang(lang) {
+            const internalShop = "store.html";
+            const boothShop = "https://staryume.booth.pm/";
+            const isChinese = (lang === 'zh');
+            const targetLink = isChinese ? internalShop : boothShop;
+            const targetTarget = isChinese ? "_self" : "_blank";
+            const dLink = document.getElementById('desktop-store-link');
+            if (dLink) { dLink.href = targetLink; dLink.target = targetTarget; }
+            const mLink = document.getElementById('mobile-store-link');
+            if (mLink) { mLink.href = targetLink; mLink.target = targetTarget; }
+        }
+
         function init() {
+            // Apply STORE routing for saved lang before post may force a content fallback
             document.getElementById('currentLangDisplay').innerText = currentLang.toUpperCase();
+            document.documentElement.lang = htmlLangFor(currentLang);
+            applyStoreLinksForLang(currentLang);
             loadPostData();
             setupEventModalGestures();
             document.addEventListener('keydown', (e) => {
@@ -282,9 +303,19 @@
                     );
                     if (availableLang) {
                         currentLang = availableLang;
+                        document.documentElement.lang = htmlLangFor(currentLang);
+                        const displayEl = document.getElementById('currentLangDisplay');
+                        if (displayEl) displayEl.innerText = currentLang.toUpperCase();
+                        // Do not overwrite user's preferred siteLang; only sync on-page chrome + STORE for this view
+                        applyStoreLinksForLang(currentLang);
                         const noticeDiv = document.createElement('div');
                         noticeDiv.className = "bg-tech-purple text-black text-xs font-bold px-4 py-2 mb-8 text-center";
-                        noticeDiv.innerHTML = `NOTE: This post is only available in ${availableLang.toUpperCase()}.`;
+                        const noticeMap = {
+                            jp: `NOTE: この投稿は ${availableLang.toUpperCase()} のみです。`,
+                            en: `NOTE: This post is only available in ${availableLang.toUpperCase()}.`,
+                            zh: `NOTE: 此文章僅提供 ${availableLang.toUpperCase()} 版本。`,
+                        };
+                        noticeDiv.textContent = noticeMap[availableLang] || noticeMap.en;
                         
                         const contentBox = document.getElementById('post-content');
                         contentBox.insertBefore(noticeDiv, contentBox.firstChild);
@@ -571,14 +602,9 @@
         function switchLang(lang) {
             currentLang = lang;
             localStorage.setItem('siteLang', lang);
+            document.documentElement.lang = htmlLangFor(lang);
             document.getElementById('currentLangDisplay').innerText = lang.toUpperCase();
-            const internalShop = "store.html";
-            const boothShop = "https://staryume.booth.pm/"; 
-            const isChinese = (lang === 'zh');
-            const targetLink = isChinese ? internalShop : boothShop;
-            const targetTarget = isChinese ? "_self" : "_blank"; 
-            const dLink = document.getElementById('desktop-store-link'); if(dLink) { dLink.href = targetLink; dLink.target = targetTarget; }
-            const mLink = document.getElementById('mobile-store-link'); if(mLink) { mLink.href = targetLink; mLink.target = targetTarget; }
+            applyStoreLinksForLang(lang);
             
             // Clear content before reloading to prevent duplicates
             document.getElementById('post-content').innerHTML = ''; 

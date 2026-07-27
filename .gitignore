@@ -15,6 +15,7 @@ CLAUDE.md
 *.swp
 *.swo
 
-# Dependencies (if Node.js is ever added)
+# Dependencies
 node_modules/
+
 

@@ -8,15 +8,16 @@
     <meta name="description" content="Portfolio of Illustrator staryume. イラストレーター「星遥ゆめ」のウェブサイト">
     <meta name="author" content="staryume">
 
-    <meta property="og:title" content="STARYUME WEB | Portfolio of Illustrator staryume">
+    <meta property="og:title" content="GALLERY | STARYUME WEB">
     <meta property="og:description" content="Portfolio of Illustrator staryume. イラストレーター「星遥ゆめ」のウェブサイト">
-    <meta property="og:image" content="https://staryu.me/coreimg/hero1.jpg"> <meta property="og:url" content="https://staryu.me/">
+    <meta property="og:image" content="https://staryu.me/assets/coreimg/hero1.jpg">
+    <meta property="og:url" content="https://staryu.me/gallery.html">
     <meta property="og:type" content="website">
 
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="STARYUME WEB | staryume Portfolio">
+    <meta name="twitter:title" content="GALLERY | STARYUME WEB">
     <meta name="twitter:description" content="Portfolio of Illustrator staryume. イラストレーター「星遥ゆめ」のウェブサイト">
-    <meta name="twitter:image" content="https://staryu.me/coreimg/hero1.jpg">
+    <meta name="twitter:image" content="https://staryu.me/assets/coreimg/hero1.jpg">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
     <script>
@@ -29,7 +30,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">    
+    <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
@@ -148,8 +149,7 @@
             <div class="flex space-x-6 text-sm font-bold text-gray-400 font-tech tracking-wider">
                 <button onclick="filterGallery('ALL')" class="filter-btn text-black border-b-2 border-tech-purple pb-1 transition-colors" data-filter="ALL">ALL</button>
                 <button onclick="filterGallery('FANART')" class="filter-btn hover:text-black transition-colors" data-filter="FANART">FANART</button>
-                <button onclick="filterGallery('ORIGINAL')" class="filter-btn hover:text-black transition-colors" data-filter="ORIGINAL">ORIGINAL</button>
-                <button onclick="filterGallery('COMMERCIAL')" class="filter-btn hover:text-black transition-colors" data-filter="COMMERCIAL">COMMERCIAL</button>
+                <!-- ORIGINAL / COMMERCIAL filters return when gallery items use those tags -->
             </div>
         </div>
 
@@ -171,8 +171,19 @@
         let currentFilter = 'ALL';
 
         function init() {
-            document.getElementById('currentLangDisplay').innerText = currentLang.toUpperCase();
-            renderGallery();
+            switchLang(currentLang);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const lb = document.getElementById('lightbox');
+                    if (lb && !lb.classList.contains('hidden')) lb.classList.add('hidden');
+                }
+            });
+        }
+
+        function htmlLangFor(lang) {
+            if (lang === 'en') return 'en';
+            if (lang === 'zh') return 'zh-Hant';
+            return 'ja';
         }
 
         function renderGallery() {
@@ -184,7 +195,7 @@
             // REMOVED "VIEW" TEXT below
             grid.innerHTML = filtered.map(item => `
                 <div class="break-inside-avoid group relative cursor-pointer mb-4" onclick="openLightbox('${item.src}')">
-                    <img src="${item.src}" class="w-full h-auto transition-transform duration-500 group-hover:scale-105 border border-transparent group-hover:border-tech-purple">
+                    <img src="${item.src}" alt="${item.tag || 'Gallery'}" class="w-full h-auto transition-transform duration-500 group-hover:scale-105 border border-transparent group-hover:border-tech-purple">
                     <div class="absolute inset-0 bg-tech-purple/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center mix-blend-multiply"></div>
                     <div class="absolute bottom-2 left-2 bg-black text-white text-[10px] px-2 py-0.5 font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300">${item.tag}</div>
                 </div>
@@ -211,6 +222,7 @@
         function switchLang(lang) {
             currentLang = lang;
             localStorage.setItem('siteLang', lang);
+            document.documentElement.lang = htmlLangFor(lang);
             
             // 1. Update Language Display
             const displayEl = document.getElementById('currentLangDisplay');

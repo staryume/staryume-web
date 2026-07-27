@@ -171,7 +171,7 @@ const siteData = {
         "en": {
             "hero_sub": "MANGAKA / ILLUSTRATOR",
             "status_text": "Tokyo - COMIC1☆28 Enrolled",
-            "profile_desc": "staryume<br><br>Mangaka & Illustrator. <br> Opreating Doujin Circle 'Hoshiyumetei'."
+            "profile_desc": "staryume<br><br>Mangaka & Illustrator. <br> Operating Doujin Circle 'Hoshiyumetei'."
         },
         "zh": {
             "hero_sub": "漫畫家 / 插畫家",

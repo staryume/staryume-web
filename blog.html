@@ -5,6 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BLOG | STARYUME WEB</title>
     <meta name="author" content="staryume">
+    <meta name="description" content="News, notices, and diary from illustrator staryume / 星遥ゆめ.">
+
+    <meta property="og:title" content="BLOG | STARYUME WEB">
+    <meta property="og:description" content="News, notices, and diary from illustrator staryume / 星遥ゆめ.">
+    <meta property="og:image" content="https://staryu.me/assets/coreimg/hero1.jpg">
+    <meta property="og:url" content="https://staryu.me/blog.html">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="BLOG | STARYUME WEB">
+    <meta name="twitter:description" content="News, notices, and diary from illustrator staryume / 星遥ゆめ.">
+    <meta name="twitter:image" content="https://staryu.me/assets/coreimg/hero1.jpg">
 
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
     <script>
@@ -16,7 +27,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">   
+    <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">   
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
@@ -113,7 +124,6 @@
                 <div class="flex space-x-6 text-sm font-bold font-tech tracking-wider overflow-x-auto" id="filter-container">
                     <button onclick="filterPosts('ALL')" class="filter-btn active-filter" data-filter="ALL">LATEST</button>
                     <button onclick="filterPosts('NOTICE')" class="filter-btn" data-filter="NOTICE">NOTICE</button>
-                    <button onclick="filterPosts('ACTIVITY')" class="filter-btn" data-filter="ACTIVITY">REPORT</button>
                     <button onclick="filterPosts('NEWS')" class="filter-btn" data-filter="NEWS">NEWS</button>
                     <button onclick="filterPosts('DIARY')" class="filter-btn" data-filter="DIARY">DIARY</button>
                 </div>
@@ -125,7 +135,7 @@
         <footer class="bg-black text-white py-12 px-6 border-t-4 border-tech-purple mt-auto">
             <div class="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center">
                 <div class="mb-6 md:mb-0"><h2 class="text-2xl font-tech font-bold">STARYUME WEB</h2><p class="text-xs text-gray-500 font-mono mt-1">SYSTEM ONLINE // ALL RIGHTS RESERVED 2026</p></div>
-                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" target="_blank" class="hover:text-tech-purple transition-colors">MAIL</a></div>
+                <div class="flex space-x-6 text-sm font-tech tracking-widest"><a href="https://x.com/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">X</a><a href="https://pixiv.me/staryume" target="_blank" rel="noopener noreferrer" class="hover:text-tech-purple transition-colors">PIXIV</a><a href="mailto:staryume@me.com" class="hover:text-tech-purple transition-colors">MAIL</a></div>
             </div>
         </footer>
 
@@ -135,9 +145,14 @@
         let currentLang = localStorage.getItem('siteLang') || 'jp';
         let currentFilter = 'ALL';
 
+        function htmlLangFor(lang) {
+            if (lang === 'en') return 'en';
+            if (lang === 'zh') return 'zh-Hant';
+            return 'ja';
+        }
+
         function init() {
-            document.getElementById('currentLangDisplay').innerText = currentLang.toUpperCase();
-            renderBlog();
+            switchLang(currentLang);
         }
 
           function renderBlog() {
@@ -162,7 +177,7 @@
             grid.innerHTML = activePosts.map(post => `
                 <a href="post.html?id=${post.id}" class="group block bg-white border border-transparent hover:border-gray-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                     <div class="aspect-video overflow-hidden relative">
-                        <img src="${post.img}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        <img src="${post.img}" alt="${(post.title[currentLang] || post.tag || '').replace(/"/g, '&quot;')}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                         <div class="absolute bottom-0 left-0 bg-black text-white text-xs px-2 py-1 font-mono">${post.date}</div>
                         <div class="absolute top-0 right-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1">${post.tag}</div>
                     </div>
@@ -191,6 +206,7 @@
         function switchLang(lang) {
             currentLang = lang;
             localStorage.setItem('siteLang', lang);
+            document.documentElement.lang = htmlLangFor(lang);
             document.getElementById('currentLangDisplay').innerText = lang.toUpperCase();
             const internalShop = "store.html";
             const boothShop = "https://staryume.booth.pm/"; 

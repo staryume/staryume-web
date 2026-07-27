@@ -21,7 +21,8 @@ const storeConfig = {
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
-        "maxProofBytes": 6000000,
+        // Client compresses proofs under ~2.4MB; edge max body is 3.5MB.
+        "maxProofBytes": 3500000,
         "payment": {
             "fps": {
                 "enabled": true,
@@ -74,7 +75,8 @@ const storeConfig = {
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
-        "maxProofBytes": 6000000,
+        // Same limit as hkCheckout / edge (preorder rarely uploads proof)
+        "maxProofBytes": 3500000,
         "payment": {
             "fps": {
                 "enabled": true,
@@ -1353,7 +1355,10 @@ function generateRegionOrderId(region) {
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, "0");
     const day = String(d.getDate()).padStart(2, "0");
-    const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+    // 8 base36 chars (~2.8e12) to reduce same-day collision risk
+    const rand = (Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2))
+        .slice(0, 8)
+        .toUpperCase();
     const prefix = normalizeStoreRegion(region) === "TW" ? "TW" : "HK";
     return prefix + "-" + y + m + day + "-" + rand;
 }

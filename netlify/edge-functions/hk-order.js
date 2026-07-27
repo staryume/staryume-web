@@ -71,8 +71,25 @@ export default async (request) => {
     }
     if (data.totalHkd == null && data.total != null) data.totalHkd = data.total;
 
-    const isPreorder =
+    const totalNum = Number(data.totalHkd != null ? data.totalHkd : data.total);
+    if (!Number.isFinite(totalNum) || totalNum <= 0) {
+      return json({ ok: false, error: "invalid_total" }, 400);
+    }
+    if (!Array.isArray(data.items) || data.items.length === 0) {
+      return json({ ok: false, error: "missing_items" }, 400);
+    }
+
+    // Only Taiwan pre-order may skip payment proof. Never trust client
+    // orderType/paymentMethod alone — HK paid orders always need a screenshot.
+    const region = String(data.region || "HK").toUpperCase();
+    const claimsPreorder =
       data.orderType === "preorder" || data.paymentMethod === "preorder_on_site";
+    const isPreorder = region === "TW" && claimsPreorder;
+
+    if (region !== "TW" && claimsPreorder) {
+      data.orderType = "paid";
+      if (data.paymentMethod === "preorder_on_site") data.paymentMethod = "";
+    }
 
     if (!isPreorder) {
       if (!data.proof || !data.proof.dataUrl || typeof data.proof.dataUrl !== "string") {

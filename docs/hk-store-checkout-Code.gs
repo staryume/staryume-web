@@ -69,7 +69,17 @@ function handleCreate_(data) {
   var total = data.totalHkd != null ? data.totalHkd : (data.total != null ? data.total : '');
   var region = String(data.region || 'HK').toUpperCase();
   var currency = String(data.currency || (region === 'TW' ? 'TWD' : 'HKD'));
+  // Only Taiwan may create preorders (pay at pickup). Never trust client
+  // orderType alone for HK — paid HK always requires payment proof.
   var orderType = String(data.orderType || (data.paymentMethod === 'preorder_on_site' ? 'preorder' : 'paid'));
+  if (region !== 'TW') {
+    orderType = 'paid';
+  } else if (data.paymentMethod === 'preorder_on_site' || orderType === 'preorder') {
+    orderType = 'preorder';
+  } else {
+    orderType = 'paid';
+  }
+  var isTwPreorder = (region === 'TW' && orderType === 'preorder');
   var name = data.name || '';
   var email = normalizeEmail_(data.email);
   var phone = data.phone || '';
@@ -80,9 +90,9 @@ function handleCreate_(data) {
   fulfillment = region + ' · ' + currency + (fulfillment ? (' · ' + fulfillment) : '');
   var sfCode = data.sfCode || '';
   var payment = data.paymentLabel || paymentLabel_(data.paymentMethod || '');
-  if (orderType === 'preorder' && !payment) payment = '預購·現場付款';
+  if (isTwPreorder && !payment) payment = '預購·現場付款';
   var notes = data.notes || '';
-  if (orderType === 'preorder') {
+  if (isTwPreorder) {
     notes = (notes ? (notes + '\n') : '') + '[PREORDER] pay at pickup; pledge OK';
   }
   var itemsJson = '';
@@ -90,8 +100,19 @@ function handleCreate_(data) {
     if (data.items) itemsJson = JSON.stringify(data.items);
   } catch (e) { itemsJson = ''; }
 
+  if (!name || !email) {
+    return jsonOut_({ ok: false, error: 'missing_fields', message: '姓名與電郵為必填。' });
+  }
+  var totalNum = Number(total);
+  if (!isFinite(totalNum) || totalNum <= 0) {
+    return jsonOut_({ ok: false, error: 'invalid_total', message: '訂單金額無效。' });
+  }
+  if (!data.items || !data.items.length) {
+    return jsonOut_({ ok: false, error: 'missing_items', message: '訂單沒有商品。' });
+  }
+
   // TW pre-order gates
-  if (region === 'TW' && orderType === 'preorder') {
+  if (isTwPreorder) {
     var closed = twDeadlinePassed_();
     if (closed) {
       return jsonOut_({
@@ -112,6 +133,43 @@ function handleCreate_(data) {
     }
   }
 
+  // Paid orders (including any non-TW create): require valid proof before writing the row
+  var proofUrl = '';
+  if (!isTwPreorder) {
+    if (!data.proof || !data.proof.dataUrl) {
+      return jsonOut_({
+        ok: false,
+        error: 'missing_proof',
+        message: '請上載付款截圖後再提交。'
+      });
+    }
+    try {
+      proofUrl = saveProof_(data.proof, orderId);
+      if (!proofUrl) {
+        return jsonOut_({
+          ok: false,
+          error: 'proof_upload_failed',
+          message: '付款截圖上載失敗，請換圖或稍後再試。訂單尚未建立。'
+        });
+      }
+    } catch (proofErr) {
+      console.error('Proof upload failed: ' + proofErr);
+      return jsonOut_({
+        ok: false,
+        error: 'proof_upload_failed',
+        message: '付款截圖上載失敗，請換圖或稍後再試。訂單尚未建立。'
+      });
+    }
+  } else if (data.proof && data.proof.dataUrl) {
+    // Optional proof on preorder (ignore failures — not required)
+    try {
+      proofUrl = saveProof_(data.proof, orderId) || '';
+    } catch (ePre) {
+      console.error('Optional preorder proof failed: ' + ePre);
+      proofUrl = '';
+    }
+  }
+
   var now = new Date();
   sheet.appendRow([
     now,
@@ -126,7 +184,7 @@ function handleCreate_(data) {
     fulfillment,
     sfCode,
     payment,
-    '',
+    proofUrl || '',
     notes,
     'new',
     region,
@@ -136,18 +194,8 @@ function handleCreate_(data) {
     ''
   ]);
   var row = sheet.getLastRow();
-
-  var proofUrl = '';
-  var proofError = '';
-  if (data.proof && data.proof.dataUrl) {
-    try {
-      proofUrl = saveProof_(data.proof, orderId);
-      if (proofUrl) sheet.getRange(row, col_('Proof URL')).setValue(proofUrl);
-    } catch (proofErr) {
-      proofError = String(proofErr);
-      console.error('Proof upload failed: ' + proofError);
-      sheet.getRange(row, col_('Status')).setValue('new; proof_failed');
-    }
+  if (proofUrl) {
+    try { sheet.getRange(row, col_('Proof URL')).setValue(proofUrl); } catch (ePu) { /* already in row */ }
   }
 
   var mailInfo = {
@@ -184,8 +232,8 @@ function handleCreate_(data) {
     ok: true,
     orderId: orderId,
     proofUrl: proofUrl || null,
-    proofError: proofError || null,
-    editableUntil: orderType === 'preorder' && region === 'TW'
+    proofError: null,
+    editableUntil: isTwPreorder
       ? twDeadlineDate_().toISOString()
       : null
   });

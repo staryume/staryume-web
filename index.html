@@ -29,7 +29,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link rel="icon" type="image/png" href="./assets/coreimg/favicon.svg">   
+    <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">   
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
@@ -127,7 +127,7 @@
         <div class="max-w-6xl mx-auto px-6 py-20">
             
             <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-24">
-                <a href="https://staryume.booth.pm/?_gl=1*1yb2mn6*_ga*MTEwMTQ3MzIxNC4xNzM1OTA3Mzg3*_ga_RWT2QKJLDC*czE3NzA4MDcyNzEkbzM3JGcxJHQxNzcwODA3MzMwJGoxJGwwJGgw" target="_blank" rel="noopener noreferrer" class="group relative bg-white border border-gray-300 h-28 flex items-center justify-center overflow-hidden hover:border-black transition-all">
+                <a href="https://staryume.booth.pm/" target="_blank" rel="noopener noreferrer" class="group relative bg-white border border-gray-300 h-28 flex items-center justify-center overflow-hidden hover:border-black transition-all">
                     <img src="./assets/coreimg/banner-booth.jpg?q=200&w=600" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" alt="BOOTH">
                 </a>
                 <a href="https://staryume.fanbox.cc/" target="_blank" rel="noopener noreferrer" class="group relative bg-white border border-gray-300 h-28 flex items-center justify-center overflow-hidden hover:border-black transition-all">
@@ -211,9 +211,16 @@
             }, 5000);
         }
 
+        function htmlLangFor(lang) {
+            if (lang === 'en') return 'en';
+            if (lang === 'zh') return 'zh-Hant';
+            return 'ja';
+        }
+
         function switchLang(lang) {
             currentLang = lang;
             localStorage.setItem('siteLang', lang);
+            document.documentElement.lang = htmlLangFor(lang);
             
             const displayEl = document.getElementById('currentLangDisplay');
             if(displayEl) displayEl.innerText = lang.toUpperCase();
@@ -240,7 +247,6 @@
                  }
             }
 
-            if(typeof renderIndexBlog === 'function') renderIndexBlog();
             if(typeof renderIndexGallery === 'function') renderIndexGallery();
             if(typeof renderBlog === 'function') renderBlog();
 
@@ -263,7 +269,7 @@
             container.innerHTML = displayPosts.map(post => `
                 <a href="post.html?id=${post.id}" class="group block bg-white border border-transparent hover:border-gray-200 hover:shadow-xl transition-all">
                     <div class="aspect-video overflow-hidden relative">
-                        <img src="${post.img}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        <img src="${post.img}" alt="${(post.title[currentLang] || post.tag || '').replace(/"/g, '&quot;')}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
                         <div class="absolute top-0 right-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1">${post.tag}</div>
                     </div>
                     <div class="p-4">
@@ -285,13 +291,20 @@
             
             container.innerHTML = previewImages.map(item => `
                 <div class="break-inside-avoid group relative cursor-pointer" onclick="openLightbox('${item.src}')">
-                    <img src="${item.src}" class="w-full h-auto transition-transform duration-500 group-hover:scale-105 border border-transparent hover:border-tech-purple">
+                    <img src="${item.src}" alt="${item.tag || 'Gallery'}" class="w-full h-auto transition-transform duration-500 group-hover:scale-105 border border-transparent hover:border-tech-purple">
                     <div class="absolute inset-0 bg-tech-purple/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center mix-blend-multiply"></div>
                 </div>
             `).join('');
         }
 
         function openLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').classList.remove('hidden'); }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const lb = document.getElementById('lightbox');
+                if (lb && !lb.classList.contains('hidden')) lb.classList.add('hidden');
+            }
+        });
         function toggleMobileMenu() { document.getElementById('mobileMenu').classList.toggle('translate-x-full'); }
         function toggleDesktopLang() { document.getElementById('langMenuDesktop').classList.toggle('open'); }
 

@@ -2,19 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>https://staryu.me/</loc>
-      <lastmod>2026-02-13</lastmod>
+      <lastmod>2026-07-27</lastmod>
       <priority>1.00</priority>
    </url>
-   
    <url>
       <loc>https://staryu.me/blog.html</loc>
-      <lastmod>2026-02-13</lastmod>
+      <lastmod>2026-07-27</lastmod>
       <priority>0.80</priority>
    </url>
-   
    <url>
       <loc>https://staryu.me/gallery.html</loc>
-      <lastmod>2026-02-13</lastmod>
-      <priority>0.80</priority>
+      <lastmod>2026-07-27</lastmod>
+      <priority>0.70</priority>
+   </url>
+   <url>
+      <loc>https://staryu.me/store.html</loc>
+      <lastmod>2026-07-27</lastmod>
+      <priority>0.90</priority>
    </url>
 </urlset>
