@@ -1,5 +1,11 @@
 # Hide local CMS and setup docs from the public site
 /admin.html    /    404!
 /admin/*       /    404!
+
+# Entire docs folder (ops, security, Apps Script, QA, Discord copy, etc.)
 /docs          /    404!
+/docs/         /    404!
 /docs/*        /    404!
+
+# Agent / process docs kept at repo root — not for public visitors
+/INSTRUCTIONS.md    /    404!
