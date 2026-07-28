@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>限定海報定價抽選報名 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="限定海報定價抽選報名（Discord 專用連結）">
+
+  <!--
+    Setup: docs/lottery-apps-script.md (Option B: one Sheet per event)
+    Event URLs: lottery.html?event=acghk&k=ACCESS_KEY
+    Script URLs live in lottery-config.js (not hardcoded here).
+  -->
+
+  <script src="./lottery-config.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    .field-error { border-color: #ef4444 !important; }
+    .hp-field { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-center sticky top-0 z-50">
+    <a href="./index.html" class="hover:opacity-80 transition-opacity">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+    </a>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
+    <div class="mb-6 text-center">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">FIXED-PRICE LOTTERY</p>
+      <h1 id="pageTitle" class="text-2xl font-bold tracking-tight">限定海報定價抽選</h1>
+      <p id="pageSub" class="text-sm text-gray-500 mt-2 leading-relaxed">
+        載入設定中…
+      </p>
+    </div>
+
+    <!-- Closed / error banner -->
+    <div id="closedBanner" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900"></div>
+
+    <!-- Success -->
+    <div id="successCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-tech-purple/40 flex items-center justify-center text-2xl">✓</div>
+      <h2 class="text-xl font-bold mb-2">報名成功！</h2>
+      <p class="text-sm text-gray-600 leading-relaxed mb-4">
+        確認電郵已發送（請檢查垃圾郵件匣）。<br>
+        請保存以下連結，可查看倒數與開獎結果。
+      </p>
+      <p class="text-xs text-gray-400 mb-2">報名編號 <span id="successEntryId" class="font-mono font-bold text-black"></span></p>
+      <a id="successStatusLink" href="#"
+        class="inline-flex items-center justify-center w-full py-3 bg-tech-black text-white font-bold rounded-xl hover:bg-gray-800 transition text-sm mb-3">
+        打開我的抽選儀表板
+      </a>
+      <p id="mailWarn" class="hidden text-xs text-amber-700 mb-2">電郵可能未送出，請務必收藏上方連結。</p>
+      <a href="./index.html" class="text-sm font-bold underline decoration-tech-purple underline-offset-4">返回首頁</a>
+    </div>
+
+    <!-- Form -->
+    <form id="lotteryForm" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-5" novalidate>
+      <div class="p-4 bg-tech-gray rounded-xl text-sm space-y-1">
+        <p><span class="font-bold">活動</span> <span id="infoEvent">—</span></p>
+        <p><span class="font-bold">定價</span> <span id="infoPrice">—</span>（現場付款）</p>
+        <p><span class="font-bold">領取</span> <span id="infoPickup">—</span> 親臨【香港】攤位</p>
+        <p><span class="font-bold">開獎</span> <span id="infoEnd">—</span></p>
+        <p id="infoCountWrap" class="hidden"><span class="font-bold">已報名</span> <span id="infoCount">0</span> 人</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="name">姓名 / Name <span class="text-red-500">*</span></label>
+        <input id="name" name="name" type="text" required maxlength="80" autocomplete="name"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple"
+          placeholder="用於核對領取">
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="email">電郵 / Email <span class="text-red-500">*</span></label>
+        <input id="email" name="email" type="email" required autocomplete="email"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple"
+          placeholder="接收確認信與結果連結">
+        <p class="text-xs text-gray-400 mt-1">每個電郵限報名一次</p>
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="discord">Discord 顯示名稱</label>
+        <input id="discord" name="discord" type="text" maxlength="80"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple"
+          placeholder="例如 staryume">
+      </div>
+
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="phone">電話 / WhatsApp（選填）</label>
+        <input id="phone" name="phone" type="tel" maxlength="40" autocomplete="tel"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple"
+          placeholder="方便現場聯絡">
+      </div>
+
+      <!-- honeypot -->
+      <div class="hp-field" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+
+      <fieldset class="space-y-3">
+        <legend class="text-sm font-bold mb-1">承諾事項 <span class="text-red-500">*</span>（須全部勾選）</legend>
+        <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+          <input type="checkbox" id="pledgeAttend" class="mt-1 accent-black" required>
+          <span class="text-sm">我能於領取時段<strong>親臨【香港】攤位</strong>領取海報。</span>
+        </label>
+        <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+          <input type="checkbox" id="pledgePay" class="mt-1 accent-black" required>
+          <span class="text-sm">得獎後我會以<strong>定價現場付款</strong>。</span>
+        </label>
+        <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+          <input type="checkbox" id="pledgeBackup" class="mt-1 accent-black" required>
+          <span class="text-sm">我明白若無法到場，資格會由<strong>第一→第二→第三候補</strong>遞補；無故缺席可能影響日後抽選。</span>
+        </label>
+      </fieldset>
+
+      <p id="formError" class="hidden text-sm text-red-600"></p>
+      <p id="configHint" class="hidden text-sm text-amber-700 bg-amber-50 p-3 rounded-xl">
+        後端尚未連接。請完成 Apps Script 部署並設定 SCRIPT_URL（見 docs/lottery-apps-script.md）。
+      </p>
+
+      <button type="submit" id="submitBtn"
+        class="w-full py-3.5 bg-tech-black text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+        提交報名
+      </button>
+
+      <p class="text-center text-xs text-gray-400">
+        <a id="statusPageLink" href="./lottery-status.html" class="underline decoration-tech-purple underline-offset-2">查看抽選儀表板／倒數</a>
+      </p>
+    </form>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const accessKey = params.get('k') || params.get('key') || '';
+    const resolved = typeof resolveLotteryEvent === 'function'
+      ? resolveLotteryEvent()
+      : { eventId: '', event: null, scriptUrl: '', error: 'no_config' };
+    const SCRIPT_URL = resolved.scriptUrl || '';
+    const EVENT_ID = resolved.eventId || '';
+
+    const form = document.getElementById('lotteryForm');
+    const successCard = document.getElementById('successCard');
+    const formError = document.getElementById('formError');
+    const configHint = document.getElementById('configHint');
+    const closedBanner = document.getElementById('closedBanner');
+    const submitBtn = document.getElementById('submitBtn');
+
+    if (resolved.error || !SCRIPT_URL) {
+      configHint.classList.remove('hidden');
+      if (resolved.error === 'unknown_event') {
+        configHint.textContent = '未知活動 event=' + EVENT_ID + '。請檢查連結或 lottery-config.js。';
+      } else if (resolved.error === 'no_script_url') {
+        configHint.textContent = '活動「' + ((resolved.event && resolved.event.label) || EVENT_ID) + '」尚未填入 scriptUrl（lottery-config.js）。見 docs/lottery-apps-script.md';
+      } else {
+        configHint.textContent = '後端尚未連接。Option B：每個活動一個 Sheet + 在 lottery-config.js 填 scriptUrl。';
+      }
+    }
+
+    function withEventQuery(path, extra) {
+      const u = new URL(path, location.href);
+      if (EVENT_ID) u.searchParams.set('event', EVENT_ID);
+      if (accessKey) u.searchParams.set('k', accessKey);
+      if (extra) {
+        Object.keys(extra).forEach((k) => {
+          if (extra[k] != null && extra[k] !== '') u.searchParams.set(k, extra[k]);
+        });
+      }
+      return u.pathname + u.search;
+    }
+
+    function apiGet(action) {
+      const u = new URL(SCRIPT_URL);
+      u.searchParams.set('action', action);
+      return fetch(u.toString(), { method: 'GET', redirect: 'follow' })
+        .then((r) => r.text())
+        .then((t) => {
+          if (t && t.trim().startsWith('{')) return JSON.parse(t);
+          throw new Error('bad_response');
+        });
+    }
+
+    function formatEnd(endAt, endAtMs) {
+      if (endAtMs) {
+        try {
+          return new Date(endAtMs).toLocaleString('zh-HK', {
+            timeZone: 'Asia/Hong_Kong',
+            year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit',
+          }) + ' (HKT)';
+        } catch (_) {}
+      }
+      return endAt || '（稍後公布）';
+    }
+
+    function applyConfig(cfg) {
+      if (!cfg || !cfg.ok) return;
+      document.getElementById('pageTitle').textContent = cfg.title || '限定海報定價抽選';
+      document.getElementById('pageSub').textContent =
+        'Fixed-price lottery · 僅限能親臨香港攤位者 · 請勿外傳連結';
+      document.getElementById('infoEvent').textContent = cfg.eventName || '—';
+      document.getElementById('infoPrice').textContent = cfg.price || '—';
+      document.getElementById('infoPickup').textContent = cfg.pickup || '18:00–20:00';
+      document.getElementById('infoEnd').textContent = formatEnd(cfg.endAt, cfg.endAtMs);
+      if (cfg.entrantCount != null) {
+        document.getElementById('infoCountWrap').classList.remove('hidden');
+        document.getElementById('infoCount').textContent = String(cfg.entrantCount);
+      }
+      document.getElementById('statusPageLink').href = withEventQuery('./lottery-status.html');
+
+      if (resolved.event && resolved.event.label) {
+        document.getElementById('pageSub').textContent =
+          resolved.event.label + (resolved.event.note ? ' · ' + resolved.event.note : '') +
+          ' · 請勿外傳連結';
+      }
+
+      if (!cfg.enrollOpen) {
+        closedBanner.classList.remove('hidden');
+        if (cfg.drawn) {
+          closedBanner.textContent = '本輪已開獎，停止報名。請到儀表板查看結果。';
+        } else {
+          closedBanner.textContent = '報名已截止或尚未開放。';
+        }
+        submitBtn.disabled = true;
+        form.querySelectorAll('input, button[type="submit"]').forEach((el) => {
+          if (el.type !== 'hidden') el.disabled = true;
+        });
+      }
+    }
+
+    async function loadConfig() {
+      if (!SCRIPT_URL) return;
+      try {
+        const cfg = await apiGet('config');
+        applyConfig(cfg);
+      } catch (e) {
+        document.getElementById('pageSub').textContent =
+          '無法載入設定（請確認 lottery-config.js 的 scriptUrl 與 Apps Script 部署）。';
+      }
+    }
+
+    function humanError(code) {
+      const map = {
+        bad_key: '連結金鑰不正確。請使用 Discord 頻道內的完整連結。',
+        duplicate_email: '此電郵已報名過。',
+        pledges_required: '請勾選全部承諾事項。',
+        bad_email: '請輸入有效電郵。',
+        bad_name: '請輸入姓名。',
+        closed: '報名已關閉。',
+        ended: '已過開獎時間，無法報名。',
+        already_drawn: '已開獎，無法再報名。',
+      };
+      return map[code] || ('提交失敗：' + (code || 'unknown'));
+    }
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      formError.classList.add('hidden');
+      formError.textContent = '';
+
+      if (!SCRIPT_URL) {
+        configHint.classList.remove('hidden');
+        formError.textContent = '後端尚未設定（event / scriptUrl）。';
+        formError.classList.remove('hidden');
+        return;
+      }
+
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const pledgeAttend = document.getElementById('pledgeAttend').checked;
+      const pledgePay = document.getElementById('pledgePay').checked;
+      const pledgeBackup = document.getElementById('pledgeBackup').checked;
+
+      if (!name || !email || !pledgeAttend || !pledgePay || !pledgeBackup) {
+        formError.textContent = '請填寫必填欄位並勾選全部承諾。';
+        formError.classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = '提交中…';
+
+      const payload = {
+        action: 'enroll',
+        accessKey: accessKey,
+        k: accessKey,
+        eventId: EVENT_ID,
+        name: name,
+        email: email,
+        discord: document.getElementById('discord').value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        pledgeAttend: pledgeAttend,
+        pledgePay: pledgePay,
+        pledgeBackup: pledgeBackup,
+        website: document.getElementById('website').value,
+      };
+
+      try {
+        const res = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        let result = null;
+        try {
+          const text = await res.text();
+          if (text && text.trim().startsWith('{')) result = JSON.parse(text);
+        } catch (_) {}
+
+        if (!result || result.ok === false) {
+          formError.textContent = humanError(result && result.error);
+          formError.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '提交報名';
+          return;
+        }
+
+        form.classList.add('hidden');
+        successCard.classList.remove('hidden');
+        document.getElementById('successEntryId').textContent = result.entryId || '';
+        const link = document.getElementById('successStatusLink');
+        // Prefer site dashboard with event id (email link may be absolute without ?event=)
+        link.href = withEventQuery('./lottery-status.html', {
+          token: result.token || '',
+        });
+        if (result.mailError) {
+          document.getElementById('mailWarn').classList.remove('hidden');
+        }
+      } catch (err) {
+        formError.textContent = '網路錯誤，請稍後再試。';
+        formError.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '提交報名';
+      }
+    });
+
+    loadConfig();
+  </script>
+</body>
+</html>

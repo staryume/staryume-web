@@ -8,6 +8,8 @@ Disallow: /docs/
 Disallow: /checkout.html
 Disallow: /preorder.html
 Disallow: /hk-form.html
+Disallow: /lottery.html
+Disallow: /lottery-status.html
 Disallow: /api/
 
 Sitemap: https://staryu.me/sitemap.xml

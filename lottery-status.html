@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>抽選儀表板 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="限定海報抽選倒數與結果">
+
+  <script src="./lottery-config.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-center sticky top-0 z-50">
+    <a href="./index.html" class="hover:opacity-80 transition-opacity">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+    </a>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
+    <div class="mb-6 text-center">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">LOTTERY DASHBOARD</p>
+      <h1 id="pageTitle" class="text-2xl font-bold tracking-tight">抽選儀表板</h1>
+      <p id="pageSub" class="text-sm text-gray-500 mt-2">載入中…</p>
+    </div>
+
+    <div id="errorCard" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800"></div>
+
+    <!-- Personal result -->
+    <div id="youCard" class="hidden mb-4 bg-white rounded-2xl border border-tech-purple shadow-sm p-5">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">YOUR RESULT</p>
+      <p id="youName" class="font-bold text-lg"></p>
+      <p id="youOutcome" class="text-sm mt-1"></p>
+    </div>
+
+    <!-- Countdown -->
+    <div id="countdownCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">COUNTDOWN TO DRAW</p>
+      <p id="countdownLabel" class="text-sm text-gray-500 mb-3">距離自動開獎</p>
+      <div id="countdownDigits" class="grid grid-cols-4 gap-2 text-center font-mono">
+        <div class="bg-tech-gray rounded-xl py-3">
+          <div id="cdD" class="text-2xl font-bold">—</div>
+          <div class="text-[10px] text-gray-400">日</div>
+        </div>
+        <div class="bg-tech-gray rounded-xl py-3">
+          <div id="cdH" class="text-2xl font-bold">—</div>
+          <div class="text-[10px] text-gray-400">時</div>
+        </div>
+        <div class="bg-tech-gray rounded-xl py-3">
+          <div id="cdM" class="text-2xl font-bold">—</div>
+          <div class="text-[10px] text-gray-400">分</div>
+        </div>
+        <div class="bg-tech-gray rounded-xl py-3">
+          <div id="cdS" class="text-2xl font-bold">—</div>
+          <div class="text-[10px] text-gray-400">秒</div>
+        </div>
+      </div>
+      <p id="endAtText" class="text-xs text-gray-400 mt-3 text-center"></p>
+    </div>
+
+    <!-- Meta -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 text-sm space-y-1">
+      <p><span class="font-bold">活動</span> <span id="infoEvent">—</span></p>
+      <p><span class="font-bold">定價</span> <span id="infoPrice">—</span></p>
+      <p><span class="font-bold">領取</span> <span id="infoPickup">—</span> · 香港攤位 · 現場付款</p>
+      <p id="infoCountWrap"><span class="font-bold">已報名</span> <span id="infoCount">—</span> 人</p>
+      <p><span class="font-bold">狀態</span> <span id="infoStatus">—</span></p>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-3">RESULTS · 開獎結果</p>
+      <ul class="space-y-3" id="resultsList"></ul>
+      <p id="drawnAtText" class="text-xs text-gray-400 mt-4"></p>
+      <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+        得主請於領取時段親臨攤位，以定價付款取海報。若未到場，依候補順序遞補。
+      </p>
+    </div>
+
+    <div class="flex flex-col sm:flex-row gap-2">
+      <a id="enrollLink" href="./lottery.html"
+        class="flex-1 text-center py-3 bg-tech-black text-white font-bold rounded-xl text-sm hover:bg-gray-800 transition">
+        前往報名
+      </a>
+      <button type="button" id="refreshBtn"
+        class="flex-1 py-3 border border-gray-300 font-bold rounded-xl text-sm hover:border-black transition">
+        重新整理
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+    const accessKey = params.get('k') || params.get('key') || '';
+    const resolved = typeof resolveLotteryEvent === 'function'
+      ? resolveLotteryEvent()
+      : { eventId: '', event: null, scriptUrl: '', error: 'no_config' };
+    const SCRIPT_URL = resolved.scriptUrl || '';
+    const EVENT_ID = resolved.eventId || '';
+
+    let endAtMs = null;
+    let skewMs = 0; // serverNow - clientNow
+    let tickTimer = null;
+    let pollTimer = null;
+
+    const errorCard = document.getElementById('errorCard');
+
+    function withEventQuery(path, extra) {
+      const u = new URL(path, location.href);
+      if (EVENT_ID) u.searchParams.set('event', EVENT_ID);
+      if (accessKey) u.searchParams.set('k', accessKey);
+      if (extra) {
+        Object.keys(extra).forEach((k) => {
+          if (extra[k] != null && extra[k] !== '') u.searchParams.set(k, extra[k]);
+        });
+      }
+      return u.pathname + u.search;
+    }
+
+    function apiGet(action, extra) {
+      const u = new URL(SCRIPT_URL);
+      u.searchParams.set('action', action);
+      if (extra) {
+        Object.keys(extra).forEach((k) => {
+          if (extra[k]) u.searchParams.set(k, extra[k]);
+        });
+      }
+      return fetch(u.toString(), { method: 'GET', redirect: 'follow' })
+        .then((r) => r.text())
+        .then((t) => {
+          if (t && t.trim().startsWith('{')) return JSON.parse(t);
+          throw new Error('bad_response');
+        });
+    }
+
+    function setCountdown(msLeft) {
+      if (msLeft == null || isNaN(msLeft)) {
+        document.getElementById('cdD').textContent = '—';
+        document.getElementById('cdH').textContent = '—';
+        document.getElementById('cdM').textContent = '—';
+        document.getElementById('cdS').textContent = '—';
+        return;
+      }
+      if (msLeft < 0) msLeft = 0;
+      const s = Math.floor(msLeft / 1000);
+      const d = Math.floor(s / 86400);
+      const h = Math.floor((s % 86400) / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      document.getElementById('cdD').textContent = String(d);
+      document.getElementById('cdH').textContent = String(h).padStart(2, '0');
+      document.getElementById('cdM').textContent = String(m).padStart(2, '0');
+      document.getElementById('cdS').textContent = String(sec).padStart(2, '0');
+    }
+
+    function startTick() {
+      if (tickTimer) clearInterval(tickTimer);
+      tickTimer = setInterval(() => {
+        if (endAtMs == null) return;
+        const now = Date.now() + skewMs;
+        const left = endAtMs - now;
+        setCountdown(left);
+        if (left <= 0) {
+          document.getElementById('countdownLabel').textContent = '已到開獎時間';
+          // Refresh status soon to pick up auto-draw
+          loadStatus();
+        }
+      }, 250);
+    }
+
+    function renderYou(you) {
+      const card = document.getElementById('youCard');
+      if (!you || !you.found) {
+        if (token) {
+          card.classList.remove('hidden');
+          document.getElementById('youName').textContent = '找不到此 token';
+          document.getElementById('youOutcome').textContent = '請使用確認信中的完整連結。';
+        } else {
+          card.classList.add('hidden');
+        }
+        return;
+      }
+      card.classList.remove('hidden');
+      document.getElementById('youName').textContent = you.name || '參加者';
+      const el = document.getElementById('youOutcome');
+      if (you.outcome === 'pending') {
+        el.textContent = '報名已記錄 · 等待開獎';
+        el.className = 'text-sm mt-1 text-gray-600';
+      } else if (you.outcome === 'winner') {
+        el.textContent = '🎉 你是得主！請於領取時段親臨攤位付款取海報。';
+        el.className = 'text-sm mt-1 text-green-700 font-bold';
+      } else if (you.outcome === 'backup') {
+        el.textContent = '你是「' + (you.rankLabel || '候補') + '」。若得主未到將依序遞補。';
+        el.className = 'text-sm mt-1 text-amber-800 font-bold';
+      } else {
+        el.textContent = '本次未中選，謝謝參與。';
+        el.className = 'text-sm mt-1 text-gray-600';
+      }
+    }
+
+    function renderResults(result) {
+      const card = document.getElementById('resultsCard');
+      const list = document.getElementById('resultsList');
+      if (!result || !result.winner) {
+        card.classList.add('hidden');
+        return;
+      }
+      card.classList.remove('hidden');
+      const items = [
+        { label: '🎉 得主', name: result.winner.name },
+        ...(result.backups || []).map((b, i) => ({
+          label: ['① 第一候補', '② 第二候補', '③ 第三候補'][i] || ('候補' + (i + 1)),
+          name: b.name,
+        })),
+      ];
+      list.innerHTML = items.map((it) => (
+        '<li class="flex items-center justify-between gap-3 p-3 bg-tech-gray rounded-xl">' +
+        '<span class="text-sm font-bold">' + it.label + '</span>' +
+        '<span class="text-sm">' + escapeHtml(it.name || '—') + '</span></li>'
+      )).join('');
+      if (result.drawnAt) {
+        document.getElementById('drawnAtText').textContent = '開獎時間：' + result.drawnAt;
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function applyStatus(data) {
+      errorCard.classList.add('hidden');
+      document.getElementById('pageTitle').textContent = data.title || '抽選儀表板';
+      document.getElementById('pageSub').textContent =
+        (data.eventName || '') + (data.drawn ? ' · 已開獎' : ' · 自動開獎');
+      document.getElementById('infoEvent').textContent = data.eventName || '—';
+      document.getElementById('infoPrice').textContent = data.price || '—';
+      document.getElementById('infoPickup').textContent = data.pickup || '18:00–20:00';
+      if (data.entrantCount != null) {
+        document.getElementById('infoCount').textContent = String(data.entrantCount);
+      } else {
+        document.getElementById('infoCount').textContent = '—';
+      }
+
+      if (data.serverNowMs) {
+        skewMs = data.serverNowMs - Date.now();
+      }
+      endAtMs = data.endAtMs || null;
+      if (endAtMs) {
+        document.getElementById('endAtText').textContent =
+          '開獎：' + new Date(endAtMs).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' }) + ' (HKT)';
+        startTick();
+      } else {
+        document.getElementById('endAtText').textContent = '尚未設定開獎時間';
+        setCountdown(null);
+      }
+
+      let status = '報名進行中';
+      if (data.drawn) status = '已開獎';
+      else if (data.pastEnd) status = '已截止 · 開獎處理中';
+      else if (!data.enrollOpen) status = '報名已關閉';
+      document.getElementById('infoStatus').textContent = status;
+
+      if (data.drawn) {
+        document.getElementById('countdownLabel').textContent = '已開獎';
+        setCountdown(0);
+      }
+
+      renderYou(data.you);
+      renderResults(data.result);
+
+      const enroll = document.getElementById('enrollLink');
+      enroll.href = withEventQuery('./lottery.html');
+      if (data.drawn || !data.enrollOpen) {
+        enroll.textContent = '報名已結束';
+        enroll.classList.add('opacity-50', 'pointer-events-none');
+      }
+      if (resolved.event && resolved.event.label) {
+        document.getElementById('pageSub').textContent =
+          resolved.event.label + (data.drawn ? ' · 已開獎' : ' · 自動開獎');
+      }
+    }
+
+    async function loadStatus() {
+      if (!SCRIPT_URL) {
+        let msg = '尚未設定後端。';
+        if (resolved.error === 'unknown_event') msg = '未知活動 event=' + EVENT_ID;
+        else if (resolved.error === 'no_script_url') msg = '請在 lottery-config.js 為「' + EVENT_ID + '」填入 scriptUrl';
+        else msg = '請使用 ?event=acghk 等連結，並設定 lottery-config.js（見 docs/lottery-apps-script.md）';
+        errorCard.textContent = msg;
+        errorCard.classList.remove('hidden');
+        document.getElementById('pageSub').textContent = '後端未連接';
+        return;
+      }
+      try {
+        const data = await apiGet('status', { token: token });
+        if (!data.ok) throw new Error(data.error || 'fail');
+        applyStatus(data);
+      } catch (e) {
+        errorCard.textContent = '無法載入狀態，請稍後按「重新整理」。';
+        errorCard.classList.remove('hidden');
+        document.getElementById('pageSub').textContent = '載入失敗';
+      }
+    }
+
+    document.getElementById('refreshBtn').addEventListener('click', () => {
+      loadStatus();
+    });
+
+    loadStatus();
+    // Poll every 30s near/after end so lazy draw shows up
+    pollTimer = setInterval(loadStatus, 30000);
+  </script>
+</body>
+</html>
