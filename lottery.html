@@ -53,8 +53,26 @@
     <div class="mb-6 text-center">
       <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">FIXED-PRICE LOTTERY</p>
       <h1 id="pageTitle" class="text-2xl font-bold tracking-tight">限定海報定價抽選</h1>
+
+      <!-- Title image (same pattern as hk-form.html). File: assets/coreimg/lottery-acghk-banner.png -->
+      <div class="mt-4 mb-3 mx-auto w-full max-w-[500px] rounded-xl overflow-hidden border border-gray-200 bg-gray-100 relative aspect-[1200/744]">
+        <img
+          id="titleImage"
+          src="./assets/coreimg/lottery-acghk-banner.png"
+          alt="ACGHK 限定海報"
+          width="1200"
+          height="744"
+          class="w-full h-full object-cover"
+          onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');"
+        >
+        <div class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-400 gap-1 pointer-events-none">
+          <span class="text-sm font-mono font-bold">封面圖片</span>
+          <span class="text-[10px] font-mono opacity-70">assets/coreimg/lottery-acghk-banner.png</span>
+        </div>
+      </div>
+
       <p id="pageSub" class="text-sm text-gray-500 mt-2 leading-relaxed">
-        載入設定中…
+        請填寫以下資料完成報名。提交後將寄出確認電郵。
       </p>
     </div>
 
@@ -221,8 +239,9 @@
     function applyConfig(cfg) {
       if (!cfg || !cfg.ok) return;
       document.getElementById('pageTitle').textContent = cfg.title || '限定海報定價抽選';
+      // Keep a short fixed blurb (no event-label / 請勿外傳 line)
       document.getElementById('pageSub').textContent =
-        'Fixed-price lottery · 僅限能親臨香港攤位者 · 請勿外傳連結';
+        '請填寫以下資料完成報名。提交後將寄出確認電郵。';
       document.getElementById('infoEvent').textContent = cfg.eventName || '—';
       document.getElementById('infoPrice').textContent = cfg.price || '—';
       document.getElementById('infoPickup').textContent = cfg.pickup || '18:00–20:00';
@@ -232,12 +251,6 @@
         document.getElementById('infoCount').textContent = String(cfg.entrantCount);
       }
       document.getElementById('statusPageLink').href = withEventQuery('./lottery-status.html');
-
-      if (resolved.event && resolved.event.label) {
-        document.getElementById('pageSub').textContent =
-          resolved.event.label + (resolved.event.note ? ' · ' + resolved.event.note : '') +
-          ' · 請勿外傳連結';
-      }
 
       if (!cfg.enrollOpen) {
         closedBanner.classList.remove('hidden');
@@ -260,7 +273,7 @@
         applyConfig(cfg);
       } catch (e) {
         document.getElementById('pageSub').textContent =
-          '無法載入設定（請確認 lottery-config.js 的 scriptUrl 與 Apps Script 部署）。';
+          '無法載入活動設定，請稍後再試。';
       }
     }
 
