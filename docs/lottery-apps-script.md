@@ -83,6 +83,20 @@ In Apps Script editor:
 | `staffKey` | (optional random) | For force draw URL |
 | `drawn` | `FALSE` | System sets `TRUE` after draw — don’t set manually unless reset |
 | `showEntrantCount` | `TRUE` | Show count on form/dashboard |
+| `booth` | ACGHK 2026 Creative Paradise… | Pickup location in emails |
+| `eventSlug` | `acghk` | `?event=` in result-email dashboard links |
+
+### Result emails (after auto-draw)
+
+When the lottery runs, **every entrant** gets an email:
+
+| Outcome | Subject style |
+|---------|----------------|
+| 得主 | 【當選通知】… 你是得主 |
+| 第一／二／三候補 | 【候補當選通知】… |
+| 其餘 | 【結果通知】… 未能當選 |
+
+Gmail daily quota applies (usually enough for small events). Large lists may need a Workspace account.
 
 **Important:** `endAt` must be a real ISO datetime with offset, e.g. Hong Kong afternoon:
 

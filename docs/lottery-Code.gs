@@ -99,6 +99,7 @@ function ensureSheets_() {
       ['eventName', '同人活動攤位'],
       ['pickup', '18:00–20:00'],
       ['booth', 'ACGHK 2026 Creative Paradise 攤位 --- 3樓 CE-30 星夢亭'],
+      ['eventSlug', 'acghk'], // used in result email dashboard links (?event=)
       ['endAt', ''], // ISO e.g. 2026-07-28T14:00:00+08:00
       ['enrollOpen', 'TRUE'],
       ['accessKey', DEFAULT_ACCESS_KEY],
@@ -155,6 +156,7 @@ function readConfig_() {
     eventName: String(map.eventName || ''),
     pickup: String(map.pickup || '18:00–20:00'),
     booth: String(map.booth || 'ACGHK 2026 Creative Paradise 攤位 --- 3樓 CE-30 星夢亭'),
+    eventSlug: String(map.eventSlug || 'acghk').trim().toLowerCase(),
     endAt: endAtRaw,
     endAtMs: isNaN(endAtMs) ? null : endAtMs,
     enrollOpen: String(map.enrollOpen || 'TRUE').toUpperCase() !== 'FALSE',
@@ -443,6 +445,119 @@ function sendConfirmEmail_(name, email, cfg, statusUrl, entryId) {
   });
 }
 
+/**
+ * After draw: email winner, 3 backups, and everyone else.
+ * role: 'winner' | 'backup1' | 'backup2' | 'backup3' | 'not_selected'
+ */
+function buildStatusUrl_(token, eventSlug, accessKey) {
+  return PUBLIC_SITE_ORIGIN + STATUS_PATH +
+    '?token=' + encodeURIComponent(token || '') +
+    (eventSlug ? '&event=' + encodeURIComponent(eventSlug) : '') +
+    (accessKey ? '&k=' + encodeURIComponent(accessKey) : '');
+}
+
+function sendResultEmail_(person, role, cfg, eventSlug) {
+  var email = normalizeEmail_(person.email);
+  if (!email) return;
+  var name = person.name || '參加者';
+  var statusUrl = buildStatusUrl_(person.token, eventSlug, cfg.accessKey);
+  var subject = '';
+  var bodyLines = [name + ' 你好，', '', '活動：' + cfg.title, '（' + cfg.eventName + '）', ''];
+
+  if (role === 'winner') {
+    subject = '【當選通知】' + cfg.title + ' — 你是得主';
+    bodyLines = bodyLines.concat([
+      '恭喜！你已當選為本次活動的【得主】，獲得活動海報的購入權。',
+      '',
+      '請於領取時段親臨攤位，以定價現場付款領取：',
+      '領取時段：' + cfg.pickup,
+      '地點：' + cfg.booth,
+      '定價：' + cfg.price + '（現場付款）',
+      '',
+      '若你無法到場，請盡快回覆本電郵告知，資格將依候補順序遞補。',
+      '',
+      '查詢頁面：',
+      statusUrl,
+      '',
+      '— staryume'
+    ]);
+  } else if (role === 'backup1' || role === 'backup2' || role === 'backup3') {
+    var rankLabel = {
+      backup1: '第一候補',
+      backup2: '第二候補',
+      backup3: '第三候補'
+    }[role];
+    subject = '【候補當選通知】' + cfg.title + ' — ' + rankLabel;
+    bodyLines = bodyLines.concat([
+      '你已成為本次活動的【' + rankLabel + '】。',
+      '',
+      '若得主（及順位在你之前的候補）無法於領取時段到場，將依序通知你購入。',
+      '請暫時保留時段，並留意電郵／Discord 通知。',
+      '',
+      '領取時段：' + cfg.pickup,
+      '地點：' + cfg.booth,
+      '定價：' + cfg.price + '（現場付款）',
+      '',
+      '查詢頁面：',
+      statusUrl,
+      '',
+      '— staryume'
+    ]);
+  } else {
+    subject = '【結果通知】' + cfg.title + ' — 未能當選';
+    bodyLines = bodyLines.concat([
+      '感謝你報名本次活動。',
+      '',
+      '很抱歉，經過隨機抽選後你本次未能當選得主或候補。',
+      '歡迎下次活動再來參加，謝謝支持！',
+      '',
+      '查詢頁面（可查看得主與候補名單）：',
+      statusUrl,
+      '',
+      '— staryume'
+    ]);
+  }
+
+  MailApp.sendEmail({
+    to: email,
+    subject: subject,
+    body: bodyLines.join('\n')
+  });
+}
+
+/**
+ * @param {Array} pool — full shuffled list with entryId, name, email, token
+ * @param {Array} top — first up to 4 winners/backups
+ */
+function sendAllResultEmails_(pool, top, cfg) {
+  var eventSlug = String(cfg.eventSlug || 'acghk').trim().toLowerCase();
+
+  var roleById = {};
+  if (top[0]) roleById[String(top[0].entryId)] = 'winner';
+  if (top[1]) roleById[String(top[1].entryId)] = 'backup1';
+  if (top[2]) roleById[String(top[2].entryId)] = 'backup2';
+  if (top[3]) roleById[String(top[3].entryId)] = 'backup3';
+
+  var sent = 0;
+  var errors = 0;
+  for (var i = 0; i < pool.length; i++) {
+    var p = pool[i];
+    var role = roleById[String(p.entryId)] || 'not_selected';
+    try {
+      sendResultEmail_(p, role, cfg, eventSlug);
+      sent++;
+      // Light throttle to reduce Gmail burst issues
+      if (i > 0 && i % 20 === 0) {
+        Utilities.sleep(1000);
+      }
+    } catch (err) {
+      errors++;
+      Logger.log('Result email fail ' + p.email + ': ' + err);
+    }
+  }
+  return { sent: sent, errors: errors, total: pool.length };
+}
+
 // ── Draw ───────────────────────────────────────────────────────────────────
 
 /** Time-driven trigger: every 5–15 minutes */
@@ -480,7 +595,12 @@ function runDraw_(note) {
 
     var rows = sheet.getRange(2, 1, last, ENTRANT_HEADERS.length).getValues();
     var pool = rows.map(function (r) {
-      return { entryId: String(r[1]), name: String(r[3]), email: String(r[4]) };
+      return {
+        entryId: String(r[1]),
+        token: String(r[2]),
+        name: String(r[3]),
+        email: String(r[4])
+      };
     });
 
     // Fisher–Yates
@@ -496,6 +616,14 @@ function runDraw_(note) {
     setConfig_('enrollOpen', 'FALSE');
     writeResultRow_(top, note || 'draw');
 
+    // Notify all entrants (winner / backups / not selected)
+    var mailStats = { sent: 0, errors: 0, total: 0 };
+    try {
+      mailStats = sendAllResultEmails_(pool, top, cfg);
+    } catch (mailBatchErr) {
+      Logger.log('sendAllResultEmails_ failed: ' + mailBatchErr);
+    }
+
     if (STAFF_NOTIFY_EMAIL) {
       try {
         var names = top.map(function (t, idx) {
@@ -505,12 +633,19 @@ function runDraw_(note) {
         MailApp.sendEmail({
           to: STAFF_NOTIFY_EMAIL,
           subject: '[Lottery] Drawn: ' + cfg.title,
-          body: 'Count=' + pool.length + '\n' + names
+          body: 'Count=' + pool.length + '\n' + names +
+            '\n\nResult emails: sent=' + mailStats.sent +
+            ' errors=' + mailStats.errors
         });
       } catch (e3) { /* ignore */ }
     }
 
-    return { ok: true, drawn: true, result: readResult_() };
+    return {
+      ok: true,
+      drawn: true,
+      result: readResult_(),
+      emails: mailStats
+    };
   } finally {
     lock.releaseLock();
   }
