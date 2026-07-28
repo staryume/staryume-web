@@ -42,9 +42,8 @@
 
   <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
     <div class="mb-6 text-center">
-      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">LOTTERY DASHBOARD</p>
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">SPECIAL EVENT FOR DISCORD MEMBERS</p>
       <h1 id="pageTitle" class="text-2xl font-bold tracking-tight">抽選儀表板</h1>
-      <p id="pageSub" class="text-sm text-gray-500 mt-2">載入中…</p>
     </div>
 
     <div id="errorCard" class="hidden mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-800"></div>
@@ -59,12 +58,8 @@
     <!-- Countdown -->
     <div id="countdownCard" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
       <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">COUNTDOWN TO DRAW</p>
-      <p id="countdownLabel" class="text-sm text-gray-500 mb-3">距離自動開獎</p>
-      <div id="countdownDigits" class="grid grid-cols-4 gap-2 text-center font-mono">
-        <div class="bg-tech-gray rounded-xl py-3">
-          <div id="cdD" class="text-2xl font-bold">—</div>
-          <div class="text-[10px] text-gray-400">日</div>
-        </div>
+      <p id="countdownLabel" class="text-sm text-gray-500 mb-3">距離結果公布時間尚餘:</p>
+      <div id="countdownDigits" class="grid grid-cols-3 gap-2 text-center font-mono">
         <div class="bg-tech-gray rounded-xl py-3">
           <div id="cdH" class="text-2xl font-bold">—</div>
           <div class="text-[10px] text-gray-400">時</div>
@@ -78,7 +73,6 @@
           <div class="text-[10px] text-gray-400">秒</div>
         </div>
       </div>
-      <p id="endAtText" class="text-xs text-gray-400 mt-3 text-center"></p>
     </div>
 
     <!-- Meta -->
@@ -159,7 +153,6 @@
 
     function setCountdown(msLeft) {
       if (msLeft == null || isNaN(msLeft)) {
-        document.getElementById('cdD').textContent = '—';
         document.getElementById('cdH').textContent = '—';
         document.getElementById('cdM').textContent = '—';
         document.getElementById('cdS').textContent = '—';
@@ -167,11 +160,10 @@
       }
       if (msLeft < 0) msLeft = 0;
       const s = Math.floor(msLeft / 1000);
-      const d = Math.floor(s / 86400);
-      const h = Math.floor((s % 86400) / 3600);
+      // Total hours (can exceed 24 if multi-day), no separate day unit
+      const h = Math.floor(s / 3600);
       const m = Math.floor((s % 3600) / 60);
       const sec = s % 60;
-      document.getElementById('cdD').textContent = String(d);
       document.getElementById('cdH').textContent = String(h).padStart(2, '0');
       document.getElementById('cdM').textContent = String(m).padStart(2, '0');
       document.getElementById('cdS').textContent = String(sec).padStart(2, '0');
@@ -185,7 +177,7 @@
         const left = endAtMs - now;
         setCountdown(left);
         if (left <= 0) {
-          document.getElementById('countdownLabel').textContent = '已到開獎時間';
+          document.getElementById('countdownLabel').textContent = '距離結果公布時間尚餘:';
           // Refresh status soon to pick up auto-draw
           loadStatus();
         }
@@ -258,8 +250,6 @@
     function applyStatus(data) {
       errorCard.classList.add('hidden');
       document.getElementById('pageTitle').textContent = data.title || '抽選儀表板';
-      document.getElementById('pageSub').textContent =
-        (data.eventName || '') + (data.drawn ? ' · 已開獎' : ' · 自動開獎');
       document.getElementById('infoEvent').textContent = data.eventName || '—';
       document.getElementById('infoPrice').textContent = data.price || '—';
       document.getElementById('infoPickup').textContent = data.pickup || '18:00–20:00';
@@ -274,11 +264,8 @@
       }
       endAtMs = data.endAtMs || null;
       if (endAtMs) {
-        document.getElementById('endAtText').textContent =
-          '開獎：' + new Date(endAtMs).toLocaleString('zh-HK', { timeZone: 'Asia/Hong_Kong' }) + ' (HKT)';
         startTick();
       } else {
-        document.getElementById('endAtText').textContent = '尚未設定開獎時間';
         setCountdown(null);
       }
 
@@ -288,9 +275,12 @@
       else if (!data.enrollOpen) status = '報名已關閉';
       document.getElementById('infoStatus').textContent = status;
 
+      const countdownLabel = document.getElementById('countdownLabel');
       if (data.drawn) {
-        document.getElementById('countdownLabel').textContent = '已開獎';
+        countdownLabel.textContent = '結果已公布';
         setCountdown(0);
+      } else {
+        countdownLabel.textContent = '距離結果公布時間尚餘:';
       }
 
       renderYou(data.you);
@@ -302,10 +292,6 @@
         enroll.textContent = '報名已結束';
         enroll.classList.add('opacity-50', 'pointer-events-none');
       }
-      if (resolved.event && resolved.event.label) {
-        document.getElementById('pageSub').textContent =
-          resolved.event.label + (data.drawn ? ' · 已開獎' : ' · 自動開獎');
-      }
     }
 
     async function loadStatus() {
@@ -316,7 +302,6 @@
         else msg = '請使用 ?event=acghk 等連結，並設定 lottery-config.js（見 docs/lottery-apps-script.md）';
         errorCard.textContent = msg;
         errorCard.classList.remove('hidden');
-        document.getElementById('pageSub').textContent = '後端未連接';
         return;
       }
       try {
@@ -326,7 +311,6 @@
       } catch (e) {
         errorCard.textContent = '無法載入狀態，請稍後按「重新整理」。';
         errorCard.classList.remove('hidden');
-        document.getElementById('pageSub').textContent = '載入失敗';
       }
     }
 
