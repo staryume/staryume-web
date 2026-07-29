@@ -47,6 +47,19 @@ Google Sheet **File → Version history** is also available for accidental undos
 - Same email cannot create another TW pre-order within **24 hours** of a previous one  
 - New TW pre-orders also freeze at the same deadline
 
+### Inventory POS linkage (optional)
+
+After you deploy **Inventory + Event POS** (`docs/pos-apps-script.md`):
+
+1. In this order `Code.gs`, set:
+   - `POS_INVENTORY_URL` = POS web app URL  
+   - `INVENTORY_SERVICE_KEY` = same secret as POS Script Property  
+2. Redeploy the **order** web app (new version).  
+3. Behavior on successful create:
+   - **`limited`** products → deduct `stockHK` or `stockTW` by order region  
+   - **`unlimited`** (pre-order import) → no stock change  
+   - **HK limited** with `HARD_REJECT_HK_LIMITED = true` → reject checkout if not enough stock  
+
 ---
 
 ## B. Create the Google Drive folder (payment screenshots)

@@ -12,6 +12,16 @@ var MAX_PROOF_BYTES = 6000000;
 var STORE_NAME = 'staryume';
 var SELLER_NOTIFY_EMAIL = 'staryume@gmail.com';
 
+/**
+ * Inventory POS linkage (docs/pos-Code.gs). Leave URL empty to skip stock checks.
+ * After deploying POS web app: paste URL + same INVENTORY_SERVICE_KEY as POS Script Property.
+ * Limited SKUs deduct regional pool (HK→stockHK, TW→stockTW); unlimited pre-order skips stock.
+ */
+var POS_INVENTORY_URL = '';
+var INVENTORY_SERVICE_KEY = '';
+/** HK paid limited: reject order if inventory pool insufficient. TW usually unlimited. */
+var HARD_REJECT_HK_LIMITED = true;
+
 /** Same email cannot place another TW pre-order within this many hours. */
 var NEW_ORDER_COOLDOWN_HOURS = 24;
 /**
@@ -133,6 +143,22 @@ function handleCreate_(data) {
     }
   }
 
+  // Inventory hard-check for HK paid limited stock (before proof / write)
+  if (POS_INVENTORY_URL && region === 'HK' && HARD_REJECT_HK_LIMITED) {
+    var stockGate = inventoryWebCheck_(region, data.items, true);
+    if (stockGate && stockGate.ok === false) {
+      return jsonOut_(stockGate);
+    }
+    if (stockGate && stockGate.available === false) {
+      return jsonOut_({
+        ok: false,
+        error: 'insufficient_stock',
+        message: stockGate.message || '部分商品庫存不足，無法完成訂單。請減少數量或聯絡 Discord。',
+        results: stockGate.results || null
+      });
+    }
+  }
+
   // Paid orders (including any non-TW create): require valid proof before writing the row
   var proofUrl = '';
   if (!isTwPreorder) {
@@ -228,6 +254,15 @@ function handleCreate_(data) {
     console.error('Seller notify mail failed: ' + sellerMailErr);
   }
 
+  // Deduct limited inventory after order is written (unlimited / pre-order: no stock change)
+  var inventoryResult = null;
+  try {
+    inventoryResult = inventoryWebDeduct_(region, currency, orderId, data.items);
+  } catch (invErr) {
+    console.error('Inventory deduct failed: ' + invErr);
+    inventoryResult = { ok: false, error: String(invErr) };
+  }
+
   return jsonOut_({
     ok: true,
     orderId: orderId,
@@ -235,8 +270,59 @@ function handleCreate_(data) {
     proofError: null,
     editableUntil: isTwPreorder
       ? twDeadlineDate_().toISOString()
-      : null
+      : null,
+    inventory: inventoryResult
   });
+}
+
+// ── Inventory POS bridge (optional) ─────────────────────────────────────────
+
+function inventoryConfigured_() {
+  return !!(POS_INVENTORY_URL && INVENTORY_SERVICE_KEY &&
+    POS_INVENTORY_URL.indexOf('http') === 0 &&
+    INVENTORY_SERVICE_KEY !== 'CHANGE_ME_SERVICE');
+}
+
+function inventoryWebCheck_(region, items, hardReject) {
+  if (!inventoryConfigured_()) return { ok: true, available: true, skipped: true };
+  var payload = {
+    action: 'web_check',
+    serviceKey: INVENTORY_SERVICE_KEY,
+    region: region,
+    items: items || [],
+    hardReject: !!hardReject
+  };
+  return inventoryFetch_(payload);
+}
+
+function inventoryWebDeduct_(region, currency, orderId, items) {
+  if (!inventoryConfigured_()) return { ok: true, skipped: true };
+  var payload = {
+    action: 'web_deduct',
+    serviceKey: INVENTORY_SERVICE_KEY,
+    region: region,
+    currency: currency,
+    orderId: orderId,
+    items: items || [],
+    hardReject: region === 'HK' && HARD_REJECT_HK_LIMITED,
+    logUnlimited: true
+  };
+  return inventoryFetch_(payload);
+}
+
+function inventoryFetch_(payload) {
+  var res = UrlFetchApp.fetch(POS_INVENTORY_URL, {
+    method: 'post',
+    contentType: 'text/plain;charset=utf-8',
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true,
+    followRedirects: true
+  });
+  var text = res.getContentText() || '';
+  try {
+    if (text && text.trim().charAt(0) === '{') return JSON.parse(text);
+  } catch (e) { /* fall through */ }
+  return { ok: false, error: 'inventory_upstream', status: res.getResponseCode(), body: text.slice(0, 200) };
 }
 
 // ── Get / Update / Cancel / Check ───────────────────────────────────────────

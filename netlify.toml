@@ -21,3 +21,8 @@
 [[edge_functions]]
   function = "geo"
   path = "/api/geo"
+
+# Staff inventory + event POS (rate limit + proxy to Apps Script)
+[[edge_functions]]
+  function = "pos"
+  path = "/api/pos"

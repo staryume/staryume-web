@@ -10,6 +10,8 @@ Disallow: /preorder.html
 Disallow: /hk-form.html
 Disallow: /lottery.html
 Disallow: /lottery-status.html
+Disallow: /pos.html
+Disallow: /pos.js
 Disallow: /api/
 
 Sitemap: https://staryu.me/sitemap.xml

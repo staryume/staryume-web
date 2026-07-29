@@ -28,3 +28,4 @@
 - CSP still allows `'unsafe-inline'` scripts (Tailwind CDN / inline pages).  
 - Product/post HTML in `data.js` / `store.js` is trusted editor content (XSS if repo is compromised).  
 - **裏 store 通關密碼** lives in client `store.js` (`storeConfig.ura.passcode`). This is **fan obscurity**, not strong secrecy — anyone can read the JS. Rotate the code via Discord + redeploy when needed. Unlock uses `sessionStorage` only.  
+- **Inventory / Event POS** (`pos.html`): staff passcode is checked **server-side** on every `/api/pos` call (Apps Script `POS_PASSCODE` / Script Property). The page URL is not secret — rotate the passcode via Script Property if leaked. `INVENTORY_SERVICE_KEY` must live only in Apps Script (order + POS), never in public JS. See `docs/pos-apps-script.md`.  
