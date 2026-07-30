@@ -7,7 +7,7 @@
  */
 const POS_APPS_SCRIPT_URL =
   Deno.env.get("POS_APPS_SCRIPT_URL") ||
-  "https://script.google.com/macros/s/REPLACE_WITH_POS_DEPLOYMENT_ID/exec";
+  "https://script.google.com/macros/s/AKfycbx172jxXoEpAI0d2KwfoiHUtYTbddrMHyJCwZQh3CfbKOPhrMwf5FYhrDqO75AteddF/exec";
 
 const MAX_BODY_BYTES = 2_000_000;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
