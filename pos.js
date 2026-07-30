@@ -531,7 +531,7 @@ function renderInventory() {
         <td class="px-1 py-2 text-[10px] font-mono text-gray-500">${esc(p.stockMode)}</td>
         ${pools}
         <td class="px-1 py-1">
-          <button type="button" data-save-stock="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 bg-black text-white rounded">存</button>
+          <button type="button" data-save-stock="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 bg-black text-white rounded">SAVE</button>
         </td>
       </tr>`;
     })
