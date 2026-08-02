@@ -17,7 +17,7 @@ var ALLOW_NEGATIVE_STOCK = false;
  * Web apps sometimes cannot use getActiveSpreadsheet(); openById is reliable.
  * Script Property SPREADSHEET_ID overrides this value.
  */
-var SPREADSHEET_ID = '';
+var SPREADSHEET_ID = '1XTKcUGFL9XSmqsfq7icYk7K9hi7geZvt3YHWk0MAEs4';
 
 var POOLS = ['HK', 'TW', 'JP', 'BOOTH', 'HOME'];
 var CURRENCIES = { HK: 'HKD', TW: 'TWD', JP: 'JPY', BOOTH: 'JPY', HOME: 'HKD' };
