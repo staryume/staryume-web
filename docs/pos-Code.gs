@@ -19,8 +19,17 @@ var ALLOW_NEGATIVE_STOCK = false;
  */
 var SPREADSHEET_ID = '1XTKcUGFL9XSmqsfq7icYk7K9hi7geZvt3YHWk0MAEs4';
 
-var POOLS = ['HK', 'TW', 'JP', 'BOOTH', 'HOME'];
-var CURRENCIES = { HK: 'HKD', TW: 'TWD', JP: 'JPY', BOOTH: 'JPY', HOME: 'HKD' };
+/** Pool codes used in stock fields: stock + code (e.g. HKAT → stockHKAT). */
+var POOLS = ['HK', 'TW', 'JP', 'BOOTH', 'HOME', 'HKAT', 'JPMELON'];
+var CURRENCIES = {
+  HK: 'HKD', TW: 'TWD', JP: 'JPY', BOOTH: 'JPY', HOME: 'HKD',
+  HKAT: 'HKD', JPMELON: 'JPY'
+};
+/** Display labels for UI (optional; client may mirror). */
+var POOL_LABELS = {
+  HK: 'HK', TW: 'TW', JP: 'JP', BOOTH: 'BOOTH', HOME: 'HOME',
+  HKAT: 'HK-AT', JPMELON: 'JP-MELON'
+};
 
 /** Append-only new columns so existing sheet data columns do not shift. */
 var PRODUCT_HEADERS = [
@@ -29,7 +38,8 @@ var PRODUCT_HEADERS = [
   'priceHKD', 'priceTWD', 'priceJPY',
   'stockHK', 'stockTW', 'stockJP', 'stockBOOTH', 'stockHOME',
   'category', 'thumbUrl', 'active', 'notes', 'updatedAt',
-  'productCreateDate', 'parentSku', 'productKind', 'sortOrder'
+  'productCreateDate', 'parentSku', 'productKind', 'sortOrder',
+  'stockHKAT', 'stockJPMELON'
 ];
 
 /** Default placeholder sub-products created under each set. */
@@ -225,6 +235,8 @@ function rowToProduct_(row, sheetRow) {
     parentSku: String(row[21] || ''),
     productKind: kind,
     sortOrder: int_(row[23]),
+    stockHKAT: int_(row[24]),
+    stockJPMELON: int_(row[25]),
     _row: sheetRow
   };
 }
@@ -256,7 +268,9 @@ function productToRow_(p) {
     p.productCreateDate || p.updatedAt || new Date().toISOString(),
     p.parentSku || '',
     kind,
-    int_(p.sortOrder)
+    int_(p.sortOrder),
+    int_(p.stockHKAT),
+    int_(p.stockJPMELON)
   ];
 }
 
@@ -349,6 +363,8 @@ function ensureSetPlaceholders_(parentSku, count) {
       stockJP: 0,
       stockBOOTH: 0,
       stockHOME: 0,
+      stockHKAT: 0,
+      stockJPMELON: 0,
       category: 'component',
       thumbUrl: parent.thumbUrl || '',
       active: true,
@@ -439,6 +455,8 @@ function handleUpsertProduct_(data) {
       if (p.stockJP == null) merged.stockJP = existing.stockJP;
       if (p.stockBOOTH == null) merged.stockBOOTH = existing.stockBOOTH;
       if (p.stockHOME == null) merged.stockHOME = existing.stockHOME;
+      if (p.stockHKAT == null) merged.stockHKAT = existing.stockHKAT;
+      if (p.stockJPMELON == null) merged.stockJPMELON = existing.stockJPMELON;
       // Allow staff to edit release date (productCreateDate) when provided
       if (p.productCreateDate != null && String(p.productCreateDate).trim() !== '') {
         merged.productCreateDate = normalizeReleaseDate_(p.productCreateDate) || String(p.productCreateDate).trim();
@@ -644,6 +662,8 @@ function handleImportStore_(data) {
         stockJP: 0,
         stockBOOTH: 0,
         stockHOME: 0,
+        stockHKAT: 0,
+        stockJPMELON: 0,
         category: cat || '',
         thumbUrl: thumb || '',
         active: s.active === false ? false : true,
@@ -662,6 +682,8 @@ function handleImportStore_(data) {
           p.stockJP = existing.stockJP;
           p.stockBOOTH = existing.stockBOOTH;
           p.stockHOME = existing.stockHOME;
+          p.stockHKAT = existing.stockHKAT;
+          p.stockJPMELON = existing.stockJPMELON;
           if (!data.forceStockMode) p.stockMode = existing.stockMode;
         }
         p.productCreateDate = existing.productCreateDate || existing.updatedAt || nowIso;
@@ -1124,6 +1146,8 @@ function handleDailySummary_(data) {
       stockJP: p.stockJP,
       stockBOOTH: p.stockBOOTH,
       stockHOME: p.stockHOME,
+      stockHKAT: p.stockHKAT,
+      stockJPMELON: p.stockJPMELON,
       regionStock: event ? getPoolStock_(p, event.region) : null
     };
   });
@@ -1387,6 +1411,7 @@ function handleBootstrap_(data) {
     activeEvent: active,
     todaySales: todaySales,
     pools: POOLS,
+    poolLabels: POOL_LABELS,
     spreadsheet: ssMeta
   });
 }

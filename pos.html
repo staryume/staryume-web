@@ -105,23 +105,24 @@
 
       <!-- Inventory -->
       <section data-panel="inventory" class="hidden">
-        <p class="text-xs text-gray-500 mb-3">排序依<strong>發售日</strong>（愈新愈上）。套組下方縮排為子項目。改庫存或發售日後按 SAVE。也可開試算表直接改。</p>
+        <p class="text-xs text-gray-500 mb-3">排序依<strong>發售日</strong>（愈新愈上）。庫存區：HK / TW / JP / BOOTH / HOME / <strong>HK-AT</strong> / <strong>JP-MELON</strong>。改完按 SAVE。</p>
         <div class="flex flex-wrap gap-2 mb-3">
           <button type="button" id="btn-save-all-stock" class="text-xs font-bold px-3 py-2 bg-black text-white rounded-lg">SAVE ALL</button>
           <button type="button" id="btn-open-sheet-inv" class="text-xs font-bold px-3 py-2 border border-tech-purple text-purple-900 rounded-lg">開啟 Google 試算表</button>
         </div>
         <div class="overflow-x-auto bg-white border border-gray-200 rounded-xl">
-          <table class="w-full text-left min-w-[860px]">
+          <table class="w-full text-left min-w-[980px]">
             <thead>
               <tr class="text-[10px] uppercase text-gray-400 border-b border-gray-100">
                 <th class="px-2 py-2">商品</th>
-                <th class="px-1 py-2">kind</th>
                 <th class="px-1 py-2">發售日</th>
                 <th class="px-1 py-2 text-center">HK</th>
                 <th class="px-1 py-2 text-center">TW</th>
                 <th class="px-1 py-2 text-center">JP</th>
                 <th class="px-1 py-2 text-center">BOOTH</th>
                 <th class="px-1 py-2 text-center">HOME</th>
+                <th class="px-1 py-2 text-center">HK-AT</th>
+                <th class="px-1 py-2 text-center">JP-MELON</th>
                 <th class="px-1 py-2"></th>
               </tr>
             </thead>
@@ -291,6 +292,8 @@
             <option value="JP">JP</option>
             <option value="BOOTH">BOOTH</option>
             <option value="HOME">HOME</option>
+            <option value="HKAT">HK-AT</option>
+            <option value="JPMELON">JP-MELON</option>
           </select>
         </div>
         <div>

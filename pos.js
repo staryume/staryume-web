@@ -17,9 +17,30 @@ const POS_CONFIG = {
   sheetUrl: "",
   sessionKey: "staryume_pos_passcode",
   deviceKey: "staryume_pos_device",
-  pools: ["HK", "TW", "JP", "BOOTH", "HOME"],
-  currencyByRegion: { HK: "HKD", TW: "TWD", JP: "JPY", BOOTH: "JPY", HOME: "HKD" },
+  pools: ["HK", "TW", "JP", "BOOTH", "HOME", "HKAT", "JPMELON"],
+  poolLabels: {
+    HK: "HK",
+    TW: "TW",
+    JP: "JP",
+    BOOTH: "BOOTH",
+    HOME: "HOME",
+    HKAT: "HK-AT",
+    JPMELON: "JP-MELON",
+  },
+  currencyByRegion: {
+    HK: "HKD",
+    TW: "TWD",
+    JP: "JPY",
+    BOOTH: "JPY",
+    HOME: "HKD",
+    HKAT: "HKD",
+    JPMELON: "JPY",
+  },
 };
+
+function poolLabel(pool) {
+  return POS_CONFIG.poolLabels[pool] || pool;
+}
 
 // ── State ───────────────────────────────────────────────────────────────────
 
@@ -697,12 +718,12 @@ function renderInventory() {
         <td class="px-1 py-1">
           <input type="number" min="0" step="1" data-stock-sku="${escAttr(p.sku)}" data-pool="${pool}"
             value="${poolStock(p, pool)}"
-            class="w-14 sm:w-16 text-center text-xs font-mono border border-gray-200 rounded py-1 ${p.stockMode === "unlimited" ? "bg-gray-50 text-gray-400" : ""}"
-            ${p.stockMode === "unlimited" ? 'title="unlimited 不扣庫存"' : ""}>
+            class="w-12 sm:w-14 text-center text-xs font-mono border border-gray-200 rounded py-1 ${p.stockMode === "unlimited" ? "bg-gray-50 text-gray-400" : ""}"
+            ${p.stockMode === "unlimited" ? 'title="unlimited 不扣庫存"' : ""}
+            title="${escAttr(poolLabel(pool))}">
         </td>`
         )
         .join("");
-      const kindLabel = p.productKind || (child ? "component" : p.category === "set" ? "set" : "—");
       const rel = releaseDateOnly(p);
       return `
       <tr class="border-b border-gray-100 hover:bg-gray-50 ${child ? "bg-gray-50/80" : ""}">
@@ -711,11 +732,10 @@ function renderInventory() {
             ${thumbHtml(p, "w-9 h-9")}
             <div class="min-w-0">
               <div class="text-xs font-bold truncate max-w-[10rem] sm:max-w-[14rem]" title="${escAttr(displayName(p))}">${child ? "↳ " : ""}${esc(displayName(p))}</div>
-              <div class="text-[9px] font-mono text-gray-400 truncate">${esc(p.sku)}</div>
+              <div class="text-[9px] font-mono text-gray-400 truncate">${esc(p.sku)}${p.stockMode === "unlimited" ? " · ∞" : ""}</div>
             </div>
           </div>
         </td>
-        <td class="px-1 py-2 text-[10px] font-mono text-gray-500">${esc(kindLabel)}<br><span class="text-gray-400">${esc(p.stockMode)}</span></td>
         <td class="px-1 py-1">
           <input type="date" data-release-sku="${escAttr(p.sku)}" value="${escAttr(rel)}"
             class="w-[7.5rem] text-[10px] font-mono border border-gray-200 rounded py-1 px-1"
@@ -780,7 +800,7 @@ async function saveStockRow(sku) {
     const bits = POS_CONFIG.pools.map((pool) => {
       const sent = stocks[pool];
       const got = Number(p["stock" + pool]);
-      return `${pool}:${got}${sent !== got ? "≠" + sent : ""}`;
+      return `${poolLabel(pool)}:${got}${sent !== got ? "≠" + sent : ""}`;
     });
     const sheetName = res.spreadsheet?.name ? ` → ${res.spreadsheet.name}` : "";
     toast(`SAVED ${releaseDate ? releaseDate + " · " : ""}${bits.join(" ")}${sheetName}`);
