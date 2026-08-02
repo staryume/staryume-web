@@ -87,6 +87,7 @@ function doPost(e) {
     if (action === 'upsert_product') return handleUpsertProduct_(data);
     if (action === 'delete_product') return handleDeleteProduct_(data);
     if (action === 'set_stock') return handleSetStock_(data);
+    if (action === 'set_stock_batch') return handleSetStockBatch_(data);
     if (action === 'import_store') return handleImportStore_(data);
     if (action === 'ensure_set_components') return handleEnsureSetComponents_(data);
     if (action === 'list_events') return handleListEvents_(data);
@@ -510,9 +511,66 @@ function handleDeleteProduct_(data) {
   }
 }
 
+/**
+ * Normalize stocks object: { HK: 1, hkat: "2" } → { HK: 1, HKAT: 2 }
+ * Accepts numeric 0 (does not skip zero).
+ */
+function normalizeStocksMap_(pools) {
+  var normalized = {};
+  if (!pools || typeof pools !== 'object') return normalized;
+  for (var k in pools) {
+    if (!pools.hasOwnProperty(k)) continue;
+    if (pools[k] == null || pools[k] === '') continue;
+    var pool = String(k).toUpperCase().replace(/-/g, ''); // HK-AT → HKAT
+    // Map display aliases
+    if (pool === 'HKAT' || pool === 'HK_AT') pool = 'HKAT';
+    if (pool === 'JPMELON' || pool === 'JP_MELON' || pool === 'JPMELON') pool = 'JPMELON';
+    if (POOLS.indexOf(pool) < 0) continue;
+    normalized[pool] = int_(pools[k]);
+  }
+  return normalized;
+}
+
+/**
+ * Apply stock map + optional release date onto an in-memory product and write the row.
+ * Returns { ok, product?, changed?, error? }.
+ */
+function applyStockToProduct_(existing, stocksMap, releaseDate, source) {
+  var normalized = normalizeStocksMap_(stocksMap);
+  var anyPool = false;
+  var changed = [];
+  POOLS.forEach(function (pool) {
+    if (!Object.prototype.hasOwnProperty.call(normalized, pool)) return;
+    anyPool = true;
+    var fromQty = getPoolStock_(existing, pool);
+    var toQty = int_(normalized[pool]);
+    setPoolStockOnProduct_(existing, pool, toQty);
+    if (fromQty !== toQty) {
+      changed.push({ pool: pool, from: fromQty, to: toQty });
+      logStockChange_(existing.sku, pool, fromQty, toQty, source || 'set_stock', '');
+    }
+  });
+
+  if (!anyPool) {
+    return { ok: false, error: 'no_stocks', message: 'No stock values received.' };
+  }
+
+  if (releaseDate != null && String(releaseDate).trim() !== '') {
+    existing.productCreateDate = normalizeReleaseDate_(releaseDate) || String(releaseDate).trim();
+  }
+  existing.updatedAt = new Date().toISOString();
+  sheet_('Products').getRange(existing._row, 1, 1, PRODUCT_HEADERS.length)
+    .setValues([productToRow_(existing)]);
+  return {
+    ok: true,
+    product: publicProduct_(existing),
+    changed: changed
+  };
+}
+
 function handleSetStock_(data) {
   var lock = LockService.getScriptLock();
-  lock.waitLock(15000);
+  lock.waitLock(20000);
   try {
     var sku = String(data.sku || '');
     var existing = findProductBySku_(sku);
@@ -525,62 +583,99 @@ function handleSetStock_(data) {
     }
 
     var pools = data.stocks || {};
-    // also accept single pool + qty
     if (data.pool != null && data.qty != null) {
       pools[String(data.pool).toUpperCase()] = data.qty;
     }
 
-    // Accept lowercase keys from clients
-    var normalized = {};
-    for (var k in pools) {
-      if (pools.hasOwnProperty(k) && pools[k] != null && pools[k] !== '') {
-        normalized[String(k).toUpperCase()] = pools[k];
-      }
-    }
-
-    var changed = [];
-    var anyPool = false;
-    POOLS.forEach(function (pool) {
-      if (normalized[pool] == null) return;
-      anyPool = true;
-      var fromQty = getPoolStock_(existing, pool);
-      var toQty = int_(normalized[pool]);
-      setPoolStockOnProduct_(existing, pool, toQty);
-      if (fromQty !== toQty) {
-        changed.push({ pool: pool, from: fromQty, to: toQty });
-        logStockChange_(sku, pool, fromQty, toQty, 'set_stock', data.note || '');
-      }
-    });
-
-    if (!anyPool) {
+    var applied = applyStockToProduct_(existing, pools, data.productCreateDate || data.releaseDate, 'set_stock');
+    if (!applied.ok) {
       return jsonOut_({
         ok: false,
-        error: 'no_stocks',
-        message: 'No stock values received. Try SAVE again.'
+        error: applied.error || 'no_stocks',
+        message: applied.message || 'No stock values received. Try SAVE again.'
       });
     }
-
-    if (data.stockMode === 'limited' || data.stockMode === 'unlimited') {
-      existing.stockMode = data.stockMode;
-    }
-    existing.updatedAt = new Date().toISOString();
-    sheet_('Products').getRange(existing._row, 1, 1, PRODUCT_HEADERS.length)
-      .setValues([productToRow_(existing)]);
     SpreadsheetApp.flush();
 
-    // Re-read row to confirm persistence
     var sh = sheet_('Products');
     var confirmRow = sh.getRange(existing._row, 1, 1, PRODUCT_HEADERS.length).getValues()[0];
     var confirmed = rowToProduct_(confirmRow, existing._row);
-    var out = Object.assign({}, confirmed);
-    delete out._row;
-
     var ss = ss_();
     return jsonOut_({
       ok: true,
-      product: out,
-      changed: changed,
+      product: publicProduct_(confirmed),
+      changed: applied.changed,
       spreadsheet: { id: ss.getId(), name: ss.getName() }
+    });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Batch save many products in one lock (for SAVE ALL).
+ * data.items: [{ sku, stocks: {HK:0,...}, productCreateDate? }, ...]
+ */
+function handleSetStockBatch_(data) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var items = data.items || [];
+    if (!items.length) {
+      return jsonOut_({ ok: false, error: 'empty_batch', message: 'No items to save.' });
+    }
+
+    // Index products once (row numbers stay stable — we only update cells)
+    var all = productRows_();
+    var bySku = {};
+    for (var i = 0; i < all.length; i++) {
+      bySku[all[i].sku] = all[i];
+    }
+
+    var results = [];
+    var saved = 0;
+    var failed = 0;
+
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j] || {};
+      var sku = String(it.sku || '');
+      if (!sku) {
+        results.push({ sku: '', ok: false, error: 'missing_sku' });
+        failed++;
+        continue;
+      }
+      var existing = bySku[sku];
+      if (!existing) {
+        results.push({ sku: sku, ok: false, error: 'not_found' });
+        failed++;
+        continue;
+      }
+      var applied = applyStockToProduct_(
+        existing,
+        it.stocks || {},
+        it.productCreateDate || it.releaseDate,
+        'set_stock_batch'
+      );
+      if (!applied.ok) {
+        results.push({ sku: sku, ok: false, error: applied.error, message: applied.message });
+        failed++;
+        continue;
+      }
+      // keep in-memory product updated for consistency
+      bySku[sku] = existing;
+      results.push({ sku: sku, ok: true, product: applied.product, changed: applied.changed });
+      saved++;
+    }
+
+    SpreadsheetApp.flush();
+    var ss = ss_();
+    return jsonOut_({
+      ok: failed === 0,
+      saved: saved,
+      failed: failed,
+      results: results,
+      spreadsheet: { id: ss.getId(), name: ss.getName() },
+      message: failed ? (saved + ' saved, ' + failed + ' failed') : (saved + ' products saved')
     });
   } finally {
     lock.releaseLock();

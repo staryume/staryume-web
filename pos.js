@@ -754,120 +754,180 @@ function renderInventory() {
   });
 }
 
-async function saveStockRow(sku) {
-  const inputs = Array.from(document.querySelectorAll("[data-stock-sku]")).filter(
-    (inp) => inp.getAttribute("data-stock-sku") === sku
-  );
-  const stocks = {};
-  inputs.forEach((inp) => {
-    const pool = (inp.getAttribute("data-pool") || "").toUpperCase();
+/** Snapshot stock + release date from inventory DOM for one or all SKUs. */
+function collectInventoryRows(onlySku) {
+  const stockInputs = Array.from(document.querySelectorAll("[data-stock-sku]"));
+  const bySku = new Map();
+
+  stockInputs.forEach((inp) => {
+    const sku = inp.getAttribute("data-stock-sku");
+    if (!sku) return;
+    if (onlySku && sku !== onlySku) return;
+    if (!bySku.has(sku)) {
+      bySku.set(sku, { sku, stocks: {}, productCreateDate: "" });
+    }
+    const pool = String(inp.getAttribute("data-pool") || "")
+      .toUpperCase()
+      .replace(/-/g, "");
     if (!pool) return;
     const raw = String(inp.value ?? "").trim();
-    stocks[pool] = raw === "" ? 0 : parseInt(raw, 10) || 0;
+    const n = raw === "" ? 0 : parseInt(raw, 10);
+    bySku.get(sku).stocks[pool] = Number.isFinite(n) ? n : 0;
   });
-  if (!Object.keys(stocks).length) {
+
+  Array.from(document.querySelectorAll("[data-release-sku]")).forEach((inp) => {
+    const sku = inp.getAttribute("data-release-sku");
+    if (!sku || (onlySku && sku !== onlySku)) return;
+    if (!bySku.has(sku)) {
+      bySku.set(sku, { sku, stocks: {}, productCreateDate: "" });
+    }
+    bySku.get(sku).productCreateDate = String(inp.value || "").trim();
+  });
+
+  return Array.from(bySku.values()).filter((row) => Object.keys(row.stocks).length > 0);
+}
+
+async function saveStockRow(sku) {
+  const items = collectInventoryRows(sku);
+  if (!items.length) {
     toast("No stock fields found — open 庫存 tab and try again");
     return;
   }
-  const releaseInp = document.querySelector(`[data-release-sku="${cssAttrEscape(sku)}"]`);
-  // fallback without CSS escape issues
-  const releaseEl =
-    releaseInp ||
-    Array.from(document.querySelectorAll("[data-release-sku]")).find(
-      (n) => n.getAttribute("data-release-sku") === sku
-    );
-  const releaseDate = releaseEl?.value || "";
-
+  const item = items[0];
   setBusy(true);
   try {
-    const res = await api({ action: "set_stock", sku, stocks });
-    if (!res.ok) {
-      toast(res.message || res.error || "SAVE failed");
+    // Prefer batch of 1 so path matches SAVE ALL (includes release date in one write)
+    const res = await api({
+      action: "set_stock_batch",
+      items: [
+        {
+          sku: item.sku,
+          stocks: item.stocks,
+          productCreateDate: item.productCreateDate || undefined,
+        },
+      ],
+    });
+    // Fallback if Apps Script not redeployed yet
+    if (res.error === "unknown_action") {
+      const single = await api({
+        action: "set_stock",
+        sku: item.sku,
+        stocks: item.stocks,
+        productCreateDate: item.productCreateDate || undefined,
+      });
+      if (!single.ok) {
+        toast(single.message || single.error || "SAVE failed");
+        return;
+      }
+      const idx = state.products.findIndex((p) => p.sku === sku);
+      if (idx >= 0 && single.product) {
+        state.products[idx] = { ...state.products[idx], ...single.product };
+      }
+      toast("SAVED " + sku);
+      renderPosGrid();
+      renderInventory();
+      renderProducts();
       return;
     }
-    let product = res.product;
-    if (releaseDate) {
-      const up = await api({
-        action: "upsert_product",
-        product: { sku, productCreateDate: releaseDate },
-      });
-      if (up.ok && up.product) product = up.product;
-      else if (!up.ok) toast(up.message || "發售日儲存失敗");
+
+    const row = (res.results || []).find((r) => r.sku === sku) || res.results?.[0];
+    if (!res.ok && !row?.ok) {
+      toast(res.message || row?.error || "SAVE failed");
+      return;
     }
-    const idx = state.products.findIndex((p) => p.sku === sku);
-    if (idx >= 0 && product) state.products[idx] = { ...state.products[idx], ...product };
-    const p = product || {};
+    if (row?.product) {
+      const idx = state.products.findIndex((p) => p.sku === sku);
+      if (idx >= 0) state.products[idx] = { ...state.products[idx], ...row.product };
+    }
+    const p = row?.product || {};
     const bits = POS_CONFIG.pools.map((pool) => {
-      const sent = stocks[pool];
+      const sent = item.stocks[pool];
       const got = Number(p["stock" + pool]);
-      return `${poolLabel(pool)}:${got}${sent !== got ? "≠" + sent : ""}`;
+      return `${poolLabel(pool)}:${Number.isFinite(got) ? got : "?"} `;
     });
-    const sheetName = res.spreadsheet?.name ? ` → ${res.spreadsheet.name}` : "";
-    toast(`SAVED ${releaseDate ? releaseDate + " · " : ""}${bits.join(" ")}${sheetName}`);
+    toast(`SAVED ${item.productCreateDate ? item.productCreateDate + " · " : ""}${bits.join("").trim()}`);
     renderPosGrid();
     renderInventory();
     renderProducts();
+  } catch (err) {
+    toast(String(err.message || err));
   } finally {
     setBusy(false);
   }
 }
 
-function cssAttrEscape(s) {
-  // minimal escape for querySelector attribute
-  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
-}
-
 async function saveAllStock() {
-  if (!confirm("Save stock for ALL products currently shown?")) return;
-  const skus = [...new Set(
-    Array.from(document.querySelectorAll("[data-stock-sku]")).map((i) =>
-      i.getAttribute("data-stock-sku")
-    )
-  )].filter(Boolean);
-  if (!skus.length) {
+  if (!confirm("Save stock + 發售日 for ALL products currently shown?")) return;
+
+  // Snapshot IMMEDIATELY so nothing re-renders mid-save
+  const items = collectInventoryRows(null).map((row) => ({
+    sku: row.sku,
+    stocks: row.stocks,
+    productCreateDate: row.productCreateDate || undefined,
+  }));
+
+  if (!items.length) {
     toast("No rows to save");
     return;
   }
+
   setBusy(true);
-  let ok = 0;
-  let fail = 0;
+  const status = el("status-bar");
+  if (status) status.textContent = `Saving ${items.length} products…`;
+
   try {
-    for (const sku of skus) {
-      const inputs = Array.from(document.querySelectorAll("[data-stock-sku]")).filter(
-        (inp) => inp.getAttribute("data-stock-sku") === sku
-      );
-      const stocks = {};
-      inputs.forEach((inp) => {
-        const pool = (inp.getAttribute("data-pool") || "").toUpperCase();
-        if (!pool) return;
-        const raw = String(inp.value ?? "").trim();
-        stocks[pool] = raw === "" ? 0 : parseInt(raw, 10) || 0;
-      });
-      try {
-        const res = await api({ action: "set_stock", sku, stocks });
-        if (res.ok) {
-          ok++;
-          let product = res.product;
-          const releaseEl = Array.from(document.querySelectorAll("[data-release-sku]")).find(
-            (n) => n.getAttribute("data-release-sku") === sku
-          );
-          if (releaseEl?.value) {
-            const up = await api({
-              action: "upsert_product",
-              product: { sku, productCreateDate: releaseEl.value },
-            });
-            if (up.ok && up.product) product = up.product;
-          }
-          const idx = state.products.findIndex((p) => p.sku === sku);
-          if (idx >= 0 && product) state.products[idx] = { ...state.products[idx], ...product };
-        } else fail++;
-      } catch {
-        fail++;
+    let res = await api({ action: "set_stock_batch", items });
+
+    // Fallback: old Apps Script without batch — sequential (slower)
+    if (res.error === "unknown_action") {
+      let ok = 0;
+      let fail = 0;
+      for (let i = 0; i < items.length; i++) {
+        if (status) status.textContent = `Saving ${i + 1}/${items.length}…`;
+        try {
+          const one = await api({
+            action: "set_stock",
+            sku: items[i].sku,
+            stocks: items[i].stocks,
+            productCreateDate: items[i].productCreateDate,
+          });
+          if (one.ok) {
+            ok++;
+            const idx = state.products.findIndex((p) => p.sku === items[i].sku);
+            if (idx >= 0 && one.product) {
+              state.products[idx] = { ...state.products[idx], ...one.product };
+            }
+          } else fail++;
+        } catch {
+          fail++;
+        }
       }
+      toast(`Save all (legacy): ${ok} ok · ${fail} failed — please redeploy pos-Code.gs for faster batch save`);
+      await bootstrap();
+      return;
     }
-    toast(`Save all: ${ok} ok · ${fail} failed`);
-    renderInventory();
-    renderPosGrid();
+
+    if (!res.ok && !(res.saved > 0)) {
+      toast(res.message || res.error || "SAVE ALL failed");
+      return;
+    }
+
+    // Merge successful products into state
+    (res.results || []).forEach((r) => {
+      if (!r.ok || !r.product) return;
+      const idx = state.products.findIndex((p) => p.sku === r.sku);
+      if (idx >= 0) state.products[idx] = { ...state.products[idx], ...r.product };
+    });
+
+    const saved = res.saved != null ? res.saved : (res.results || []).filter((r) => r.ok).length;
+    const failed = res.failed != null ? res.failed : (res.results || []).filter((r) => !r.ok).length;
+    const sheetName = res.spreadsheet?.name ? ` → ${res.spreadsheet.name}` : "";
+    toast(`SAVE ALL: ${saved} saved · ${failed} failed${sheetName}`);
+
+    // Full reload to confirm Sheet truth
+    await bootstrap();
+  } catch (err) {
+    toast(String(err.message || err));
   } finally {
     setBusy(false);
   }

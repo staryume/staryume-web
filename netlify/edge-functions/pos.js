@@ -11,8 +11,8 @@ const POS_APPS_SCRIPT_URL =
 
 const MAX_BODY_BYTES = 2_000_000;
 const RATE_WINDOW_MS = 10 * 60 * 1000;
-/** Higher than store checkout — booth taps many sales. */
-const RATE_MAX = 120;
+/** Higher than store checkout — booth sales + SAVE ALL / inventory edits. */
+const RATE_MAX = 200;
 
 /** @type {Map<string, number[]>} */
 const hitsByIp = new Map();
