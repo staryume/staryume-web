@@ -260,13 +260,37 @@ function productToRow_(p) {
   ];
 }
 
+/** Parse release/create date to ms; higher = newer. Accepts YYYY-MM-DD or ISO. */
+function releaseTimeMs_(p) {
+  var s = String((p && (p.productCreateDate || p.updatedAt)) || '').trim();
+  if (!s) return 0;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s = s + 'T12:00:00';
+  var t = Date.parse(s);
+  return isFinite(t) ? t : 0;
+}
+
 function sortProductsNewestFirst_(products) {
   return products.slice().sort(function (a, b) {
-    var da = String(a.productCreateDate || a.updatedAt || '');
-    var db = String(b.productCreateDate || b.updatedAt || '');
-    if (da !== db) return db.localeCompare(da);
+    var ta = releaseTimeMs_(a);
+    var tb = releaseTimeMs_(b);
+    if (ta !== tb) return tb - ta; // newest release date first
+    var ida = num_(a.storeId);
+    var idb = num_(b.storeId);
+    if (ida !== idb) return idb - ida; // higher store id next
     return String(a.sku || '').localeCompare(String(b.sku || ''));
   });
+}
+
+function normalizeReleaseDate_(v) {
+  if (v == null || v === '') return '';
+  var s = String(v).trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  var t = Date.parse(s);
+  if (!isFinite(t)) return s;
+  var d = new Date(t);
+  var m = d.getMonth() + 1;
+  var day = d.getDate();
+  return d.getFullYear() + '-' + (m < 10 ? '0' : '') + m + '-' + (day < 10 ? '0' : '') + day;
 }
 
 function publicProduct_(p) {
@@ -276,8 +300,8 @@ function publicProduct_(p) {
 }
 
 /**
- * Create Sub 1…N placeholders under a set if it has no components yet.
- * Returns { created, skipped }.
+ * Create missing Sub 1…N placeholders under a set (fills gaps; never wipes renames).
+ * Returns { created, skipped, error? }.
  */
 function ensureSetPlaceholders_(parentSku, count) {
   parentSku = String(parentSku || '');
@@ -285,37 +309,30 @@ function ensureSetPlaceholders_(parentSku, count) {
   if (!parentSku) return { created: 0, skipped: true };
 
   var all = productRows_();
-  var hasChild = false;
-  for (var i = 0; i < all.length; i++) {
-    if (all[i].parentSku === parentSku) {
-      hasChild = true;
-      break;
-    }
-  }
-  if (hasChild) return { created: 0, skipped: true };
-
   var parent = null;
+  var existingSkus = {};
   for (var j = 0; j < all.length; j++) {
-    if (all[j].sku === parentSku) {
-      parent = all[j];
-      break;
-    }
+    existingSkus[all[j].sku] = true;
+    if (all[j].sku === parentSku) parent = all[j];
   }
   if (!parent) return { created: 0, skipped: true, error: 'parent_not_found' };
 
+  // Mark parent as set if needed
+  if (parent.productKind !== 'set' && parent.productKind !== 'component') {
+    parent.productKind = 'set';
+    parent.updatedAt = new Date().toISOString();
+    sheet_('Products').getRange(parent._row, 1, 1, PRODUCT_HEADERS.length)
+      .setValues([productToRow_(parent)]);
+  }
+
   var sh = sheet_('Products');
   var now = new Date().toISOString();
+  var parentRelease = normalizeReleaseDate_(parent.productCreateDate) || now.slice(0, 10);
   var created = 0;
   for (var n = 1; n <= count; n++) {
     var sku = parentSku + '__c' + n;
-    var exists = false;
-    for (var k = 0; k < all.length; k++) {
-      if (all[k].sku === sku) {
-        exists = true;
-        break;
-      }
-    }
-    if (exists) continue;
+    if (existingSkus[sku]) continue;
+    // also skip if any child already uses this sortOrder under parent with different sku
     var p = {
       sku: sku,
       source: 'set_component',
@@ -337,15 +354,16 @@ function ensureSetPlaceholders_(parentSku, count) {
       active: true,
       notes: 'placeholder',
       updatedAt: now,
-      productCreateDate: now,
+      productCreateDate: parentRelease,
       parentSku: parentSku,
       productKind: 'component',
       sortOrder: n
     };
     sh.appendRow(productToRow_(p));
+    existingSkus[sku] = true;
     created++;
   }
-  return { created: created, skipped: false };
+  return { created: created, skipped: created === 0 };
 }
 
 function findProductBySku_(sku) {
@@ -421,8 +439,12 @@ function handleUpsertProduct_(data) {
       if (p.stockJP == null) merged.stockJP = existing.stockJP;
       if (p.stockBOOTH == null) merged.stockBOOTH = existing.stockBOOTH;
       if (p.stockHOME == null) merged.stockHOME = existing.stockHOME;
-      // never overwrite create date once set
-      merged.productCreateDate = existing.productCreateDate || merged.productCreateDate || existing.updatedAt || p.updatedAt;
+      // Allow staff to edit release date (productCreateDate) when provided
+      if (p.productCreateDate != null && String(p.productCreateDate).trim() !== '') {
+        merged.productCreateDate = normalizeReleaseDate_(p.productCreateDate) || String(p.productCreateDate).trim();
+      } else {
+        merged.productCreateDate = existing.productCreateDate || existing.updatedAt || p.updatedAt;
+      }
       if (p.parentSku === undefined) merged.parentSku = existing.parentSku;
       if (p.productKind === undefined) merged.productKind = existing.productKind;
       if (p.sortOrder == null) merged.sortOrder = existing.sortOrder;
@@ -430,7 +452,7 @@ function handleUpsertProduct_(data) {
       return jsonOut_({ ok: true, product: publicProduct_(merged), created: false });
     }
 
-    p.productCreateDate = p.productCreateDate || new Date().toISOString();
+    p.productCreateDate = normalizeReleaseDate_(p.productCreateDate) || new Date().toISOString().slice(0, 10);
     if (!p.productKind) {
       if (p.parentSku) p.productKind = 'component';
       else if (String(p.category || '') === 'set') p.productKind = 'set';
@@ -689,20 +711,28 @@ function handleEnsureSetComponents_(data) {
     } else {
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
-        if (p.productKind === 'set' || p.category === 'set') targets.push(p.sku);
+        if (p.productKind === 'component') continue;
+        if (p.productKind === 'set' || p.category === 'set' ||
+            (p.category && String(p.category).indexOf('set') >= 0)) {
+          targets.push(p.sku);
+        }
       }
     }
     var totalCreated = 0;
     var processed = 0;
+    var details = [];
     for (var t = 0; t < targets.length; t++) {
       var res = ensureSetPlaceholders_(targets[t], count);
       processed++;
       totalCreated += res.created || 0;
+      details.push({ sku: targets[t], created: res.created || 0, error: res.error || null });
     }
+    SpreadsheetApp.flush();
     return jsonOut_({
       ok: true,
       processed: processed,
-      placeholdersCreated: totalCreated
+      placeholdersCreated: totalCreated,
+      details: details
     });
   } finally {
     lock.releaseLock();

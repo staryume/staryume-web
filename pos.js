@@ -226,6 +226,34 @@ async function bootstrap() {
     state.activeEvent = res.activeEvent || null;
     state.todaySales = res.todaySales || [];
     state.spreadsheet = res.spreadsheet || null;
+
+    // Auto-seed missing set contents once if any set has zero children
+    const setsMissingKids = (state.products || []).filter((p) => {
+      if (!isSetProduct(p)) return false;
+      return !(state.products || []).some(
+        (c) => String(c.parentSku || "") === p.sku
+      );
+    });
+    if (setsMissingKids.length && !state._seededComponents) {
+      try {
+        const seed = await api({ action: "ensure_set_components", count: 6 });
+        state._seededComponents = true;
+        if (seed.ok && (seed.placeholdersCreated || 0) > 0) {
+          const again = await api({ action: "bootstrap" });
+          if (again.ok) {
+            state.products = again.products || state.products;
+            state.events = again.events || state.events;
+            state.activeEvent = again.activeEvent || state.activeEvent;
+            state.todaySales = again.todaySales || state.todaySales;
+            state.spreadsheet = again.spreadsheet || state.spreadsheet;
+          }
+          toast(`已自動產生套組子項目 ×${seed.placeholdersCreated}`);
+        }
+      } catch {
+        /* user can press 產生套組子項目 */
+      }
+    }
+
     renderEventBanner();
     renderSheetLink();
     renderPos();
@@ -280,26 +308,58 @@ function openGoogleSheet() {
   window.open(url, "_blank", "noopener,noreferrer");
 }
 
-/** Flat list ordered: parents newest→oldest, each followed by children sortOrder ASC */
+/** Release/create date → ms for sort (newest first). */
+function releaseTimeMs(p) {
+  let s = String(p?.productCreateDate || p?.updatedAt || "").trim();
+  if (!s) return 0;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) s = s + "T12:00:00";
+  const t = Date.parse(s);
+  return Number.isFinite(t) ? t : 0;
+}
+
+function releaseDateOnly(p) {
+  const s = String(p?.productCreateDate || "").trim();
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  if (!s) return "";
+  const t = Date.parse(s);
+  if (!Number.isFinite(t)) return "";
+  const d = new Date(t);
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${m}-${day}`;
+}
+
+/** Flat list: parents newest release→oldest, each followed by children sortOrder ASC */
 function productsDisplayOrder(products) {
   const list = products || [];
   const bySku = new Map(list.map((p) => [p.sku, p]));
   const childrenOf = new Map();
   list.forEach((p) => {
-    if (p.parentSku && bySku.has(p.parentSku)) {
-      if (!childrenOf.has(p.parentSku)) childrenOf.set(p.parentSku, []);
-      childrenOf.get(p.parentSku).push(p);
+    const parent = String(p.parentSku || "").trim();
+    if (parent && bySku.has(parent)) {
+      if (!childrenOf.has(parent)) childrenOf.set(parent, []);
+      childrenOf.get(parent).push(p);
     }
   });
   childrenOf.forEach((arr) => {
-    arr.sort((a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0) || String(a.sku).localeCompare(String(b.sku)));
+    arr.sort(
+      (a, b) =>
+        (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0) ||
+        String(a.sku).localeCompare(String(b.sku))
+    );
   });
 
-  const roots = list.filter((p) => !p.parentSku || !bySku.has(p.parentSku));
+  const roots = list.filter((p) => {
+    const parent = String(p.parentSku || "").trim();
+    return !parent || !bySku.has(parent);
+  });
   roots.sort((a, b) => {
-    const da = String(a.productCreateDate || a.updatedAt || "");
-    const db = String(b.productCreateDate || b.updatedAt || "");
-    if (da !== db) return db.localeCompare(da);
+    const ta = releaseTimeMs(a);
+    const tb = releaseTimeMs(b);
+    if (ta !== tb) return tb - ta;
+    const ida = Number(a.storeId) || 0;
+    const idb = Number(b.storeId) || 0;
+    if (ida !== idb) return idb - ida;
     return String(a.sku).localeCompare(String(b.sku));
   });
 
@@ -313,7 +373,6 @@ function productsDisplayOrder(products) {
       seen.add(c.sku);
     });
   });
-  // orphans already in roots if parent missing; any missed
   list.forEach((p) => {
     if (!seen.has(p.sku)) out.push(p);
   });
@@ -321,7 +380,19 @@ function productsDisplayOrder(products) {
 }
 
 function isComponent(p) {
-  return p?.productKind === "component" || !!(p?.parentSku && String(p.parentSku).length);
+  if (!p) return false;
+  if (p.productKind === "component") return true;
+  const parent = String(p.parentSku || "").trim();
+  return parent.length > 0;
+}
+
+function isSetProduct(p) {
+  if (!p || isComponent(p)) return false;
+  return (
+    p.productKind === "set" ||
+    p.category === "set" ||
+    String(p.category || "").includes("set")
+  );
 }
 
 function thumbHtml(p, sizeClass) {
@@ -614,7 +685,7 @@ function renderInventory() {
   if (!table) return;
   const ordered = productsDisplayOrder(state.products);
   if (!ordered.length) {
-    table.innerHTML = `<tr><td colspan="9" class="text-center text-gray-400 py-8 text-sm">尚無商品</td></tr>`;
+    table.innerHTML = `<tr><td colspan="10" class="text-center text-gray-400 py-8 text-sm">尚無商品</td></tr>`;
     return;
   }
   table.innerHTML = ordered
@@ -632,6 +703,7 @@ function renderInventory() {
         )
         .join("");
       const kindLabel = p.productKind || (child ? "component" : p.category === "set" ? "set" : "—");
+      const rel = releaseDateOnly(p);
       return `
       <tr class="border-b border-gray-100 hover:bg-gray-50 ${child ? "bg-gray-50/80" : ""}">
         <td class="px-2 py-1.5">
@@ -644,6 +716,11 @@ function renderInventory() {
           </div>
         </td>
         <td class="px-1 py-2 text-[10px] font-mono text-gray-500">${esc(kindLabel)}<br><span class="text-gray-400">${esc(p.stockMode)}</span></td>
+        <td class="px-1 py-1">
+          <input type="date" data-release-sku="${escAttr(p.sku)}" value="${escAttr(rel)}"
+            class="w-[7.5rem] text-[10px] font-mono border border-gray-200 rounded py-1 px-1"
+            title="發售日 / 排序用（愈新愈上）">
+        </td>
         ${pools}
         <td class="px-1 py-1">
           <button type="button" data-save-stock="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 bg-black text-white rounded">SAVE</button>
@@ -672,6 +749,15 @@ async function saveStockRow(sku) {
     toast("No stock fields found — open 庫存 tab and try again");
     return;
   }
+  const releaseInp = document.querySelector(`[data-release-sku="${cssAttrEscape(sku)}"]`);
+  // fallback without CSS escape issues
+  const releaseEl =
+    releaseInp ||
+    Array.from(document.querySelectorAll("[data-release-sku]")).find(
+      (n) => n.getAttribute("data-release-sku") === sku
+    );
+  const releaseDate = releaseEl?.value || "";
+
   setBusy(true);
   try {
     const res = await api({ action: "set_stock", sku, stocks });
@@ -679,22 +765,36 @@ async function saveStockRow(sku) {
       toast(res.message || res.error || "SAVE failed");
       return;
     }
+    let product = res.product;
+    if (releaseDate) {
+      const up = await api({
+        action: "upsert_product",
+        product: { sku, productCreateDate: releaseDate },
+      });
+      if (up.ok && up.product) product = up.product;
+      else if (!up.ok) toast(up.message || "發售日儲存失敗");
+    }
     const idx = state.products.findIndex((p) => p.sku === sku);
-    if (idx >= 0 && res.product) state.products[idx] = res.product;
-    // Confirm server actually stored what we sent
-    const p = res.product || {};
+    if (idx >= 0 && product) state.products[idx] = { ...state.products[idx], ...product };
+    const p = product || {};
     const bits = POS_CONFIG.pools.map((pool) => {
       const sent = stocks[pool];
       const got = Number(p["stock" + pool]);
       return `${pool}:${got}${sent !== got ? "≠" + sent : ""}`;
     });
     const sheetName = res.spreadsheet?.name ? ` → ${res.spreadsheet.name}` : "";
-    toast(`SAVED ${bits.join(" ")}${sheetName}`);
+    toast(`SAVED ${releaseDate ? releaseDate + " · " : ""}${bits.join(" ")}${sheetName}`);
     renderPosGrid();
     renderInventory();
+    renderProducts();
   } finally {
     setBusy(false);
   }
+}
+
+function cssAttrEscape(s) {
+  // minimal escape for querySelector attribute
+  return String(s).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 async function saveAllStock() {
@@ -727,8 +827,19 @@ async function saveAllStock() {
         const res = await api({ action: "set_stock", sku, stocks });
         if (res.ok) {
           ok++;
+          let product = res.product;
+          const releaseEl = Array.from(document.querySelectorAll("[data-release-sku]")).find(
+            (n) => n.getAttribute("data-release-sku") === sku
+          );
+          if (releaseEl?.value) {
+            const up = await api({
+              action: "upsert_product",
+              product: { sku, productCreateDate: releaseEl.value },
+            });
+            if (up.ok && up.product) product = up.product;
+          }
           const idx = state.products.findIndex((p) => p.sku === sku);
-          if (idx >= 0 && res.product) state.products[idx] = res.product;
+          if (idx >= 0 && product) state.products[idx] = { ...state.products[idx], ...product };
         } else fail++;
       } catch {
         fail++;
@@ -762,7 +873,7 @@ function renderProducts() {
         <div class="flex flex-wrap gap-2 mt-2">
           <button type="button" data-edit-p="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 border border-black rounded">編輯</button>
           ${
-            p.productKind === "set" || p.category === "set"
+            isSetProduct(p)
               ? `<button type="button" data-ensure-one="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 border border-tech-purple rounded text-purple-800">子項目×6</button>`
               : ""
           }
@@ -806,8 +917,8 @@ function openProductModal(sku) {
   if (el("pf-parentSku")) el("pf-parentSku").value = p?.parentSku || "";
   if (el("pf-sortOrder")) el("pf-sortOrder").value = p?.sortOrder ?? 0;
   if (el("pf-createDate")) {
-    el("pf-createDate").value = (p?.productCreateDate || "").slice(0, 19);
-    el("pf-createDate").placeholder = p ? "" : "自動產生";
+    el("pf-createDate").value = releaseDateOnly(p) || "";
+    el("pf-createDate").readOnly = false;
   }
   // parent options: non-components
   const parentSel = el("pf-parentSku");
@@ -851,6 +962,7 @@ async function saveProductForm(e) {
     productKind: parentSku ? "component" : productKind,
     parentSku: parentSku,
     sortOrder: Number(el("pf-sortOrder")?.value) || 0,
+    productCreateDate: el("pf-createDate")?.value || undefined,
   };
   setBusy(true);
   try {
