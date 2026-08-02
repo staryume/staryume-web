@@ -10,6 +10,11 @@ const POS_CONFIG = {
    * Same pattern as store.js hkCheckout.scriptUrlDirect.
    */
   scriptUrlDirect: "",
+  /**
+   * Optional full Google Sheet URL if bootstrap does not return spreadsheet.id
+   * e.g. https://docs.google.com/spreadsheets/d/XXXX/edit
+   */
+  sheetUrl: "",
   sessionKey: "staryume_pos_passcode",
   deviceKey: "staryume_pos_device",
   pools: ["HK", "TW", "JP", "BOOTH", "HOME"],
@@ -24,6 +29,7 @@ const state = {
   events: [],
   activeEvent: null,
   todaySales: [],
+  spreadsheet: null,
   tab: "pos",
   busy: false,
   search: "",
@@ -129,8 +135,11 @@ function bindGlobal() {
     renderPosGrid();
   });
   el("btn-import-store")?.addEventListener("click", importFromStore);
+  el("btn-ensure-set-components")?.addEventListener("click", ensureSetComponents);
   el("btn-save-all-stock")?.addEventListener("click", saveAllStock);
   el("btn-add-product")?.addEventListener("click", () => openProductModal(null));
+  el("btn-open-sheet")?.addEventListener("click", openGoogleSheet);
+  el("btn-open-sheet-inv")?.addEventListener("click", openGoogleSheet);
   el("btn-create-event")?.addEventListener("click", () => openEventModal(null));
   el("btn-start-day")?.addEventListener("click", startEventDay);
   el("btn-end-day")?.addEventListener("click", endEventDay);
@@ -216,7 +225,9 @@ async function bootstrap() {
     state.events = res.events || [];
     state.activeEvent = res.activeEvent || null;
     state.todaySales = res.todaySales || [];
+    state.spreadsheet = res.spreadsheet || null;
     renderEventBanner();
+    renderSheetLink();
     renderPos();
     renderInventory();
     renderProducts();
@@ -236,6 +247,89 @@ async function bootstrap() {
 function setStatus(msg) {
   const n = el("status-bar");
   if (n) n.textContent = msg || "";
+}
+
+function sheetUrlFromState() {
+  if (POS_CONFIG.sheetUrl) return POS_CONFIG.sheetUrl;
+  const id = state.spreadsheet?.id;
+  if (id) return `https://docs.google.com/spreadsheets/d/${id}/edit`;
+  return "";
+}
+
+function renderSheetLink() {
+  const btn = el("btn-open-sheet");
+  if (!btn) return;
+  const url = sheetUrlFromState();
+  if (url) {
+    btn.classList.remove("opacity-40", "pointer-events-none");
+    btn.title = state.spreadsheet?.name || "Google Sheet";
+    btn.dataset.url = url;
+  } else {
+    btn.classList.add("opacity-40");
+    btn.title = "尚未取得試算表 ID（請設定 SPREADSHEET_ID）";
+    btn.dataset.url = "";
+  }
+}
+
+function openGoogleSheet() {
+  const url = sheetUrlFromState() || el("btn-open-sheet")?.dataset?.url;
+  if (!url) {
+    toast("沒有試算表連結。請在 Apps Script 設定 SPREADSHEET_ID 後同步。");
+    return;
+  }
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+/** Flat list ordered: parents newest→oldest, each followed by children sortOrder ASC */
+function productsDisplayOrder(products) {
+  const list = products || [];
+  const bySku = new Map(list.map((p) => [p.sku, p]));
+  const childrenOf = new Map();
+  list.forEach((p) => {
+    if (p.parentSku && bySku.has(p.parentSku)) {
+      if (!childrenOf.has(p.parentSku)) childrenOf.set(p.parentSku, []);
+      childrenOf.get(p.parentSku).push(p);
+    }
+  });
+  childrenOf.forEach((arr) => {
+    arr.sort((a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0) || String(a.sku).localeCompare(String(b.sku)));
+  });
+
+  const roots = list.filter((p) => !p.parentSku || !bySku.has(p.parentSku));
+  roots.sort((a, b) => {
+    const da = String(a.productCreateDate || a.updatedAt || "");
+    const db = String(b.productCreateDate || b.updatedAt || "");
+    if (da !== db) return db.localeCompare(da);
+    return String(a.sku).localeCompare(String(b.sku));
+  });
+
+  const out = [];
+  const seen = new Set();
+  roots.forEach((r) => {
+    out.push(r);
+    seen.add(r.sku);
+    (childrenOf.get(r.sku) || []).forEach((c) => {
+      out.push(c);
+      seen.add(c.sku);
+    });
+  });
+  // orphans already in roots if parent missing; any missed
+  list.forEach((p) => {
+    if (!seen.has(p.sku)) out.push(p);
+  });
+  return out;
+}
+
+function isComponent(p) {
+  return p?.productKind === "component" || !!(p?.parentSku && String(p.parentSku).length);
+}
+
+function thumbHtml(p, sizeClass) {
+  const cls = sizeClass || "w-10 h-10";
+  if (p?.thumbUrl) {
+    return `<img src="${escAttr(p.thumbUrl)}" alt="" class="${cls} object-cover rounded-md bg-gray-100 shrink-0" loading="lazy" onerror="this.style.visibility='hidden'">`;
+  }
+  return `<div class="${cls} rounded-md bg-gray-100 shrink-0 border border-gray-200"></div>`;
 }
 
 // ── Event banner / day ──────────────────────────────────────────────────────
@@ -336,7 +430,10 @@ function renderPosGrid() {
   const currency = state.activeEvent?.currency || POS_CONFIG.currencyByRegion[region] || "HKD";
   const q = (state.search || "").trim().toLowerCase();
 
-  let list = state.products.filter((p) => p.active !== false);
+  // v1: components are inventory-only, not sold as separate POS tiles
+  let list = productsDisplayOrder(state.products).filter(
+    (p) => p.active !== false && !isComponent(p)
+  );
   if (q) {
     list = list.filter((p) => {
       const blob = [p.sku, p.nameZh, p.nameEn, p.nameJp, p.category].join(" ").toLowerCase();
@@ -363,8 +460,9 @@ function renderPosGrid() {
               : "text-gray-700";
       const disabled = !state.activeEvent || (p.stockMode === "limited" && stock <= 0);
       const thumb = p.thumbUrl
-        ? `<img src="${escAttr(p.thumbUrl)}" alt="" class="w-full h-28 object-cover bg-gray-100" loading="lazy">`
-        : `<div class="w-full h-28 bg-gray-100 flex items-center justify-center text-gray-300 text-xs">NO IMG</div>`;
+        ? `<img src="${escAttr(p.thumbUrl)}" alt="" class="w-full aspect-square object-cover bg-gray-100" loading="lazy" onerror="this.style.visibility='hidden'">`
+        : `<div class="w-full aspect-square bg-gray-100 flex items-center justify-center text-gray-300 text-xs">NO IMG</div>`;
+      const kindBadge = p.productKind === "set" ? " · set" : "";
       return `
         <button type="button" data-sell-sku="${escAttr(p.sku)}"
           class="pos-tile text-left border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm active:scale-[0.98] transition
@@ -377,7 +475,7 @@ function renderPosGrid() {
               <span class="text-sm font-bold text-tech-black">${esc(currency)} ${esc(String(price))}</span>
               <span class="text-xs font-mono font-bold ${stockClass}">${esc(String(stock))}</span>
             </div>
-            <div class="text-[10px] text-gray-400 font-mono">${esc(p.stockMode)} · ${esc(p.sku)}</div>
+            <div class="text-[10px] text-gray-400 font-mono">${esc(p.stockMode)}${kindBadge} · ${esc(p.sku)}</div>
           </div>
         </button>`;
     })
@@ -514,12 +612,14 @@ async function voidSale(saleId) {
 function renderInventory() {
   const table = el("inventory-body");
   if (!table) return;
-  if (!state.products.length) {
-    table.innerHTML = `<tr><td colspan="8" class="text-center text-gray-400 py-8 text-sm">尚無商品</td></tr>`;
+  const ordered = productsDisplayOrder(state.products);
+  if (!ordered.length) {
+    table.innerHTML = `<tr><td colspan="9" class="text-center text-gray-400 py-8 text-sm">尚無商品</td></tr>`;
     return;
   }
-  table.innerHTML = state.products
+  table.innerHTML = ordered
     .map((p) => {
+      const child = isComponent(p);
       const pools = POS_CONFIG.pools
         .map(
           (pool) => `
@@ -527,14 +627,23 @@ function renderInventory() {
           <input type="number" min="0" step="1" data-stock-sku="${escAttr(p.sku)}" data-pool="${pool}"
             value="${poolStock(p, pool)}"
             class="w-14 sm:w-16 text-center text-xs font-mono border border-gray-200 rounded py-1 ${p.stockMode === "unlimited" ? "bg-gray-50 text-gray-400" : ""}"
-            ${p.stockMode === "unlimited" ? "title=unlimited 不扣庫存" : ""}>
+            ${p.stockMode === "unlimited" ? 'title="unlimited 不扣庫存"' : ""}>
         </td>`
         )
         .join("");
+      const kindLabel = p.productKind || (child ? "component" : p.category === "set" ? "set" : "—");
       return `
-      <tr class="border-b border-gray-100 hover:bg-gray-50">
-        <td class="px-2 py-2 text-xs font-bold max-w-[8rem] truncate" title="${escAttr(displayName(p))}">${esc(displayName(p))}</td>
-        <td class="px-1 py-2 text-[10px] font-mono text-gray-500">${esc(p.stockMode)}</td>
+      <tr class="border-b border-gray-100 hover:bg-gray-50 ${child ? "bg-gray-50/80" : ""}">
+        <td class="px-2 py-1.5">
+          <div class="flex items-center gap-2 ${child ? "pl-4" : ""}">
+            ${thumbHtml(p, "w-9 h-9")}
+            <div class="min-w-0">
+              <div class="text-xs font-bold truncate max-w-[10rem] sm:max-w-[14rem]" title="${escAttr(displayName(p))}">${child ? "↳ " : ""}${esc(displayName(p))}</div>
+              <div class="text-[9px] font-mono text-gray-400 truncate">${esc(p.sku)}</div>
+            </div>
+          </div>
+        </td>
+        <td class="px-1 py-2 text-[10px] font-mono text-gray-500">${esc(kindLabel)}<br><span class="text-gray-400">${esc(p.stockMode)}</span></td>
         ${pools}
         <td class="px-1 py-1">
           <button type="button" data-save-stock="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 bg-black text-white rounded">SAVE</button>
@@ -638,22 +747,30 @@ async function saveAllStock() {
 function renderProducts() {
   const list = el("products-list");
   if (!list) return;
-  list.innerHTML = state.products
-    .map(
-      (p) => `
-    <div class="border border-gray-200 rounded-lg p-3 flex gap-3 items-start bg-white">
-      ${p.thumbUrl ? `<img src="${escAttr(p.thumbUrl)}" class="w-14 h-14 object-cover rounded bg-gray-100 shrink-0" alt="">` : `<div class="w-14 h-14 bg-gray-100 rounded shrink-0"></div>`}
+  const ordered = productsDisplayOrder(state.products);
+  list.innerHTML = ordered
+    .map((p) => {
+      const child = isComponent(p);
+      const created = (p.productCreateDate || "").slice(0, 10);
+      return `
+    <div class="border border-gray-200 rounded-lg p-3 flex gap-3 items-start bg-white ${child ? "ml-4 border-l-2 border-l-tech-purple" : ""}">
+      ${thumbHtml(p, "w-12 h-12")}
       <div class="min-w-0 flex-1">
-        <div class="font-bold text-sm truncate">${esc(displayName(p))}</div>
-        <div class="text-[10px] font-mono text-gray-400">${esc(p.sku)} · ${esc(p.source)} · ${esc(p.stockMode)}</div>
+        <div class="font-bold text-sm truncate">${child ? "↳ " : ""}${esc(displayName(p))}</div>
+        <div class="text-[10px] font-mono text-gray-400">${esc(p.sku)} · ${esc(p.productKind || "—")} · ${esc(p.stockMode)}${created ? " · " + esc(created) : ""}</div>
         <div class="text-xs text-gray-600 mt-0.5">HKD ${esc(String(p.priceHKD || 0))} · TWD ${esc(String(p.priceTWD || 0))} · JPY ${esc(String(p.priceJPY || 0))}</div>
-        <div class="flex gap-2 mt-2">
+        <div class="flex flex-wrap gap-2 mt-2">
           <button type="button" data-edit-p="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 border border-black rounded">編輯</button>
+          ${
+            p.productKind === "set" || p.category === "set"
+              ? `<button type="button" data-ensure-one="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 border border-tech-purple rounded text-purple-800">子項目×6</button>`
+              : ""
+          }
           <button type="button" data-del-p="${escAttr(p.sku)}" class="text-[10px] font-bold px-2 py-1 border border-red-300 text-red-600 rounded">刪除</button>
         </div>
       </div>
-    </div>`
-    )
+    </div>`;
+    })
     .join("") || `<p class="text-sm text-gray-400 text-center py-8">尚無商品</p>`;
 
   list.querySelectorAll("[data-edit-p]").forEach((b) => {
@@ -661,6 +778,9 @@ function renderProducts() {
   });
   list.querySelectorAll("[data-del-p]").forEach((b) => {
     b.addEventListener("click", () => deleteProduct(b.getAttribute("data-del-p")));
+  });
+  list.querySelectorAll("[data-ensure-one]").forEach((b) => {
+    b.addEventListener("click", () => ensureSetComponents(b.getAttribute("data-ensure-one")));
   });
 }
 
@@ -682,6 +802,26 @@ function openProductModal(sku) {
   el("pf-notes").value = p?.notes || "";
   el("pf-active").checked = p ? p.active !== false : true;
   el("pf-source").value = p?.source || "pos_only";
+  if (el("pf-productKind")) el("pf-productKind").value = p?.productKind || "standalone";
+  if (el("pf-parentSku")) el("pf-parentSku").value = p?.parentSku || "";
+  if (el("pf-sortOrder")) el("pf-sortOrder").value = p?.sortOrder ?? 0;
+  if (el("pf-createDate")) {
+    el("pf-createDate").value = (p?.productCreateDate || "").slice(0, 19);
+    el("pf-createDate").placeholder = p ? "" : "自動產生";
+  }
+  // parent options: non-components
+  const parentSel = el("pf-parentSku");
+  if (parentSel && parentSel.tagName === "SELECT") {
+    const roots = state.products.filter((x) => !isComponent(x) && x.sku !== p?.sku);
+    parentSel.innerHTML =
+      `<option value="">— 無（主商品）—</option>` +
+      roots
+        .map(
+          (x) =>
+            `<option value="${escAttr(x.sku)}" ${p?.parentSku === x.sku ? "selected" : ""}>${esc(displayName(x))} (${esc(x.sku)})</option>`
+        )
+        .join("");
+  }
   modal?.classList.remove("hidden");
 }
 
@@ -692,6 +832,8 @@ async function saveProductForm(e) {
     toast("需要 SKU");
     return;
   }
+  const productKind = el("pf-productKind")?.value || "standalone";
+  const parentSku = el("pf-parentSku")?.value?.trim() || "";
   const product = {
     sku,
     source: el("pf-source").value || "pos_only",
@@ -706,8 +848,10 @@ async function saveProductForm(e) {
     thumbUrl: el("pf-thumbUrl").value.trim(),
     notes: el("pf-notes").value.trim(),
     active: el("pf-active").checked,
+    productKind: parentSku ? "component" : productKind,
+    parentSku: parentSku,
+    sortOrder: Number(el("pf-sortOrder")?.value) || 0,
   };
-  // preserve stocks on edit via upsert merge on server
   setBusy(true);
   try {
     const res = await api({ action: "upsert_product", product });
@@ -717,6 +861,28 @@ async function saveProductForm(e) {
     }
     el("product-modal")?.classList.add("hidden");
     toast("已儲存");
+    await bootstrap();
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function ensureSetComponents(skuOrEvent) {
+  const sku = typeof skuOrEvent === "string" ? skuOrEvent : null;
+  const msg = sku
+    ? `為 ${sku} 產生最多 6 個空白子項目（若已有子項目則略過）？`
+    : "為所有套組產生空白子項目（已有子項目的套組會略過）？";
+  if (!confirm(msg)) return;
+  setBusy(true);
+  try {
+    const payload = { action: "ensure_set_components", count: 6 };
+    if (sku) payload.sku = sku;
+    const res = await api(payload);
+    if (!res.ok) {
+      toast(res.message || res.error);
+      return;
+    }
+    toast(`子項目：新增 ${res.placeholdersCreated || 0}（處理 ${res.processed || 0} 套）`);
     await bootstrap();
   } finally {
     setBusy(false);

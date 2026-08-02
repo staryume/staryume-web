@@ -71,6 +71,7 @@
           </div>
         </div>
         <div class="flex items-center gap-1 shrink-0">
+          <button type="button" id="btn-open-sheet" class="text-[10px] font-bold px-2 py-1.5 border border-tech-purple bg-purple-50 text-purple-900 rounded-lg" title="Google Sheet">試算表</button>
           <button type="button" id="btn-refresh" class="text-[10px] font-bold px-2 py-1.5 border border-gray-200 rounded-lg">同步</button>
           <button type="button" id="btn-logout" class="text-[10px] font-bold px-2 py-1.5 text-gray-500">登出</button>
         </div>
@@ -104,16 +105,17 @@
 
       <!-- Inventory -->
       <section data-panel="inventory" class="hidden">
-        <p class="text-xs text-gray-500 mb-3">五區庫存：HK / TW / JP / BOOTH / HOME。unlimited 商品銷售不扣庫存，數字僅供參考。改完請按 SAVE；成功後應在 Google Sheet「Products」分頁立刻看到數字。</p>
+        <p class="text-xs text-gray-500 mb-3">五區庫存：HK / TW / JP / BOOTH / HOME。排序：最新商品在上；套組下方縮排顯示子項目（內容）。改完請 SAVE，或用右上角「試算表」直接改 Google Sheet。</p>
         <div class="flex flex-wrap gap-2 mb-3">
           <button type="button" id="btn-save-all-stock" class="text-xs font-bold px-3 py-2 bg-black text-white rounded-lg">SAVE ALL</button>
+          <button type="button" id="btn-open-sheet-inv" class="text-xs font-bold px-3 py-2 border border-tech-purple text-purple-900 rounded-lg">開啟 Google 試算表</button>
         </div>
         <div class="overflow-x-auto bg-white border border-gray-200 rounded-xl">
-          <table class="w-full text-left min-w-[640px]">
+          <table class="w-full text-left min-w-[720px]">
             <thead>
               <tr class="text-[10px] uppercase text-gray-400 border-b border-gray-100">
                 <th class="px-2 py-2">商品</th>
-                <th class="px-1 py-2">mode</th>
+                <th class="px-1 py-2">kind</th>
                 <th class="px-1 py-2 text-center">HK</th>
                 <th class="px-1 py-2 text-center">TW</th>
                 <th class="px-1 py-2 text-center">JP</th>
@@ -131,9 +133,10 @@
       <section data-panel="products" class="hidden">
         <div class="flex flex-wrap gap-2 mb-4">
           <button type="button" id="btn-import-store" class="text-xs font-bold px-3 py-2 bg-black text-white rounded-lg">從網店匯入</button>
+          <button type="button" id="btn-ensure-set-components" class="text-xs font-bold px-3 py-2 border border-tech-purple text-purple-900 rounded-lg">產生套組子項目</button>
           <button type="button" id="btn-add-product" class="text-xs font-bold px-3 py-2 border border-black rounded-lg">新增 POS 專用</button>
         </div>
-        <p class="text-[10px] text-gray-400 mb-3">預購（isPreorder）→ unlimited；其餘 → limited。POS 專用商品不會出現在公開 store。</p>
+        <p class="text-[10px] text-gray-400 mb-3">預購 → unlimited；其餘 → limited。套組自動可有 6 個「內容」子項目（庫存用，POS 不單獨販售）。列表最新在上。</p>
         <div id="products-list" class="space-y-2"></div>
       </section>
 
@@ -238,9 +241,33 @@
         </select>
       </div>
       <input id="pf-category" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="category">
-      <input id="pf-thumbUrl" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="thumb URL">
+      <input id="pf-thumbUrl" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="thumb URL（正方形裁切顯示）">
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="text-[10px] font-bold text-gray-400">Kind</label>
+          <select id="pf-productKind" class="w-full border rounded-lg px-3 py-2 text-sm">
+            <option value="standalone">standalone</option>
+            <option value="set">set（套組）</option>
+            <option value="component">component（內容）</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-[10px] font-bold text-gray-400">Sort（子項目順序）</label>
+          <input id="pf-sortOrder" type="number" min="0" step="1" class="w-full border rounded-lg px-3 py-2 text-sm" value="0">
+        </div>
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-gray-400">Parent（子項目所屬套組）</label>
+        <select id="pf-parentSku" class="w-full border rounded-lg px-3 py-2 text-sm">
+          <option value="">— 無（主商品）—</option>
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] font-bold text-gray-400">Create date（唯讀）</label>
+        <input id="pf-createDate" type="text" readonly class="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-500" placeholder="自動產生">
+      </div>
       <input id="pf-notes" class="w-full border rounded-lg px-3 py-2 text-sm" placeholder="notes">
-      <label class="flex items-center gap-2 text-sm"><input id="pf-active" type="checkbox" checked> Active（顯示於 POS）</label>
+      <label class="flex items-center gap-2 text-sm"><input id="pf-active" type="checkbox" checked> Active（主商品顯示於 POS；component 僅庫存）</label>
       <button type="submit" class="w-full bg-black text-white font-bold py-3 rounded-xl">儲存</button>
     </form>
   </div>

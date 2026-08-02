@@ -25,6 +25,23 @@ Or edit the defaults at the top of `pos-Code.gs` then redeploy.
 
 **Why `SPREADSHEET_ID`?** Web app calls sometimes cannot use “active spreadsheet”. Without the ID, stock SAVE may not write where you expect (version history stays empty).
 
+### Products sheet columns (extra)
+
+After redeploying latest `pos-Code.gs`, headers gain (appended):
+
+`productCreateDate` · `parentSku` · `productKind` · `sortOrder`
+
+| Field | Meaning |
+|--------|---------|
+| `productCreateDate` | ISO time when row was first created; UI sorts **newest first** |
+| `productKind` | `standalone` \| `set` \| `component` |
+| `parentSku` | Set SKU for component rows (e.g. `store-103`) |
+| `sortOrder` | Order of contents under a set |
+
+**Set sub-products:** import marks category `set` as `productKind=set` and seeds 6 placeholders `（內容 1）`… if none exist. Or use POS **產生套組子項目**. Components have their own stock columns but are **not** sold as separate POS tiles (v1).
+
+**Open Sheet from POS:** header **試算表** uses `spreadsheet.id` from bootstrap (needs `SPREADSHEET_ID`).
+
 4. Save → **Deploy → New deployment → Web app**  
    - Execute as: **Me**  
    - Who has access: **Anyone**  

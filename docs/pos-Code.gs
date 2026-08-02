@@ -22,13 +22,18 @@ var SPREADSHEET_ID = '';
 var POOLS = ['HK', 'TW', 'JP', 'BOOTH', 'HOME'];
 var CURRENCIES = { HK: 'HKD', TW: 'TWD', JP: 'JPY', BOOTH: 'JPY', HOME: 'HKD' };
 
+/** Append-only new columns so existing sheet data columns do not shift. */
 var PRODUCT_HEADERS = [
   'sku', 'source', 'storeId', 'stockMode',
   'nameZh', 'nameEn', 'nameJp',
   'priceHKD', 'priceTWD', 'priceJPY',
   'stockHK', 'stockTW', 'stockJP', 'stockBOOTH', 'stockHOME',
-  'category', 'thumbUrl', 'active', 'notes', 'updatedAt'
+  'category', 'thumbUrl', 'active', 'notes', 'updatedAt',
+  'productCreateDate', 'parentSku', 'productKind', 'sortOrder'
 ];
+
+/** Default placeholder sub-products created under each set. */
+var SET_PLACEHOLDER_COUNT = 6;
 
 var EVENT_HEADERS = [
   'eventId', 'name', 'region', 'currency', 'status',
@@ -73,6 +78,7 @@ function doPost(e) {
     if (action === 'delete_product') return handleDeleteProduct_(data);
     if (action === 'set_stock') return handleSetStock_(data);
     if (action === 'import_store') return handleImportStore_(data);
+    if (action === 'ensure_set_components') return handleEnsureSetComponents_(data);
     if (action === 'list_events') return handleListEvents_(data);
     if (action === 'upsert_event') return handleUpsertEvent_(data);
     if (action === 'set_event_status') return handleSetEventStatus_(data);
@@ -187,6 +193,13 @@ function productRows_() {
 }
 
 function rowToProduct_(row, sheetRow) {
+  var updatedAt = row[19] ? String(row[19]) : '';
+  var createDate = row[20] ? String(row[20]) : '';
+  if (!createDate && updatedAt) createDate = updatedAt;
+  var kind = String(row[22] || '').toLowerCase();
+  if (kind !== 'set' && kind !== 'component' && kind !== 'standalone') {
+    kind = row[21] ? 'component' : (String(row[15] || '') === 'set' ? 'set' : 'standalone');
+  }
   return {
     sku: String(row[0] || ''),
     source: String(row[1] || 'pos_only'),
@@ -207,12 +220,18 @@ function rowToProduct_(row, sheetRow) {
     thumbUrl: String(row[16] || ''),
     active: row[17] === false || row[17] === 'FALSE' || row[17] === 'false' || row[17] === 0 ? false : true,
     notes: String(row[18] || ''),
-    updatedAt: row[19] ? String(row[19]) : '',
+    updatedAt: updatedAt,
+    productCreateDate: createDate,
+    parentSku: String(row[21] || ''),
+    productKind: kind,
+    sortOrder: int_(row[23]),
     _row: sheetRow
   };
 }
 
 function productToRow_(p) {
+  var kind = p.productKind || 'standalone';
+  if (kind !== 'set' && kind !== 'component' && kind !== 'standalone') kind = 'standalone';
   return [
     p.sku,
     p.source || 'pos_only',
@@ -233,8 +252,100 @@ function productToRow_(p) {
     p.thumbUrl || '',
     p.active === false ? false : true,
     p.notes || '',
-    p.updatedAt || new Date().toISOString()
+    p.updatedAt || new Date().toISOString(),
+    p.productCreateDate || p.updatedAt || new Date().toISOString(),
+    p.parentSku || '',
+    kind,
+    int_(p.sortOrder)
   ];
+}
+
+function sortProductsNewestFirst_(products) {
+  return products.slice().sort(function (a, b) {
+    var da = String(a.productCreateDate || a.updatedAt || '');
+    var db = String(b.productCreateDate || b.updatedAt || '');
+    if (da !== db) return db.localeCompare(da);
+    return String(a.sku || '').localeCompare(String(b.sku || ''));
+  });
+}
+
+function publicProduct_(p) {
+  var c = Object.assign({}, p);
+  delete c._row;
+  return c;
+}
+
+/**
+ * Create Sub 1…N placeholders under a set if it has no components yet.
+ * Returns { created, skipped }.
+ */
+function ensureSetPlaceholders_(parentSku, count) {
+  parentSku = String(parentSku || '');
+  count = count > 0 ? int_(count) : SET_PLACEHOLDER_COUNT;
+  if (!parentSku) return { created: 0, skipped: true };
+
+  var all = productRows_();
+  var hasChild = false;
+  for (var i = 0; i < all.length; i++) {
+    if (all[i].parentSku === parentSku) {
+      hasChild = true;
+      break;
+    }
+  }
+  if (hasChild) return { created: 0, skipped: true };
+
+  var parent = null;
+  for (var j = 0; j < all.length; j++) {
+    if (all[j].sku === parentSku) {
+      parent = all[j];
+      break;
+    }
+  }
+  if (!parent) return { created: 0, skipped: true, error: 'parent_not_found' };
+
+  var sh = sheet_('Products');
+  var now = new Date().toISOString();
+  var created = 0;
+  for (var n = 1; n <= count; n++) {
+    var sku = parentSku + '__c' + n;
+    var exists = false;
+    for (var k = 0; k < all.length; k++) {
+      if (all[k].sku === sku) {
+        exists = true;
+        break;
+      }
+    }
+    if (exists) continue;
+    var p = {
+      sku: sku,
+      source: 'set_component',
+      storeId: '',
+      stockMode: 'limited',
+      nameZh: '（內容 ' + n + '）',
+      nameEn: 'Content ' + n,
+      nameJp: '（内容 ' + n + '）',
+      priceHKD: 0,
+      priceTWD: 0,
+      priceJPY: 0,
+      stockHK: 0,
+      stockTW: 0,
+      stockJP: 0,
+      stockBOOTH: 0,
+      stockHOME: 0,
+      category: 'component',
+      thumbUrl: parent.thumbUrl || '',
+      active: true,
+      notes: 'placeholder',
+      updatedAt: now,
+      productCreateDate: now,
+      parentSku: parentSku,
+      productKind: 'component',
+      sortOrder: n
+    };
+    sh.appendRow(productToRow_(p));
+    created++;
+  }
+  return { created: created, skipped: false };
 }
 
 function findProductBySku_(sku) {
@@ -281,12 +392,7 @@ function handleListProducts_(data) {
   if (data.activeOnly) {
     products = products.filter(function (p) { return p.active; });
   }
-  // strip internal _row for client
-  products = products.map(function (p) {
-    var c = Object.assign({}, p);
-    delete c._row;
-    return c;
-  });
+  products = sortProductsNewestFirst_(products).map(publicProduct_);
   return jsonOut_({ ok: true, products: products });
 }
 
@@ -301,12 +407,13 @@ function handleUpsertProduct_(data) {
     p.sku = String(p.sku).trim();
     p.updatedAt = new Date().toISOString();
     if (p.stockMode !== 'unlimited') p.stockMode = 'limited';
-    if (p.source !== 'store') p.source = p.source || 'pos_only';
+    if (p.source !== 'store' && p.source !== 'set_component') {
+      p.source = p.source || 'pos_only';
+    }
 
     var existing = findProductBySku_(p.sku);
     var sh = sheet_('Products');
     if (existing) {
-      // merge: keep existing stock if not provided
       var merged = Object.assign({}, existing, p);
       delete merged._row;
       if (p.stockHK == null) merged.stockHK = existing.stockHK;
@@ -314,15 +421,25 @@ function handleUpsertProduct_(data) {
       if (p.stockJP == null) merged.stockJP = existing.stockJP;
       if (p.stockBOOTH == null) merged.stockBOOTH = existing.stockBOOTH;
       if (p.stockHOME == null) merged.stockHOME = existing.stockHOME;
+      // never overwrite create date once set
+      merged.productCreateDate = existing.productCreateDate || merged.productCreateDate || existing.updatedAt || p.updatedAt;
+      if (p.parentSku === undefined) merged.parentSku = existing.parentSku;
+      if (p.productKind === undefined) merged.productKind = existing.productKind;
+      if (p.sortOrder == null) merged.sortOrder = existing.sortOrder;
       sh.getRange(existing._row, 1, 1, PRODUCT_HEADERS.length).setValues([productToRow_(merged)]);
-      var out = Object.assign({}, merged);
-      delete out._row;
-      return jsonOut_({ ok: true, product: out, created: false });
+      return jsonOut_({ ok: true, product: publicProduct_(merged), created: false });
     }
+
+    p.productCreateDate = p.productCreateDate || new Date().toISOString();
+    if (!p.productKind) {
+      if (p.parentSku) p.productKind = 'component';
+      else if (String(p.category || '') === 'set') p.productKind = 'set';
+      else p.productKind = 'standalone';
+    }
+    p.parentSku = p.parentSku || '';
+    p.sortOrder = int_(p.sortOrder);
     sh.appendRow(productToRow_(p));
-    var created = Object.assign({}, p);
-    delete created._row;
-    return jsonOut_({ ok: true, product: created, created: true });
+    return jsonOut_({ ok: true, product: publicProduct_(p), created: true });
   } finally {
     lock.releaseLock();
   }
@@ -335,6 +452,17 @@ function handleDeleteProduct_(data) {
     var sku = String(data.sku || '');
     var existing = findProductBySku_(sku);
     if (!existing) return jsonOut_({ ok: false, error: 'not_found' });
+    if (!data.force) {
+      var kids = productRows_().filter(function (p) { return p.parentSku === sku; });
+      if (kids.length) {
+        return jsonOut_({
+          ok: false,
+          error: 'has_children',
+          message: '此套組尚有 ' + kids.length + ' 個子項目。請先刪除子項目，或 force 刪除。',
+          childCount: kids.length
+        });
+      }
+    }
     sheet_('Products').deleteRow(existing._row);
     return jsonOut_({ ok: true, deleted: sku });
   } finally {
@@ -458,8 +586,16 @@ function handleImportStore_(data) {
       var sku = 'store-' + storeId;
       var existing = findProductBySku_(sku);
       var title = s.title || {};
-      var cat = s.category;
-      if (Array.isArray(cat)) cat = cat.filter(function (c) { return c !== 'featured' && c !== 'new'; })[0] || cat[0] || '';
+      var rawCat = s.category;
+      var isSet = false;
+      var cat = '';
+      if (Array.isArray(rawCat)) {
+        isSet = rawCat.indexOf('set') >= 0;
+        cat = rawCat.filter(function (c) { return c !== 'featured' && c !== 'new'; })[0] || rawCat[0] || '';
+      } else {
+        cat = String(rawCat || '');
+        isSet = cat === 'set';
+      }
       var thumb = '';
       if (s.imgs && s.imgs.length) thumb = s.imgs[0];
       else if (s.thumbUrl) thumb = s.thumbUrl;
@@ -469,6 +605,7 @@ function handleImportStore_(data) {
         stockMode = (s.isPreorder === true) ? 'unlimited' : 'limited';
       }
 
+      var nowIso = new Date().toISOString();
       var p = {
         sku: sku,
         source: 'store',
@@ -489,7 +626,11 @@ function handleImportStore_(data) {
         thumbUrl: thumb || '',
         active: s.active === false ? false : true,
         notes: s.notes || '',
-        updatedAt: new Date().toISOString()
+        updatedAt: nowIso,
+        productCreateDate: nowIso,
+        parentSku: '',
+        productKind: isSet ? 'set' : 'standalone',
+        sortOrder: 0
       };
 
       if (existing) {
@@ -499,18 +640,70 @@ function handleImportStore_(data) {
           p.stockJP = existing.stockJP;
           p.stockBOOTH = existing.stockBOOTH;
           p.stockHOME = existing.stockHOME;
-          // preserve staff stockMode override unless forceStockMode
           if (!data.forceStockMode) p.stockMode = existing.stockMode;
+        }
+        p.productCreateDate = existing.productCreateDate || existing.updatedAt || nowIso;
+        // keep parent/kind for non-set unless reclassifying as set
+        if (existing.productKind === 'component') {
+          p.productKind = 'component';
+          p.parentSku = existing.parentSku;
+          p.sortOrder = existing.sortOrder;
+        } else if (isSet) {
+          p.productKind = 'set';
+          p.parentSku = '';
+        } else {
+          p.productKind = existing.productKind === 'set' ? 'set' : (existing.productKind || 'standalone');
+          p.parentSku = existing.parentSku || '';
+          p.sortOrder = existing.sortOrder || 0;
         }
         sh.getRange(existing._row, 1, 1, PRODUCT_HEADERS.length).setValues([productToRow_(p)]);
         updated++;
-        // refresh cache row mapping by re-reading would be heavy; rebuild find each time is OK for small catalogs
       } else {
         sh.appendRow(productToRow_(p));
         created++;
       }
+
+      if (isSet || p.productKind === 'set') {
+        ensureSetPlaceholders_(sku, SET_PLACEHOLDER_COUNT);
+      }
     }
     return jsonOut_({ ok: true, created: created, updated: updated, total: created + updated });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * Seed placeholder components for one set or all sets.
+ * data.sku optional; data.count default 6
+ */
+function handleEnsureSetComponents_(data) {
+  var lock = LockService.getScriptLock();
+  lock.waitLock(30000);
+  try {
+    var count = data.count != null ? int_(data.count) : SET_PLACEHOLDER_COUNT;
+    var products = productRows_();
+    var targets = [];
+    if (data.sku) {
+      targets.push(String(data.sku));
+    } else {
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (p.productKind === 'set' || p.category === 'set') targets.push(p.sku);
+      }
+    }
+    var totalCreated = 0;
+    var processed = 0;
+    for (var t = 0; t < targets.length; t++) {
+      var res = ensureSetPlaceholders_(targets[t], count);
+      processed++;
+      totalCreated += res.created || 0;
+    }
+    return jsonOut_({
+      ok: true,
+      processed: processed,
+      placeholdersCreated: totalCreated
+    });
   } finally {
     lock.releaseLock();
   }
@@ -1109,11 +1302,7 @@ function handleBootstrap_(data) {
   if (data.activeOnly !== false) {
     productsRes = productsRes.filter(function (p) { return p.active; });
   }
-  var products = productsRes.map(function (p) {
-    var c = Object.assign({}, p);
-    delete c._row;
-    return c;
-  });
+  var products = sortProductsNewestFirst_(productsRes).map(publicProduct_);
   var events = eventRows_().map(function (e) {
     var c = Object.assign({}, e);
     delete c._row;
