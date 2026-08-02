@@ -129,6 +129,7 @@ function bindGlobal() {
     renderPosGrid();
   });
   el("btn-import-store")?.addEventListener("click", importFromStore);
+  el("btn-save-all-stock")?.addEventListener("click", saveAllStock);
   el("btn-add-product")?.addEventListener("click", () => openProductModal(null));
   el("btn-create-event")?.addEventListener("click", () => openEventModal(null));
   el("btn-start-day")?.addEventListener("click", startEventDay);
@@ -221,7 +222,12 @@ async function bootstrap() {
     renderProducts();
     renderEvents();
     renderTodayStrip();
-    setStatus("已同步 " + new Date().toLocaleTimeString());
+    const sheetHint = res.spreadsheet?.name
+      ? ` · Sheet: ${res.spreadsheet.name}`
+      : res.spreadsheet?.error
+        ? ` · Sheet error: ${res.spreadsheet.error}`
+        : "";
+    setStatus("已同步 " + new Date().toLocaleTimeString() + sheetHint);
   } catch (err) {
     setStatus(String(err.message || err));
   }
@@ -548,18 +554,79 @@ async function saveStockRow(sku) {
   );
   const stocks = {};
   inputs.forEach((inp) => {
-    stocks[inp.getAttribute("data-pool")] = parseInt(inp.value, 10) || 0;
+    const pool = (inp.getAttribute("data-pool") || "").toUpperCase();
+    if (!pool) return;
+    const raw = String(inp.value ?? "").trim();
+    stocks[pool] = raw === "" ? 0 : parseInt(raw, 10) || 0;
   });
+  if (!Object.keys(stocks).length) {
+    toast("No stock fields found — open 庫存 tab and try again");
+    return;
+  }
   setBusy(true);
   try {
     const res = await api({ action: "set_stock", sku, stocks });
     if (!res.ok) {
-      toast(res.message || res.error);
+      toast(res.message || res.error || "SAVE failed");
       return;
     }
     const idx = state.products.findIndex((p) => p.sku === sku);
     if (idx >= 0 && res.product) state.products[idx] = res.product;
-    toast("庫存已存");
+    // Confirm server actually stored what we sent
+    const p = res.product || {};
+    const bits = POS_CONFIG.pools.map((pool) => {
+      const sent = stocks[pool];
+      const got = Number(p["stock" + pool]);
+      return `${pool}:${got}${sent !== got ? "≠" + sent : ""}`;
+    });
+    const sheetName = res.spreadsheet?.name ? ` → ${res.spreadsheet.name}` : "";
+    toast(`SAVED ${bits.join(" ")}${sheetName}`);
+    renderPosGrid();
+    renderInventory();
+  } finally {
+    setBusy(false);
+  }
+}
+
+async function saveAllStock() {
+  if (!confirm("Save stock for ALL products currently shown?")) return;
+  const skus = [...new Set(
+    Array.from(document.querySelectorAll("[data-stock-sku]")).map((i) =>
+      i.getAttribute("data-stock-sku")
+    )
+  )].filter(Boolean);
+  if (!skus.length) {
+    toast("No rows to save");
+    return;
+  }
+  setBusy(true);
+  let ok = 0;
+  let fail = 0;
+  try {
+    for (const sku of skus) {
+      const inputs = Array.from(document.querySelectorAll("[data-stock-sku]")).filter(
+        (inp) => inp.getAttribute("data-stock-sku") === sku
+      );
+      const stocks = {};
+      inputs.forEach((inp) => {
+        const pool = (inp.getAttribute("data-pool") || "").toUpperCase();
+        if (!pool) return;
+        const raw = String(inp.value ?? "").trim();
+        stocks[pool] = raw === "" ? 0 : parseInt(raw, 10) || 0;
+      });
+      try {
+        const res = await api({ action: "set_stock", sku, stocks });
+        if (res.ok) {
+          ok++;
+          const idx = state.products.findIndex((p) => p.sku === sku);
+          if (idx >= 0 && res.product) state.products[idx] = res.product;
+        } else fail++;
+      } catch {
+        fail++;
+      }
+    }
+    toast(`Save all: ${ok} ok · ${fail} failed`);
+    renderInventory();
     renderPosGrid();
   } finally {
     setBusy(false);

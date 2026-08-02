@@ -19,8 +19,11 @@ Stock lives in a Google Spreadsheet; the public site stays static.
 |----------|--------|
 | `POS_PASSCODE` | Staff passcode (e.g. same as 裏 or a stronger one) |
 | `INVENTORY_SERVICE_KEY` | Long random secret for web-store stock deduct only |
+| `SPREADSHEET_ID` | **Required for reliable saves.** From Sheet URL: `https://docs.google.com/spreadsheets/d/`**`THIS_ID`**`/edit` |
 
-Or edit the defaults at the top of `pos-Code.gs` (`POS_PASSCODE`, `INVENTORY_SERVICE_KEY`) then redeploy.
+Or edit the defaults at the top of `pos-Code.gs` then redeploy.
+
+**Why `SPREADSHEET_ID`?** Web app calls sometimes cannot use “active spreadsheet”. Without the ID, stock SAVE may not write where you expect (version history stays empty).
 
 4. Save → **Deploy → New deployment → Web app**  
    - Execute as: **Me**  

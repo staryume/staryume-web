@@ -104,7 +104,10 @@
 
       <!-- Inventory -->
       <section data-panel="inventory" class="hidden">
-        <p class="text-xs text-gray-500 mb-3">五區庫存：HK / TW / JP / BOOTH / HOME。unlimited 商品銷售不扣庫存，數字僅供參考。</p>
+        <p class="text-xs text-gray-500 mb-3">五區庫存：HK / TW / JP / BOOTH / HOME。unlimited 商品銷售不扣庫存，數字僅供參考。改完請按 SAVE；成功後應在 Google Sheet「Products」分頁立刻看到數字。</p>
+        <div class="flex flex-wrap gap-2 mb-3">
+          <button type="button" id="btn-save-all-stock" class="text-xs font-bold px-3 py-2 bg-black text-white rounded-lg">SAVE ALL</button>
+        </div>
         <div class="overflow-x-auto bg-white border border-gray-200 rounded-xl">
           <table class="w-full text-left min-w-[640px]">
             <thead>

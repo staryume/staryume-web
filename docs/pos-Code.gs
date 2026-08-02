@@ -11,6 +11,13 @@ var INVENTORY_SERVICE_KEY = 'CHANGE_ME_SERVICE';
 var HARD_REJECT_HK_LIMITED = true;
 /** Allow stock to go negative on soft-accept paths (web TW / service deduct). */
 var ALLOW_NEGATIVE_STOCK = false;
+/**
+ * Optional but strongly recommended: paste the spreadsheet ID from the Sheet URL
+ *   https://docs.google.com/spreadsheets/d/THIS_PART/edit
+ * Web apps sometimes cannot use getActiveSpreadsheet(); openById is reliable.
+ * Script Property SPREADSHEET_ID overrides this value.
+ */
+var SPREADSHEET_ID = '';
 
 var POOLS = ['HK', 'TW', 'JP', 'BOOTH', 'HOME'];
 var CURRENCIES = { HK: 'HKD', TW: 'TWD', JP: 'JPY', BOOTH: 'JPY', HOME: 'HKD' };
@@ -113,7 +120,16 @@ function scriptProp_(key, fallback) {
 // ── Sheets ──────────────────────────────────────────────────────────────────
 
 function ss_() {
-  return SpreadsheetApp.getActiveSpreadsheet();
+  var id = scriptProp_('SPREADSHEET_ID', SPREADSHEET_ID);
+  if (id && String(id).length > 10) {
+    return SpreadsheetApp.openById(String(id).trim());
+  }
+  var active = SpreadsheetApp.getActiveSpreadsheet();
+  if (active) return active;
+  throw new Error(
+    'No spreadsheet bound. Set SPREADSHEET_ID in Script Properties ' +
+    '(Sheet URL …/d/SPREADSHEET_ID/edit) and redeploy the web app.'
+  );
 }
 
 function sheet_(name) {
@@ -127,6 +143,9 @@ function ensureSheets_() {
   ensureHeader_(sheet_('Products'), PRODUCT_HEADERS);
   ensureHeader_(sheet_('Events'), EVENT_HEADERS);
   ensureHeader_(sheet_('Sales'), SALE_HEADERS);
+  ensureHeader_(sheet_('StockLog'), [
+    'timestamp', 'sku', 'pool', 'fromQty', 'toQty', 'source', 'note'
+  ]);
 }
 
 function ensureHeader_(sh, headers) {
@@ -329,29 +348,90 @@ function handleSetStock_(data) {
   try {
     var sku = String(data.sku || '');
     var existing = findProductBySku_(sku);
-    if (!existing) return jsonOut_({ ok: false, error: 'not_found' });
+    if (!existing) {
+      return jsonOut_({
+        ok: false,
+        error: 'not_found',
+        message: 'Product not found: ' + sku
+      });
+    }
 
     var pools = data.stocks || {};
     // also accept single pool + qty
     if (data.pool != null && data.qty != null) {
       pools[String(data.pool).toUpperCase()] = data.qty;
     }
+
+    // Accept lowercase keys from clients
+    var normalized = {};
+    for (var k in pools) {
+      if (pools.hasOwnProperty(k) && pools[k] != null && pools[k] !== '') {
+        normalized[String(k).toUpperCase()] = pools[k];
+      }
+    }
+
+    var changed = [];
+    var anyPool = false;
     POOLS.forEach(function (pool) {
-      if (pools[pool] != null) {
-        setPoolStockOnProduct_(existing, pool, pools[pool]);
+      if (normalized[pool] == null) return;
+      anyPool = true;
+      var fromQty = getPoolStock_(existing, pool);
+      var toQty = int_(normalized[pool]);
+      setPoolStockOnProduct_(existing, pool, toQty);
+      if (fromQty !== toQty) {
+        changed.push({ pool: pool, from: fromQty, to: toQty });
+        logStockChange_(sku, pool, fromQty, toQty, 'set_stock', data.note || '');
       }
     });
+
+    if (!anyPool) {
+      return jsonOut_({
+        ok: false,
+        error: 'no_stocks',
+        message: 'No stock values received. Try SAVE again.'
+      });
+    }
+
     if (data.stockMode === 'limited' || data.stockMode === 'unlimited') {
       existing.stockMode = data.stockMode;
     }
     existing.updatedAt = new Date().toISOString();
     sheet_('Products').getRange(existing._row, 1, 1, PRODUCT_HEADERS.length)
       .setValues([productToRow_(existing)]);
-    var out = Object.assign({}, existing);
+    SpreadsheetApp.flush();
+
+    // Re-read row to confirm persistence
+    var sh = sheet_('Products');
+    var confirmRow = sh.getRange(existing._row, 1, 1, PRODUCT_HEADERS.length).getValues()[0];
+    var confirmed = rowToProduct_(confirmRow, existing._row);
+    var out = Object.assign({}, confirmed);
     delete out._row;
-    return jsonOut_({ ok: true, product: out });
+
+    var ss = ss_();
+    return jsonOut_({
+      ok: true,
+      product: out,
+      changed: changed,
+      spreadsheet: { id: ss.getId(), name: ss.getName() }
+    });
   } finally {
     lock.releaseLock();
+  }
+}
+
+function logStockChange_(sku, pool, fromQty, toQty, source, note) {
+  try {
+    sheet_('StockLog').appendRow([
+      new Date().toISOString(),
+      sku,
+      pool,
+      fromQty,
+      toQty,
+      source || '',
+      note || ''
+    ]);
+  } catch (e) {
+    console.error('StockLog write failed: ' + e);
   }
 }
 
@@ -1074,13 +1154,21 @@ function handleBootstrap_(data) {
       return String(b.soldAt).localeCompare(String(a.soldAt));
     });
   }
+  var ssMeta = null;
+  try {
+    var ss = ss_();
+    ssMeta = { id: ss.getId(), name: ss.getName() };
+  } catch (eMeta) {
+    ssMeta = { error: String(eMeta) };
+  }
   return jsonOut_({
     ok: true,
     products: products,
     events: events,
     activeEvent: active,
     todaySales: todaySales,
-    pools: POOLS
+    pools: POOLS,
+    spreadsheet: ssMeta
   });
 }
 
