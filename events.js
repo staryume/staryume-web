@@ -754,14 +754,18 @@ const eventCatalog = {
         "id": "acghk2026",
         "title": {
             "jp": "C108 お品書き",
-            "en": "Comic Market 108 Merchs",
+            "en": "Comic Market 108 Merch",
             "zh": "ACGHK2026 販售物情報"
         },
         "meta": {
-            "event": "CREATIVE PARADISE ACGHK 2026",
+            "event": {
+                "jp": "COMIC MARKET 108",
+                "en": "COMIC MARKET 108 / ACGHK 2026",
+                "zh": "ACGHK 2026"
+            },
             "booth": {
-                "jp": "CA-30",
-                "en": "CA-30",
+                "jp": "1日目(土) 西あ69ab ／ 2日目(日) 東ウ11b",
+                "en": "Day1 West A-69ab / Day2 East U-11b",
                 "zh": "CA-30"
             },
             "dates": "2026"
@@ -779,6 +783,85 @@ const eventCatalog = {
             "storeRegion": "HK"
         },
         "menuImages": [
+            {
+                "id": "page-jp",
+                "src": "./blog/20260719/c108pricelist-jp.jpg",
+                "label": {
+                    "jp": "新作",
+                    "en": "New",
+                    "zh": "新作"
+                },
+                "langs": {
+                    "jp": true,
+                    "en": false,
+                    "zh": false
+                },
+                "hotspots": [
+                    {
+                        "productId": "anni-15-set",
+                        "coords": [
+                            2,
+                            12.5,
+                            95.5,
+                            42.4
+                        ]
+                    },
+                    {
+                        "productId": "sleeve-gagaga",
+                        "coords": [
+                            1.9,
+                            55.6,
+                            25,
+                            21.3
+                        ]
+                    },
+                    {
+                        "productId": "sleeve-dmg-2026",
+                        "coords": [
+                            26.9,
+                            55.6,
+                            22.1,
+                            21.3
+                        ]
+                    },
+                    {
+                        "productId": "mat-dmg-2026",
+                        "coords": [
+                            50.7,
+                            55.6,
+                            47.1,
+                            21.3
+                        ]
+                    },
+                    {
+                        "productId": "goods-deckbox",
+                        "coords": [
+                            1.8,
+                            77.7,
+                            37.9,
+                            21.2
+                        ]
+                    },
+                    {
+                        "productId": "tapestry-bmg2026",
+                        "coords": [
+                            41.1,
+                            77.7,
+                            33.5,
+                            21.2
+                        ]
+                    },
+                    {
+                        "productId": "tapestry-gagaga",
+                        "coords": [
+                            75.5,
+                            77.7,
+                            22.3,
+                            21.2
+                        ]
+                    }
+                ]
+            },
             {
                 "id": "page1",
                 "src": "./blog/20260719/acghk2026pricelist1.jpg",
@@ -842,7 +925,12 @@ const eventCatalog = {
                             20.9
                         ]
                     }
-                ]
+                ],
+                "langs": {
+                    "jp": false,
+                    "en": true,
+                    "zh": true
+                }
             },
             {
                 "id": "page2",
@@ -925,7 +1013,12 @@ const eventCatalog = {
                             17.2
                         ]
                     }
-                ]
+                ],
+                "langs": {
+                    "jp": false,
+                    "en": true,
+                    "zh": true
+                }
             }
         ],
         "productOrder": [
@@ -934,6 +1027,8 @@ const eventCatalog = {
             "sleeve-dmg-2026",
             "mat-dmg-2026",
             "goods-deckbox",
+            "tapestry-bmg2026",
+            "tapestry-gagaga",
             "goods-cardbox",
             "set-makeine",
             "set-yugioh-2025",
@@ -950,22 +1045,22 @@ const eventCatalog = {
                 "category": "set",
                 "isNew": true,
                 "title": {
-                    "jp": "星夢亭15周年記念SET",
+                    "jp": "サークル15周年記念セット",
                     "en": "Hoshiyumetei 15th Anniversary SET",
                     "zh": "星夢亭15週年紀念SET"
                 },
                 "price": {
-                    "jp": "$240",
+                    "jp": "¥4,500",
                     "en": "$240",
                     "zh": "$240"
                 },
                 "specs": {
-                    "jp": null,
+                    "jp": "新刊＋バッグ＋ストレージボックス＋アクスタ＋オリカ＋資料設定",
                     "en": null,
                     "zh": null
                 },
                 "desc": {
-                    "jp": "星夢亭15周年記念セット。<br>① 新刊 Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子",
+                    "jp": "サークル15周年記念セット。<br>① 新刊 - Overlay Magic Color 4（B5 20P フルカラー）<br>② 透明フィルムバッグ（30×40×10 cm）<br>③ 大型ストレージボックス（21×33×8 cm）<br>④ アクリルフィールドセンターカード<br>⑤ オリカ×2 ＋ 鑑定品風のケース×2 ＋ 化粧箱付き<br>⑥ ゲーム「ワープマキナ」資料設定 Vol.0<br>※オリカのレアリティ（UR / PSE / GMR）はランダムでの封入となります",
                     "en": "15th anniversary set.<br>① New book Overlay Magic Color 4 (B5 20P full color / foil cover)<br>② Frosted tote bag (30×40×10 cm)<br>③ Large storage box (21×33×8 cm)<br>④ Acrylic field center card<br>⑤ Custom cards ×2 + cases ×2 + gift box<br>⑥ Warp Machina setting booklet",
                     "zh": "星夢亭15週年紀念套組。<br>① 新刊 - Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子<br>（自製卡有不同稀有度：UR / PSE / GMR）"
                 },
@@ -994,22 +1089,22 @@ const eventCatalog = {
                 "category": "sleeve",
                 "isNew": true,
                 "title": {
-                    "jp": "スリーブ ガガガガール",
+                    "jp": "新作スリーブ ガガガガール",
                     "en": "Sleeves - Gagaga Girl",
                     "zh": "新作卡套 我我我女孩"
                 },
                 "price": {
-                    "jp": "$80",
+                    "jp": "¥1,500",
                     "en": "$80",
                     "zh": "$80"
                 },
                 "specs": {
-                    "jp": "遊戯王サイズ / 60枚 / 予約",
+                    "jp": "ミニサイズ／60枚入り",
                     "en": "Yu-Gi-Oh! size / 60 pcs / pre-order",
                     "zh": null
                 },
                 "desc": {
-                    "jp": "新作カードスリーブ。我我我女孩。",
+                    "jp": "新作カードスリーブ。ガガガガール。<br>ミニサイズ（遊戯王ミニ）／60枚入り。",
                     "en": "New card sleeves featuring Gagaga Girl.",
                     "zh": "遊戲王尺寸、每包含60個／預購"
                 },
@@ -1029,22 +1124,22 @@ const eventCatalog = {
                 "category": "sleeve",
                 "isNew": true,
                 "title": {
-                    "jp": "スリーブ ブラック・マジシャン・ガール (ver. 2026)",
+                    "jp": "新作スリーブ ブラック・マジシャン・ガール（ver. 2026）",
                     "en": "Sleeves - Dark Magician Girl (ver. 2026)",
                     "zh": "新作卡套 黑魔導女孩 (ver. 2026)"
                 },
                 "price": {
-                    "jp": "$80",
+                    "jp": "¥1,500",
                     "en": "$80",
                     "zh": "$80"
                 },
                 "specs": {
-                    "jp": "遊戯王サイズ / 60枚 / 予約",
+                    "jp": "ミニサイズ／60枚入り",
                     "en": "Yu-Gi-Oh! size / 60 pcs / pre-order",
                     "zh": null
                 },
                 "desc": {
-                    "jp": "新作カードスリーブ。ブラック・マジシャン・ガール ver. 2026。",
+                    "jp": "新作カードスリーブ。ブラック・マジシャン・ガール（ver. 2026）。<br>ミニサイズ／60枚入り。<br>※ガガガガールとセット購入 ¥2,500（各 ¥1,500）",
                     "en": "New card sleeves featuring Dark Magician Girl (ver. 2026).",
                     "zh": "遊戲王尺寸、每包含60個／預購"
                 },
@@ -1064,22 +1159,22 @@ const eventCatalog = {
                 "category": "mat",
                 "isNew": true,
                 "title": {
-                    "jp": "プレイマット ブラック・マジシャン・ガール (ver. 2026)",
+                    "jp": "新作プレイマット ブラック・マジシャン・ガール（ver. 2026）",
                     "en": "Playmat - Dark Magician Girl (ver. 2026)",
                     "zh": "新作遊戲墊 黑魔導女孩 (ver. 2026)"
                 },
                 "price": {
-                    "jp": "$180",
+                    "jp": "¥3,000",
                     "en": "$180",
                     "zh": "$180"
                 },
                 "specs": {
-                    "jp": "新作プレイマット",
+                    "jp": "プレイマット",
                     "en": "New playmat",
                     "zh": null
                 },
                 "desc": {
-                    "jp": "新作プレイマット。ブラック・マジシャン・ガール ver. 2026。",
+                    "jp": "新作プレイマット。ブラック・マジシャン・ガール（ver. 2026）。",
                     "en": "New playmat featuring Dark Magician Girl (ver. 2026).",
                     "zh": "新作遊戲墊 - 黑魔導女孩 (ver. 2026)。"
                 },
@@ -1100,22 +1195,22 @@ const eventCatalog = {
                 "category": "goods",
                 "isNew": false,
                 "title": {
-                    "jp": "レザーデッキケース",
+                    "jp": "マグネットデッキケース",
                     "en": "Leather Card Deck Box",
                     "zh": "皮質卡片收納盒"
                 },
                 "price": {
-                    "jp": "$220",
+                    "jp": "¥4,000",
                     "en": "$220",
                     "zh": "$220"
                 },
                 "specs": {
-                    "jp": "レザーデッキケース",
+                    "jp": "マグネット式デッキケース",
                     "en": "Leather deck box",
                     "zh": "皮質卡片收納盒"
                 },
                 "desc": {
-                    "jp": "レザー素材のデッキケース／カード収納箱。",
+                    "jp": "マグネットデッキケース。ブラック・マジシャン・ガールイラスト仕様。",
                     "en": "Leather-style card deck box.",
                     "zh": "皮質卡片收納盒。"
                 },
@@ -1150,7 +1245,7 @@ const eventCatalog = {
                     "zh": null
                 },
                 "desc": {
-                    "jp": "敗北ヒロイン関連セット商品。",
+                    "jp": "『負けヒロインが多すぎる！』関連セット商品。",
                     "en": "Makeine-related catalog set.",
                     "zh": "敗北女角相關既有套組商品。"
                 },
@@ -1228,7 +1323,7 @@ const eventCatalog = {
                     "zh": "6款可選／各 $80"
                 },
                 "desc": {
-                    "jp": "既存キャラクタースリーブ。各種ラインナップ。モーダル内のギャラリーで各柄を確認できます。",
+                    "jp": "既存キャラクタースリーブ各種。ギャラリーで柄を確認できます。",
                     "en": "Legacy character sleeves. Multiple designs — swipe the gallery to preview each design.",
                     "zh": "既存角色卡套，多款可選。"
                 },
@@ -1268,7 +1363,7 @@ const eventCatalog = {
                     "zh": null
                 },
                 "desc": {
-                    "jp": "敗北ヒロイン関連アクリルキーホルダー。",
+                    "jp": "アクリルキーホルダー。天愛星＋八奈見杏菜。",
                     "en": "Makeine acrylic keychain set.",
                     "zh": "敗北女角太多了! \n天愛星 + 八奈見亞 亞加力匙扣。"
                 },
@@ -1303,7 +1398,7 @@ const eventCatalog = {
                     "zh": "既作遊戲墊"
                 },
                 "desc": {
-                    "jp": "既存プレイマット商品。",
+                    "jp": "既存プレイマット各種。",
                     "en": "Legacy playmat.",
                     "zh": "既作遊戲墊。"
                 },
@@ -1338,7 +1433,7 @@ const eventCatalog = {
                     "zh": null
                 },
                 "desc": {
-                    "jp": "Dream Card Box 2025 収納箱。",
+                    "jp": "収納箱 Dream Card Box 2025。",
                     "en": "Dream Card Box 2025 storage box.",
                     "zh": "Dream Card Box 2025 收納盒"
                 },
@@ -1375,7 +1470,7 @@ const eventCatalog = {
                     "zh": null
                 },
                 "desc": {
-                    "jp": "既刊 TOO MANY SEICHI! フルカラーイラスト本。",
+                    "jp": "既刊『TOO MANY SEICHI!』フルカラーイラスト本。",
                     "en": "Catalog full-color artbook TOO MANY SEICHI!",
                     "zh": "既刊 TOO MANY SEICHI! 插圖本\n20P / 全彩"
                 },
@@ -1410,7 +1505,7 @@ const eventCatalog = {
                     "zh": null
                 },
                 "desc": {
-                    "jp": "Overlay Magic Color 3 既刊。",
+                    "jp": "既刊 Overlay Magic Color 3。",
                     "en": "Overlay Magic Color 3 catalog book.",
                     "zh": "既刊 Overlay Magic Color 3。\n全彩 / 16P"
                 },
@@ -1445,7 +1540,7 @@ const eventCatalog = {
                     "zh": null
                 },
                 "desc": {
-                    "jp": "Overlay Magic GALA 既刊。",
+                    "jp": "既刊 Overlay Magic GALA。",
                     "en": "Overlay Magic GALA catalog book.",
                     "zh": "既刊 Overlay Magic GALA。\n全彩 / 32P"
                 },
@@ -1459,6 +1554,68 @@ const eventCatalog = {
                     "urlOverride": null,
                     "label": null
                 }
+            },
+            "tapestry-bmg2026": {
+                "id": "tapestry-bmg2026",
+                "category": "goods",
+                "isNew": true,
+                "title": {
+                    "jp": "新作タペストリー ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Tapestry - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作掛畫 黑魔導女孩 (ver. 2026)"
+                },
+                "price": {
+                    "jp": "¥3,000",
+                    "en": "¥3,000",
+                    "zh": "$180"
+                },
+                "specs": {
+                    "jp": "マイクロダブルスウェード／サイズ：B2",
+                    "en": "Micro double suede / Size: B2",
+                    "zh": "雙面絨／尺寸：B2"
+                },
+                "desc": {
+                    "jp": "新作タペストリー。ブラック・マジシャン・ガール（ver. 2026）。<br>マイクロダブルスウェード素材。サイズ：B2。",
+                    "en": "New tapestry. Dark Magician Girl (ver. 2026).<br>Micro double suede. Size B2.",
+                    "zh": "新作掛畫。黑魔導女孩 (ver. 2026)。<br>雙面絨材質。B2 尺寸。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg",
+                "cta": null
+            },
+            "tapestry-gagaga": {
+                "id": "tapestry-gagaga",
+                "category": "goods",
+                "isNew": true,
+                "title": {
+                    "jp": "新作タペストリー ガガガガール",
+                    "en": "Tapestry - Gagaga Girl",
+                    "zh": "新作掛畫 我我我女孩"
+                },
+                "price": {
+                    "jp": "¥3,000",
+                    "en": "¥3,000",
+                    "zh": "$180"
+                },
+                "specs": {
+                    "jp": "マイクロダブルスウェード／サイズ：B2",
+                    "en": "Micro double suede / Size: B2",
+                    "zh": "雙面絨／尺寸：B2"
+                },
+                "desc": {
+                    "jp": "新作タペストリー。ガガガガール。<br>マイクロダブルスウェード素材。サイズ：B2。",
+                    "en": "New tapestry. Gagaga Girl.<br>Micro double suede. Size B2.",
+                    "zh": "新作掛畫。我我我女孩。<br>雙面絨材質。B2 尺寸。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/tapestry/tapestry-gagaga.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/tapestry/tapestry-gagaga.jpg",
+                "cta": null
             }
         }
     }

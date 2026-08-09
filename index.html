@@ -273,7 +273,7 @@
                         <div class="absolute top-0 right-0 bg-tech-purple text-black text-[10px] font-bold px-2 py-1">${post.tag}</div>
                     </div>
                     <div class="p-4">
-                        <p class="text-[10px] text-gray-400 font-mono mb-1">${post.date}</p>
+                        <p class="text-[10px] text-gray-400 font-mono mb-1">${(post.dates && post.dates[currentLang]) || post.date}</p>
                         <h4 class="font-bold text-black group-hover:text-tech-purple transition-colors line-clamp-1 font-tech uppercase">
                             ${post.title[currentLang]}
                         </h4>

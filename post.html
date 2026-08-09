@@ -322,7 +322,8 @@
                     }
                 }
 
-                document.getElementById('post-date').innerText = post.date;
+                document.getElementById('post-date').innerText =
+                    (post.dates && post.dates[currentLang]) || post.date;
                 document.getElementById('post-img').src = post.img;
                 document.getElementById('post-tag').innerText = post.tag;
                 document.getElementById('post-title').innerText = post.title[currentLang];
@@ -353,7 +354,12 @@
             const showPulse = !localStorage.getItem('oshinagakiHintSeen');
 
             const boothLine = t(event.meta && event.meta.booth);
-            const mapsHtml = (event.menuImages || []).map((menu, menuIdx) => {
+            // menu.langs: if set, only show for those languages (e.g. JP-only お品書き image)
+            const visibleMenus = (event.menuImages || []).filter((menu) => {
+                if (!menu.langs || typeof menu.langs !== 'object') return true;
+                return !!menu.langs[currentLang];
+            });
+            const mapsHtml = visibleMenus.map((menu, menuIdx) => {
                 const label = t(menu.label);
                 const hotspots = (menu.hotspots || []).map(h => {
                     const [l, top, w, ht] = h.coords;
@@ -381,7 +387,7 @@
                 <div class="bg-white border border-gray-200 shadow-sm rounded-sm overflow-hidden">
                     <div class="px-4 py-3 md:px-6 bg-black text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
-                            <p class="text-[10px] font-mono text-tech-purple tracking-widest uppercase">${event.meta ? event.meta.event : ''}</p>
+                            <p class="text-[10px] font-mono text-tech-purple tracking-widest uppercase">${event.meta ? t(event.meta.event) : ''}</p>
                             <h2 class="text-lg md:text-xl font-bold font-tech">${t(event.title)}</h2>
                             ${boothLine ? `<p class="text-xs text-gray-400 mt-1 font-mono">${strings.booth}: ${boothLine}</p>` : ''}
                         </div>

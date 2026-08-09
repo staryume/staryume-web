@@ -93,24 +93,29 @@ const siteData = {
             "id": 6,
             "tag": "NEWS",
             "date": "2026/07/19",
+            "dates": {
+                "jp": "2026/08/10",
+                "en": "2026/07/19",
+                "zh": "2026/07/19"
+            },
             "img": "./blog/20260719/20260719thumb.jpg",
             "ogImage": "./blog/20260719/20260719-og.jpg",
             "ogImageWidth": 1200,
             "ogImageHeight": 630,
             "eventId": "acghk2026",
             "title": {
-                "jp": null,
-                "en": null,
+                "jp": "C108お品書き",
+                "en": "C108 / ACGHK2026 Product Info",
                 "zh": "ACGHK2026 販售物情報"
             },
             "content": {
-                "jp": null,
-                "en": null,
+                "jp": "\n## C108 お品書き\n\n星夢亭の結成15周年を記念して、今回のお品書きはいつもより少し豪華になっています！\n<br>\nさらに今回は、お品書き画像上の商品をタップ／クリックすると詳細が開く<strong>インタラクティブなお品書き</strong>に対応しました。\n<br>\n気になる商品を画像から直接チェックできます。\n<br>\nコミックマーケット108でお待ちしております！\n<br>\n<strong>配置：</strong>1日目(土) 西あ69ab ／ 2日目(日) 東ウ11b\n<br>\n最終更新： 2026/08/10\n                ",
+                "en": "\n## C108 / ACGHK2026 Product Info\n\nFor Hoshiyumetei's 15th anniversary, this lineup is richer than usual!\n<br>\nThis time the product menu is interactive — tap or click items on the image for details.\n<br>\nSee you at the event!\n<br>\nLast update: 2026/08/10\n                ",
                 "zh": "## ACGHK2026 販售物情報\n\n因為今年是星夢亭的成立 15週年紀念，這次的販售物會比以往的豐富!\n<br>\n同時這次價目表的顯示方式也超絕強化，變成一個可以 \"互動\" 的價目表、\n<br>\n只需要按下價目表內對應的商品位置、就可以看到詳細的介紹資訊!\n<br>\n期待 ACGHK2026 活動當天見面!\n<br>\n最終更新： 2026/07/21"
             },
             "langs": {
-                "jp": false,
-                "en": false,
+                "jp": true,
+                "en": true,
                 "zh": true
             }
         }
