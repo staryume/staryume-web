@@ -231,7 +231,21 @@
     </div>
 
     <script>
-        let currentLang = localStorage.getItem('siteLang') || 'jp';
+        // Optional ?lang=jp|en|zh forces language (and saves to localStorage for this browser)
+        function langFromQuery() {
+            try {
+                const q = (new URLSearchParams(window.location.search).get('lang') || '').toLowerCase();
+                if (q === 'jp' || q === 'ja') return 'jp';
+                if (q === 'en') return 'en';
+                if (q === 'zh' || q === 'tc' || q === 'zh-tw' || q === 'zh-hk') return 'zh';
+            } catch (e) { /* ignore */ }
+            return null;
+        }
+        const forcedLang = langFromQuery();
+        if (forcedLang) {
+            try { localStorage.setItem('siteLang', forcedLang); } catch (e) { /* ignore */ }
+        }
+        let currentLang = forcedLang || localStorage.getItem('siteLang') || 'jp';
         let currentEvent = null;
         let currentProduct = null;
         let eventImgIndex = 0;
