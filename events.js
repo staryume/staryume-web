@@ -4,6 +4,7 @@
 const eventUiStrings = {
     "jp": {
         "hint": "画像の商品をタップ／クリックで詳細を表示",
+        "listHeading": "商品一覧",
         "photos": "写真",
         "pages": "ページプレビュー",
         "specs": "仕様",
@@ -21,6 +22,7 @@ const eventUiStrings = {
     },
     "en": {
         "hint": "Tap / click a product on the image for details",
+        "listHeading": "Product List",
         "photos": "Photos",
         "pages": "Page Preview",
         "specs": "Specs",
@@ -38,6 +40,7 @@ const eventUiStrings = {
     },
     "zh": {
         "hint": "點擊圖上的商品查看詳細資訊",
+        "listHeading": "商品一覽",
         "photos": "照片",
         "pages": "內頁預覽",
         "specs": "規格",
@@ -319,10 +322,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應遊戲王迷你尺寸。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/sleeve-legacy/04.jpg"
+                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030655488.jpg"
                 ],
                 "pages": [],
-                "thumb": "./blog/20260719/products/sleeve-legacy/04.jpg",
+                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030655488.jpg",
                 "cta": null
             },
             "sleeve-furi": {
@@ -350,10 +353,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應遊戲王迷你尺寸。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/sleeve-legacy/03.jpg"
+                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030654315.jpg"
                 ],
                 "pages": [],
-                "thumb": "./blog/20260719/products/sleeve-legacy/03.jpg",
+                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030654315.jpg",
                 "cta": null
             },
             "mat-annna": {
@@ -412,10 +415,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應 MTG / PTCG 標準尺寸。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/sleeve-legacy/05.jpg"
+                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030652984.jpg"
                 ],
                 "pages": [],
-                "thumb": "./blog/20260719/products/sleeve-legacy/05.jpg",
+                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030652984.jpg",
                 "cta": null
             },
             "sleeve-dreizehn": {
@@ -443,10 +446,10 @@ const eventCatalog = {
                     "zh": "新作卡套。對應 MTG / PTCG 標準尺寸。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/sleeve-legacy/06.jpg"
+                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030650952.jpg"
                 ],
                 "pages": [],
-                "thumb": "./blog/20260719/products/sleeve-legacy/06.jpg",
+                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2602091030650952.jpg",
                 "cta": null
             },
             "book-too-many-seichi": {
@@ -478,7 +481,11 @@ const eventCatalog = {
                     "./blog/20251224/products/book-too-many-seichi/02.jpg",
                     "./blog/20251224/products/book-too-many-seichi/03.jpg"
                 ],
-                "pages": [],
+                "pages": [
+                    "./blog/20251224/products/book-too-many-seichi/page-01.jpg",
+                    "./blog/20251224/products/book-too-many-seichi/page-02.jpg",
+                    "./blog/20251224/products/book-too-many-seichi/page-03.jpg"
+                ],
                 "thumb": "./blog/20251224/products/book-too-many-seichi/01.jpg",
                 "cta": null
             },
@@ -604,10 +611,10 @@ const eventCatalog = {
                     "zh": "黑魔導女孩牌墊。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/mat-dmg-2026/01.jpg"
+                    "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2508240784869452.jpg"
                 ],
                 "pages": [],
-                "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
+                "thumb": "https://myship.7-11.com.tw/i/cgdm/GM2403022207590/2508240784869452.jpg",
                 "cta": null
             },
             "goods-makein-akkey": {
@@ -668,12 +675,13 @@ const eventCatalog = {
                 "gallery": [
                     "./blog/20251224/products/book-om6/01.jpg",
                     "./blog/20251224/products/book-om6/02.jpg",
-                    "./blog/20251224/products/book-om6/03.jpg",
-                    "./blog/20251224/products/book-om6/04.jpg",
-                    "./blog/20251224/products/book-om6/05.jpg",
-                    "./blog/20251224/products/book-om6/06.jpg"
+                    "./blog/20251224/products/book-om6/03.jpg"
                 ],
-                "pages": [],
+                "pages": [
+                    "./blog/20251224/products/book-om6/page-01.jpg",
+                    "./blog/20251224/products/book-om6/page-02.jpg",
+                    "./blog/20251224/products/book-om6/page-03.jpg"
+                ],
                 "thumb": "./blog/20251224/products/book-om6/01.jpg",
                 "cta": null
             },
@@ -704,11 +712,13 @@ const eventCatalog = {
                 "gallery": [
                     "./blog/20251224/products/book-omc3/01.jpg",
                     "./blog/20251224/products/book-omc3/02.jpg",
-                    "./blog/20251224/products/book-omc3/03.jpg",
-                    "./blog/20251224/products/book-omc3/04.jpg",
-                    "./blog/20251224/products/book-omc3/05.jpg"
+                    "./blog/20251224/products/book-omc3/03.jpg"
                 ],
-                "pages": [],
+                "pages": [
+                    "./blog/20251224/products/book-omc3/page-01.jpg",
+                    "./blog/20251224/products/book-omc3/page-02.jpg",
+                    "./blog/20251224/products/book-omc3/page-03.jpg"
+                ],
                 "thumb": "./blog/20251224/products/book-omc3/01.jpg",
                 "cta": null
             },
@@ -739,12 +749,13 @@ const eventCatalog = {
                 "gallery": [
                     "./blog/20251224/products/book-om-omnibus/01.jpg",
                     "./blog/20251224/products/book-om-omnibus/02.jpg",
-                    "./blog/20251224/products/book-om-omnibus/03.jpg",
-                    "./blog/20251224/products/book-om-omnibus/04.jpg",
-                    "./blog/20251224/products/book-om-omnibus/05.jpg",
-                    "./blog/20251224/products/book-om-omnibus/06.jpg"
+                    "./blog/20251224/products/book-om-omnibus/03.jpg"
                 ],
-                "pages": [],
+                "pages": [
+                    "./blog/20251224/products/book-om-omnibus/page-01.jpg",
+                    "./blog/20251224/products/book-om-omnibus/page-02.jpg",
+                    "./blog/20251224/products/book-om-omnibus/page-03.jpg"
+                ],
                 "thumb": "./blog/20251224/products/book-om-omnibus/01.jpg",
                 "cta": null
             }
@@ -758,11 +769,7 @@ const eventCatalog = {
             "zh": "ACGHK2026 販售物情報"
         },
         "meta": {
-            "event": {
-                "jp": "COMIC MARKET 108",
-                "en": "COMIC MARKET 108 / ACGHK 2026",
-                "zh": "ACGHK 2026"
-            },
+            "event": "COMIC MARKET 108 / ACGHK 2026",
             "booth": {
                 "jp": "1日目(土) 西あ69ab ／ 2日目(日) 東ウ11b",
                 "en": "Day1 West A-69ab / Day2 East U-11b",
@@ -772,12 +779,12 @@ const eventCatalog = {
         },
         "defaultCta": {
             "label": {
-                "jp": "ストアで予約",
-                "en": "Pre-order on Store",
+                "jp": "BOOTHで購入",
+                "en": "Buy on BOOTH",
                 "zh": "前往網店預購"
             },
-            "url": "store.html?region=HK",
-            "external": false,
+            "url": "https://staryume.booth.pm",
+            "external": true,
             "boothUrl": "https://staryume.booth.pm",
             "storeUrl": "store.html",
             "storeRegion": "HK"
@@ -800,63 +807,54 @@ const eventCatalog = {
                     {
                         "productId": "anni-15-set",
                         "coords": [
-                            2,
-                            12.5,
-                            95.5,
-                            42.4
+                            2.5,
+                            12.2,
+                            95,
+                            41.5
                         ]
                     },
                     {
                         "productId": "sleeve-gagaga",
                         "coords": [
-                            1.9,
-                            55.6,
-                            25,
-                            21.3
+                            2.5,
+                            54.5,
+                            23.8,
+                            21.8
                         ]
                     },
                     {
                         "productId": "sleeve-dmg-2026",
                         "coords": [
-                            26.9,
-                            55.6,
-                            22.1,
-                            21.3
+                            27.3,
+                            54.5,
+                            23.8,
+                            21.8
                         ]
                     },
                     {
                         "productId": "mat-dmg-2026",
                         "coords": [
-                            50.7,
-                            55.6,
-                            47.1,
-                            21.3
+                            52,
+                            54.5,
+                            45.5,
+                            21.8
                         ]
                     },
                     {
                         "productId": "goods-deckbox",
                         "coords": [
-                            1.8,
-                            77.7,
-                            37.9,
+                            2,
+                            77,
+                            37.5,
                             21.2
                         ]
                     },
                     {
-                        "productId": "tapestry-bmg2026",
+                        "productId": "goods-tapestry",
                         "coords": [
-                            41.1,
-                            77.7,
-                            33.5,
-                            21.2
-                        ]
-                    },
-                    {
-                        "productId": "tapestry-gagaga",
-                        "coords": [
-                            75.5,
-                            77.7,
-                            22.3,
+                            41,
+                            77,
+                            56.5,
                             21.2
                         ]
                     }
@@ -1027,8 +1025,7 @@ const eventCatalog = {
             "sleeve-dmg-2026",
             "mat-dmg-2026",
             "goods-deckbox",
-            "tapestry-bmg2026",
-            "tapestry-gagaga",
+            "goods-tapestry",
             "goods-cardbox",
             "set-makeine",
             "set-yugioh-2025",
@@ -1070,16 +1067,12 @@ const eventCatalog = {
                     "./blog/20260719/products/anni-15-set/03.jpg",
                     "./blog/20260719/products/anni-15-set/04.jpg",
                     "./blog/20260719/products/anni-15-set/05.jpg",
-                    "./blog/20260719/products/anni-15-set/06.jpg",
-                    "./blog/20260719/products/anni-15-set/07.jpg",
-                    "./blog/20260719/products/anni-15-set/08.jpg",
-                    "./blog/20260719/products/anni-15-set/09.jpg",
-                    "./blog/20260719/products/anni-15-set/10.jpg"
+                    "./blog/20260719/products/anni-15-set/06.jpg"
                 ],
                 "pages": [],
                 "thumb": "./blog/20260719/products/anni-15-set/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1114,7 +1107,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-gagaga/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1149,7 +1142,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-dmg-2026/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1185,7 +1178,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1220,7 +1213,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1260,7 +1253,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/set-makeine/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1298,7 +1291,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/set-yugioh-2025/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1338,7 +1331,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/sleeve-legacy/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1373,7 +1366,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-akkey/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1408,7 +1401,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/mat-legacy/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1445,7 +1438,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-cardbox/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1480,7 +1473,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-too-many-seichi/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1515,7 +1508,7 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-omc3/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
@@ -1550,24 +1543,24 @@ const eventCatalog = {
                 "pages": [],
                 "thumb": "./blog/20260719/products/book-om-gala/01.jpg",
                 "cta": {
-                    "enabled": true,
+                    "enabled": false,
                     "urlOverride": null,
                     "label": null
                 }
             },
-            "tapestry-bmg2026": {
-                "id": "tapestry-bmg2026",
+            "goods-tapestry": {
+                "id": "goods-tapestry",
                 "category": "goods",
                 "isNew": true,
                 "title": {
-                    "jp": "新作タペストリー ブラック・マジシャン・ガール（ver. 2026）",
-                    "en": "Tapestry - Dark Magician Girl (ver. 2026)",
-                    "zh": "新作掛畫 黑魔導女孩 (ver. 2026)"
+                    "jp": "新作タペストリー（B2）",
+                    "en": "New Tapestry (B2)",
+                    "zh": "新作掛畫（B2）"
                 },
                 "price": {
-                    "jp": "¥3,000",
-                    "en": "¥3,000",
-                    "zh": "$180"
+                    "jp": "各 ¥3,000",
+                    "en": "¥3,000 each",
+                    "zh": "各 $180"
                 },
                 "specs": {
                     "jp": "マイクロダブルスウェード／サイズ：B2",
@@ -1575,48 +1568,45 @@ const eventCatalog = {
                     "zh": "雙面絨／尺寸：B2"
                 },
                 "desc": {
-                    "jp": "新作タペストリー。ブラック・マジシャン・ガール（ver. 2026）。<br>マイクロダブルスウェード素材。サイズ：B2。",
-                    "en": "New tapestry. Dark Magician Girl (ver. 2026).<br>Micro double suede. Size B2.",
-                    "zh": "新作掛畫。黑魔導女孩 (ver. 2026)。<br>雙面絨材質。B2 尺寸。"
+                    "jp": "新作タペストリー。マイクロダブルスウェード素材。サイズ：B2。複数デザインあり（各 ¥3,000）。",
+                    "en": "New tapestry. Micro double suede. Size B2. Multiple designs (¥3,000 each).",
+                    "zh": "新作掛畫。雙面絨材質。B2 尺寸。多款設計（各售）。"
                 },
-                "gallery": [
-                    "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"
-                ],
+                "gallery": [],
                 "pages": [],
-                "thumb": "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg",
-                "cta": null
-            },
-            "tapestry-gagaga": {
-                "id": "tapestry-gagaga",
-                "category": "goods",
-                "isNew": true,
-                "title": {
-                    "jp": "新作タペストリー ガガガガール",
-                    "en": "Tapestry - Gagaga Girl",
-                    "zh": "新作掛畫 我我我女孩"
-                },
-                "price": {
-                    "jp": "¥3,000",
-                    "en": "¥3,000",
-                    "zh": "$180"
-                },
-                "specs": {
-                    "jp": "マイクロダブルスウェード／サイズ：B2",
-                    "en": "Micro double suede / Size: B2",
-                    "zh": "雙面絨／尺寸：B2"
-                },
-                "desc": {
-                    "jp": "新作タペストリー。ガガガガール。<br>マイクロダブルスウェード素材。サイズ：B2。",
-                    "en": "New tapestry. Gagaga Girl.<br>Micro double suede. Size B2.",
-                    "zh": "新作掛畫。我我我女孩。<br>雙面絨材質。B2 尺寸。"
-                },
-                "gallery": [
-                    "./blog/20260719/products/tapestry/tapestry-gagaga.jpg"
-                ],
-                "pages": [],
-                "thumb": "./blog/20260719/products/tapestry/tapestry-gagaga.jpg",
+                "thumb": "./blog/20260719/c108pricelist-jp.jpg",
                 "cta": null
             }
+        },
+        "afterShowcase": {
+            "jp": [
+                {
+                    "id": "fanbox-perk",
+                    "title": "FANBOX メンバー特典",
+                    "body": "FANBOX で <strong>月額 1,000円以上</strong> ご支援いただいているメンバーの方は、イベント会場で<strong>加入証明（スマートフォン画面など）</strong>をご提示いただくと、下記の<strong>FANBOX限定 PRカード</strong>をプレゼントいたします。<br><br>※お一人様1枚まで／数量に限りがある場合がございます。<br>※加入プラン・表示名が確認できる状態でご提示ください。",
+                    "images": [
+                        {
+                            "src": "./blog/20260719/extras/fanbox-pr-card.jpg",
+                            "alt": "FANBOX限定 PRカード（月額1,000円以上特典）",
+                            "caption": "1,000 JPY / month 〜 限定 PRカード"
+                        }
+                    ]
+                },
+                {
+                    "id": "poster-janken",
+                    "title": "恒例のサークルポスタージャンケン大会",
+                    "body": "今回の<strong>C108イベント用サークルポスター</strong>（ブラマジガール）を、<strong>ジャンケン大会の勝者</strong>の方にプレゼントします！<br><br>🕒 <strong>日時：</strong>各日 <strong>15:00頃〜</strong>（進行により前後する場合があります）<br>📍 <strong>場所：</strong>「星夢亭」ブース<br>　・1日目(土)　西 <strong>あ69ab</strong><br>　・2日目(日)　東 <strong>ウ11b</strong><br><br>ポスターを希望される方が複数いらっしゃった場合は、<strong>ジャンケン</strong>で勝者の方に<strong>無料</strong>でお渡しします。<br><br>※ブース前の案内もあわせてご確認ください。",
+                    "images": [
+                        {
+                            "src": "./blog/20260719/extras/event-poster-janken.jpg",
+                            "alt": "C108 サークルポスター（ブラマジガール／ジャンケン景品）",
+                            "caption": "C108 サークルポスター（ジャンケン景品・無料）"
+                        }
+                    ]
+                }
+            ],
+            "en": null,
+            "zh": null
         }
     }
 };

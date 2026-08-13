@@ -383,6 +383,8 @@
                     </div>`;
             }).join('');
 
+            const afterNotes = renderEventAfterShowcase(event);
+
             root.innerHTML = `
                 <div class="bg-white border border-gray-200 shadow-sm rounded-sm overflow-hidden">
                     <div class="px-4 py-3 md:px-6 bg-black text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -396,12 +398,62 @@
                     <div class="p-4 md:p-8">
                         ${mapsHtml}
                     </div>
-                </div>`;
+                </div>
+                ${afterNotes}`;
 
             root.classList.remove('hidden');
             if (showPulse) {
                 localStorage.setItem('oshinagakiHintSeen', '1');
             }
+        }
+
+        /** Optional language-specific notes under the お品書き (FANBOX perk, janken poster, etc.) */
+        function renderEventAfterShowcase(event) {
+            if (!event || !event.afterShowcase) return '';
+            const raw = event.afterShowcase;
+            let sections = null;
+            if (Array.isArray(raw)) {
+                sections = raw;
+            } else if (typeof raw === 'object') {
+                sections = raw[currentLang] || raw.jp || raw.en || raw.zh || null;
+            }
+            if (!sections || !sections.length) return '';
+
+            return sections.map((sec) => {
+                const title = escHtml(typeof sec.title === 'string' ? sec.title : t(sec.title));
+                const body = typeof sec.body === 'string' ? sec.body : t(sec.body);
+                const imgs = (sec.images || []).map((img) => {
+                    const src = typeof img === 'string' ? img : img.src;
+                    const alt = typeof img === 'string' ? title : (img.alt || title);
+                    const caption = typeof img === 'string' ? '' : (img.caption || '');
+                    return `
+                        <figure class="mt-4">
+                            <img src="${escHtml(src)}" alt="${escHtml(alt)}"
+                                class="w-full max-w-md mx-auto rounded-lg border border-gray-200 shadow-sm object-contain bg-gray-50"
+                                loading="lazy">
+                            ${caption ? `<figcaption class="text-center text-xs text-gray-500 font-mono mt-2">${escHtml(caption)}</figcaption>` : ''}
+                        </figure>`;
+                }).join('');
+
+                return `
+                    <div class="mt-8 bg-white border border-gray-200 shadow-sm rounded-sm overflow-hidden">
+                        <div class="px-4 py-3 md:px-6 bg-black text-white">
+                            <h3 class="text-base md:text-lg font-bold font-tech tracking-wide">${title}</h3>
+                        </div>
+                        <div class="p-4 md:p-8">
+                            <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed">${body}</div>
+                            ${imgs}
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function escHtml(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
         }
 
         function openEventProduct(productId) {

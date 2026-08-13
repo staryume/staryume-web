@@ -2,8 +2,8 @@
 
 The form page is: **`hk-form.html`**  
 Live URL after deploy: **`https://staryu.me/hk-form.html`**  
-Local test URL: **`http://localhost:8010/hk-form.html`**  
-(Use any free port; if Starpedia is on 8000, use e.g. `python3 -m http.server 8010`)
+Local test URL: **`http://localhost:8000/hk-form.html`**  
+(From the `web` folder: `python3 -m http.server 8000`)
 
 ---
 
