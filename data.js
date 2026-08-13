@@ -104,7 +104,7 @@ const siteData = {
                 "zh": "ACGHK2026 販售物情報"
             },
             "content": {
-                "jp": "## C108 お品書き\n\nサークル15周年を記念して、今回のお品書きはいつもより少し豪華になっています！\n<br>\nさらに今回は、お品書き画像上の商品をタップ／クリックすると詳細を確認できる<strong>インタラクティブなお品書き</strong>に対応しました。\n<br>\n気になる商品を画像から直接チェックしていただけます。\n<br><br>\nコミックマーケット108でお待ちしております！\n<br>\n<strong>配置：</strong>1日目(土) 西あ69ab ／ 2日目(日) 東ウ11b\n<br>\n最終更新： 2026/08/10",
+                "jp": "## C108 お品書き\n\nサークル15周年を記念して、今回のお品書きはいつもより少し豪華になっています！\n<br>\nさらに今回は、お品書き画像上の商品をタップ／クリックすると詳細を確認できるインタラクティブなお品書きに対応しました。\n<br>\n気になる商品を画像から直接チェックしていただけます。\n<br><br>\nコミックマーケット108でお待ちしております！\n<br>\n<strong>配置：</strong>1日目(土) 西 あ-69ab ／ 2日目(日) 東 ウ-11b\n<br>\n<strong>最終更新：</strong> 2026/08/10",
                 "en": "## C108 / ACGHK2026 Product Info\n\nFor Hoshiyumetei's 15th anniversary, this lineup is richer than usual!\n<br>\nThis time the product menu is interactive — tap or click items on the image for details.\n<br>\nSee you at the event!\n<br>\nLast update: 2026/08/10",
                 "zh": "## ACGHK2026 販售物情報\n\n因為今年是星夢亭的成立 15週年紀念，這次的販售物會比以往的豐富!\n<br>\n同時這次價目表的顯示方式也超絕強化，變成一個可以 \"互動\" 的價目表、\n<br>\n只需要按下價目表內對應的商品位置、就可以看到詳細的介紹資訊!\n<br>\n期待 ACGHK2026 活動當天見面!\n<br>\n最終更新： 2026/07/21"
             },

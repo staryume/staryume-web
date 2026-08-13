@@ -771,8 +771,8 @@ const eventCatalog = {
         "meta": {
             "event": "COMIC MARKET 108 / ACGHK 2026",
             "booth": {
-                "jp": "1日目(土) 西あ69ab ／ 2日目(日) 東ウ11b",
-                "en": "Day1 West A-69ab / Day2 East U-11b",
+                "jp": "1日目(土) 西 あ-69ab ／ 2日目(日) 東 ウ-11b",
+                "en": "Day1 West あ-69ab / Day2 East ウ-11b",
                 "zh": "CA-30"
             },
             "dates": "2026"
@@ -850,11 +850,20 @@ const eventCatalog = {
                         ]
                     },
                     {
-                        "productId": "goods-tapestry",
+                        "productId": "tapestry-bmg2026",
                         "coords": [
-                            41,
-                            77,
-                            56.5,
+                            41.1,
+                            77.7,
+                            32.8,
+                            21.2
+                        ]
+                    },
+                    {
+                        "productId": "tapestry-gagaga",
+                        "coords": [
+                            74.5,
+                            77.7,
+                            23.3,
                             21.2
                         ]
                     }
@@ -1025,7 +1034,8 @@ const eventCatalog = {
             "sleeve-dmg-2026",
             "mat-dmg-2026",
             "goods-deckbox",
-            "goods-tapestry",
+            "tapestry-bmg2026",
+            "tapestry-gagaga",
             "goods-cardbox",
             "set-makeine",
             "set-yugioh-2025",
@@ -1548,19 +1558,19 @@ const eventCatalog = {
                     "label": null
                 }
             },
-            "goods-tapestry": {
-                "id": "goods-tapestry",
+            "tapestry-bmg2026": {
+                "id": "tapestry-bmg2026",
                 "category": "goods",
                 "isNew": true,
                 "title": {
-                    "jp": "新作タペストリー（B2）",
-                    "en": "New Tapestry (B2)",
-                    "zh": "新作掛畫（B2）"
+                    "jp": "新作タペストリー ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Tapestry - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作掛畫 黑魔導女孩 (ver. 2026)"
                 },
                 "price": {
-                    "jp": "各 ¥3,000",
-                    "en": "¥3,000 each",
-                    "zh": "各 $180"
+                    "jp": "¥3,000",
+                    "en": "¥3,000",
+                    "zh": "$180"
                 },
                 "specs": {
                     "jp": "マイクロダブルスウェード／サイズ：B2",
@@ -1568,13 +1578,46 @@ const eventCatalog = {
                     "zh": "雙面絨／尺寸：B2"
                 },
                 "desc": {
-                    "jp": "新作タペストリー。マイクロダブルスウェード素材。サイズ：B2。複数デザインあり（各 ¥3,000）。",
-                    "en": "New tapestry. Micro double suede. Size B2. Multiple designs (¥3,000 each).",
-                    "zh": "新作掛畫。雙面絨材質。B2 尺寸。多款設計（各售）。"
+                    "jp": "新作タペストリー。ブラック・マジシャン・ガール（ver. 2026）。<br>マイクロダブルスウェード素材。サイズ：B2。",
+                    "en": "New tapestry featuring Dark Magician Girl (ver. 2026).<br>Micro double suede. Size B2.",
+                    "zh": "新作掛畫。黑魔導女孩 (ver. 2026)。<br>雙面絨材質。B2 尺寸。"
                 },
-                "gallery": [],
+                "gallery": [
+                    "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"
+                ],
                 "pages": [],
-                "thumb": "./blog/20260719/c108pricelist-jp.jpg",
+                "thumb": "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg",
+                "cta": null
+            },
+            "tapestry-gagaga": {
+                "id": "tapestry-gagaga",
+                "category": "goods",
+                "isNew": true,
+                "title": {
+                    "jp": "新作タペストリー ガガガガール",
+                    "en": "Tapestry - Gagaga Girl",
+                    "zh": "新作掛畫 我我我女孩"
+                },
+                "price": {
+                    "jp": "¥3,000",
+                    "en": "¥3,000",
+                    "zh": "$180"
+                },
+                "specs": {
+                    "jp": "マイクロダブルスウェード／サイズ：B2",
+                    "en": "Micro double suede / Size: B2",
+                    "zh": "雙面絨／尺寸：B2"
+                },
+                "desc": {
+                    "jp": "新作タペストリー。ガガガガール。<br>マイクロダブルスウェード素材。サイズ：B2。",
+                    "en": "New tapestry featuring Gagaga Girl.<br>Micro double suede. Size B2.",
+                    "zh": "新作掛畫。我我我女孩。<br>雙面絨材質。B2 尺寸。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/tapestry/tapestry-gagaga.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/tapestry/tapestry-gagaga.jpg",
                 "cta": null
             }
         },
@@ -1583,24 +1626,24 @@ const eventCatalog = {
                 {
                     "id": "fanbox-perk",
                     "title": "FANBOX メンバー特典",
-                    "body": "FANBOX で <strong>月額 1,000円以上</strong> ご支援いただいているメンバーの方は、イベント会場で<strong>加入証明（スマートフォン画面など）</strong>をご提示いただくと、下記の<strong>FANBOX限定 PRカード</strong>をプレゼントいたします。<br><br>※お一人様1枚まで／数量に限りがある場合がございます。<br>※加入プラン・表示名が確認できる状態でご提示ください。",
+                    "body": "FANBOX で <strong>月額 1,000円以上</strong> ご支援いただいているメンバーの方は、イベント会場で加入証明（スマートフォン画面など）をご提示いただくと、下記のFANBOX限定 PRカードをプレゼントいたします。<br><br>※お一人様1枚まで／数量に限りがある場合がございます。<br>※加入プラン・表示名が確認できる状態でご提示ください。",
                     "images": [
                         {
                             "src": "./blog/20260719/extras/fanbox-pr-card.jpg",
                             "alt": "FANBOX限定 PRカード（月額1,000円以上特典）",
-                            "caption": "1,000 JPY / month 〜 限定 PRカード"
+                            "caption": ""
                         }
                     ]
                 },
                 {
                     "id": "poster-janken",
                     "title": "恒例のサークルポスタージャンケン大会",
-                    "body": "今回の<strong>C108イベント用サークルポスター</strong>（ブラマジガール）を、<strong>ジャンケン大会の勝者</strong>の方にプレゼントします！<br><br>🕒 <strong>日時：</strong>各日 <strong>15:00頃〜</strong>（進行により前後する場合があります）<br>📍 <strong>場所：</strong>「星夢亭」ブース<br>　・1日目(土)　西 <strong>あ69ab</strong><br>　・2日目(日)　東 <strong>ウ11b</strong><br><br>ポスターを希望される方が複数いらっしゃった場合は、<strong>ジャンケン</strong>で勝者の方に<strong>無料</strong>でお渡しします。<br><br>※ブース前の案内もあわせてご確認ください。",
+                    "body": "今回のC108イベント用サークルポスター（ブラマジガール）を、ジャンケン大会の勝者の方にプレゼントします！<br><br><strong>日時：</strong>各日 15:00頃〜（進行により前後する場合があります）<br><strong>場所：</strong>「星夢亭」ブース<br>　・1日目(土)　西 あ-69ab<br>　・2日目(日)　東 ウ-11b<br><br>ポスターを希望される方が複数いらっしゃった場合は、ジャンケンで勝者の方に無料でお渡しします。<br><br>※ブース前の案内もあわせてご確認ください。",
                     "images": [
                         {
                             "src": "./blog/20260719/extras/event-poster-janken.jpg",
                             "alt": "C108 サークルポスター（ブラマジガール／ジャンケン景品）",
-                            "caption": "C108 サークルポスター（ジャンケン景品・無料）"
+                            "caption": ""
                         }
                     ]
                 }
