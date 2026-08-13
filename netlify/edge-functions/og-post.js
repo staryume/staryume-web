@@ -1,8 +1,10 @@
 /**
- * Inject per-post Open Graph / Twitter meta for Facebook & crawlers.
+ * Inject per-post Open Graph / Twitter meta for Facebook, LINE, Discord crawlers.
  * Crawlers do not run client JS, so static post.html always looked generic.
  *
- * Path: /post.html?id=N
+ * Path: /post.html?id=N&lang=jp|en|zh
+ * When ?lang= is set, title/description/locale follow that language.
+ * Without ?lang=, prefers zh → jp → en (existing share links stay stable).
  */
 export default async (request, context) => {
   const url = new URL(request.url);
@@ -33,10 +35,10 @@ export default async (request, context) => {
     const post = (siteData.posts || []).find((p) => String(p.id) === String(idParam));
     if (!post) return htmlResponse(html, response);
 
+    const lang = resolveLang(url.searchParams.get("lang"), post);
     const title =
-      pickLang(post.title, ["zh", "jp", "en"]) || `Post #${idParam}`;
-    const raw =
-      pickLang(post.content, ["zh", "jp", "en"]) || "";
+      pickLang(post.title, langOrder(lang), post.langs) || `Post #${idParam}`;
+    const raw = pickLang(post.content, langOrder(lang), post.langs) || "";
     const description = toPlainText(raw).slice(0, 180) || "STARYUME WEB Blog";
     // Prefer dedicated 1200×630 ogImage for large Facebook/Messenger cards
     const imagePath = post.ogImage || post.img;
@@ -44,8 +46,10 @@ export default async (request, context) => {
       toAbsoluteUrl(imagePath, url.origin) || `${url.origin}/assets/coreimg/logo.png`;
     const imageWidth = Number(post.ogImageWidth) || (post.ogImage ? 1200 : 0);
     const imageHeight = Number(post.ogImageHeight) || (post.ogImage ? 630 : 0);
-    const pageUrl = `${url.origin}/post.html?id=${encodeURIComponent(idParam)}`;
+    // Distinct og:url per language so LINE/FB cache JP vs ZH previews separately
+    const pageUrl = buildPageUrl(url.origin, idParam, lang, url.searchParams.get("lang"));
     const fullTitle = `${title} | STARYUME WEB`;
+    const locale = localeFor(lang);
 
     const meta = buildMetaTags({
       fullTitle,
@@ -55,10 +59,10 @@ export default async (request, context) => {
       imageWidth,
       imageHeight,
       pageUrl,
-      tag: post.tag || "article",
+      locale,
     });
 
-    html = injectMeta(html, meta, fullTitle);
+    html = injectMeta(html, meta, fullTitle, htmlLangFor(lang));
     return htmlResponse(html, response);
   } catch (err) {
     console.error("og-post edge error:", err);
@@ -70,13 +74,66 @@ export const config = {
   path: "/post.html",
 };
 
-function pickLang(obj, order) {
+/** Normalize ?lang=; fall back when missing or not available on the post. */
+function resolveLang(rawLang, post) {
+  const requested = String(rawLang || "").toLowerCase();
+  const allowed = ["jp", "en", "zh"];
+  const hasContent = (code) => {
+    if (post.langs && typeof post.langs[code] === "boolean" && !post.langs[code]) {
+      return false;
+    }
+    const t = post.title && post.title[code];
+    return t != null && String(t).trim() !== "";
+  };
+
+  if (allowed.includes(requested) && hasContent(requested)) return requested;
+
+  // Default order for links without ?lang= (keeps existing ZH LINE shares stable)
+  for (const code of ["zh", "jp", "en"]) {
+    if (hasContent(code)) return code;
+  }
+  return "jp";
+}
+
+function langOrder(preferred) {
+  const rest = ["zh", "jp", "en"].filter((k) => k !== preferred);
+  return [preferred, ...rest];
+}
+
+function pickLang(obj, order, langs) {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
   for (const k of order) {
+    if (langs && typeof langs[k] === "boolean" && !langs[k]) continue;
     if (obj[k] != null && String(obj[k]).trim() !== "") return String(obj[k]);
   }
   return "";
+}
+
+function localeFor(lang) {
+  if (lang === "en") return "en_US";
+  if (lang === "zh") return "zh_HK";
+  return "ja_JP";
+}
+
+function htmlLangFor(lang) {
+  if (lang === "en") return "en";
+  if (lang === "zh") return "zh-Hant";
+  return "ja";
+}
+
+/**
+ * Only pin lang= in og:url when the share link explicitly had ?lang=.
+ * That way crawlers treat JP/EN/ZH URLs as separate cache keys.
+ */
+function buildPageUrl(origin, idParam, resolvedLang, rawLangParam) {
+  const base = `${origin.replace(/\/$/, "")}/post.html?id=${encodeURIComponent(idParam)}`;
+  const requested = String(rawLangParam || "").toLowerCase();
+  if (requested === "jp" || requested === "en" || requested === "zh") {
+    return `${base}&lang=${encodeURIComponent(requested)}`;
+  }
+  // Implicit default — omit lang= so legacy shared URLs stay the same key
+  return base;
 }
 
 function toPlainText(md) {
@@ -112,13 +169,14 @@ function buildMetaTags({
   imageWidth,
   imageHeight,
   pageUrl,
-  tag,
+  locale,
 }) {
   const t = escapeAttr(title);
   const ft = escapeAttr(fullTitle);
   const d = escapeAttr(description);
   const img = escapeAttr(image);
   const u = escapeAttr(pageUrl);
+  const loc = escapeAttr(locale);
   const sizeTags =
     imageWidth > 0 && imageHeight > 0
       ? `
@@ -126,6 +184,11 @@ function buildMetaTags({
     <meta property="og:image:height" content="${imageHeight}">
     <meta property="og:image:type" content="image/jpeg">`
       : "";
+  // Alternate locales help some platforms; primary is og:locale
+  const alternates = ["ja_JP", "zh_HK", "en_US"]
+    .filter((l) => l !== locale)
+    .map((l) => `<meta property="og:locale:alternate" content="${l}">`)
+    .join("\n    ");
   return `
     <title>${ft}</title>
     <meta name="description" content="${d}">
@@ -137,7 +200,8 @@ function buildMetaTags({
     <meta property="og:image:secure_url" content="${img}">${sizeTags}
     <meta property="og:image:alt" content="${t}">
     <meta property="og:url" content="${u}">
-    <meta property="og:locale" content="zh_HK">
+    <meta property="og:locale" content="${loc}">
+    ${alternates}
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${t}">
     <meta name="twitter:description" content="${d}">
@@ -146,13 +210,21 @@ function buildMetaTags({
   `.replace(/\n\s+/g, "\n    ");
 }
 
-function injectMeta(html, metaBlock, fullTitle) {
+function injectMeta(html, metaBlock, fullTitle, htmlLang) {
   // Remove existing title + common social tags so we don't duplicate
   let out = html
     .replace(/<title>[\s\S]*?<\/title>/gi, "")
     .replace(/<meta\s+name=["']description["'][^>]*>/gi, "")
     .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, "")
     .replace(/<meta\s+name=["']twitter:[^"']+["'][^>]*>/gi, "");
+
+  // Align <html lang> with resolved content language for crawlers
+  if (htmlLang) {
+    out = out.replace(
+      /<html([^>]*)\slang=["'][^"']*["']/i,
+      `<html$1 lang="${htmlLang}"`
+    );
+  }
 
   if (/<head[^>]*>/i.test(out)) {
     out = out.replace(/<head([^>]*)>/i, `<head$1>\n${metaBlock}\n`);
@@ -165,8 +237,10 @@ function injectMeta(html, metaBlock, fullTitle) {
 function htmlResponse(html, original) {
   const headers = new Headers(original.headers);
   headers.set("content-type", "text/html; charset=utf-8");
-  // Allow Facebook to re-fetch when content changes
+  // Short cache so language/content updates show up; LINE still may cache longer client-side
   headers.set("cache-control", "public, max-age=300");
+  // Vary on full URL query so CDN can cache JP/ZH separately
+  headers.set("vary", "Accept-Encoding");
   return new Response(html, {
     status: original.status,
     statusText: original.statusText,
