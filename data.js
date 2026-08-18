@@ -118,7 +118,7 @@ const siteData = {
             "id": 7,
             "tag": "NEWS",
             "date": "2026/08/18",
-            "img": "./blog/20260818/20260818thumb.jpg",
+            "img": "./blog/20260719/20260719thumb.jpg",
             "eventId": "ff47",
             "title": {
                 "jp": null,
