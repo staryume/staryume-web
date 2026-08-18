@@ -1822,28 +1822,28 @@ const eventCatalog = {
                     {
                         "productId": "book-too-many-seichi",
                         "coords": [
-                            2.0,
-                            82.0,
+                            2.2,
+                            82.2,
                             30.8,
-                            16.8
+                            16.5
                         ]
                     },
                     {
                         "productId": "book-omc3",
                         "coords": [
-                            33.6,
-                            82.0,
-                            31.0,
-                            16.8
+                            34.7,
+                            82.2,
+                            30.8,
+                            16.5
                         ]
                     },
                     {
                         "productId": "book-om-gala",
                         "coords": [
                             66.8,
-                            82.0,
-                            31.0,
-                            16.8
+                            82.2,
+                            30.8,
+                            16.5
                         ]
                     }
                 ]
