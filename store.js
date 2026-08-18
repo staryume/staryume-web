@@ -946,7 +946,7 @@ const storeProducts = [
             "en": "Overlay Magic Color 4",
             "zh": "Overlay Magic Color 4"
         },
-        "priceTW": 150,
+        "priceTW": 200,
         "priceHK": 60,
         "imgs": [
             "./blog/20260719/products/book-omc4/01.jpg"
