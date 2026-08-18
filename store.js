@@ -380,7 +380,7 @@ const storeProducts = [
             "featured",
             "other"
         ],
-        "regions": ["TW"],
+        "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": true,
@@ -409,7 +409,7 @@ const storeProducts = [
             "featured",
             "other"
         ],
-        "regions": ["TW"],
+        "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": true,
