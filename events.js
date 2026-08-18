@@ -1698,63 +1698,63 @@ const eventCatalog = {
                     {
                         "productId": "anni-15-set",
                         "coords": [
-                            1.8,
-                            12.6,
-                            95.8,
-                            41.9
+                            1.9,
+                            12.4,
+                            95.6,
+                            42.4
                         ]
                     },
                     {
                         "productId": "sleeve-gagaga",
                         "coords": [
-                            1.9,
-                            55.7,
+                            2.0,
+                            55.8,
                             23.4,
-                            20.8
+                            20.9
                         ]
                     },
                     {
                         "productId": "sleeve-dmg-2026",
                         "coords": [
-                            25.3,
-                            55.7,
-                            23.7,
-                            20.8
+                            25.5,
+                            55.8,
+                            23.4,
+                            20.9
                         ]
                     },
                     {
                         "productId": "mat-dmg-2026",
                         "coords": [
                             50.7,
-                            55.7,
-                            47,
-                            20.8
+                            55.8,
+                            46.9,
+                            20.9
                         ]
                     },
                     {
                         "productId": "goods-deckbox",
                         "coords": [
-                            1.9,
+                            2.0,
                             77.8,
-                            47,
+                            37.4,
                             20.9
                         ]
                     },
                     {
                         "productId": "tapestry-bmg2026",
                         "coords": [
-                            50.7,
+                            41.4,
                             77.8,
-                            32.2,
+                            33.0,
                             20.9
                         ]
                     },
                     {
                         "productId": "tapestry-gagaga",
                         "coords": [
-                            83.0,
+                            74.5,
                             77.8,
-                            14.6,
+                            23.2,
                             20.9
                         ]
                     }
@@ -1777,37 +1777,37 @@ const eventCatalog = {
                     {
                         "productId": "set-makeine",
                         "coords": [
-                            1.9,
-                            12.5,
-                            47,
-                            37
+                            2.0,
+                            12.3,
+                            46.9,
+                            37.5
                         ]
                     },
                     {
                         "productId": "set-yugioh-2025",
                         "coords": [
-                            51.7,
-                            2,
+                            50.7,
+                            1.3,
                             46.9,
-                            47.5
+                            48.5
                         ]
                     },
                     {
                         "productId": "goods-akkey",
                         "coords": [
-                            1.9,
+                            2.1,
                             50.6,
-                            47,
-                            14.5
+                            46.9,
+                            15.1
                         ]
                     },
                     {
                         "productId": "mat-legacy",
                         "coords": [
-                            1.9,
-                            66,
-                            47,
-                            14.5
+                            2.1,
+                            66.7,
+                            46.9,
+                            14.1
                         ]
                     },
                     {
@@ -1822,28 +1822,28 @@ const eventCatalog = {
                     {
                         "productId": "book-too-many-seichi",
                         "coords": [
-                            2.2,
-                            82.2,
+                            2.0,
+                            82.0,
                             30.8,
-                            17.2
+                            16.8
                         ]
                     },
                     {
                         "productId": "book-omc3",
                         "coords": [
-                            34.7,
-                            82.2,
-                            30.8,
-                            17.2
+                            33.6,
+                            82.0,
+                            31.0,
+                            16.8
                         ]
                     },
                     {
                         "productId": "book-om-gala",
                         "coords": [
                             66.8,
-                            82.2,
-                            30.8,
-                            17.2
+                            82.0,
+                            31.0,
+                            16.8
                         ]
                     }
                 ]
