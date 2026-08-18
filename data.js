@@ -113,6 +113,28 @@ const siteData = {
                 "en": true,
                 "zh": true
             }
+        },
+        {
+            "id": 7,
+            "tag": "NEWS",
+            "date": "2026/08/18",
+            "img": "./blog/20260818/20260818thumb.jpg",
+            "eventId": "ff47",
+            "title": {
+                "jp": null,
+                "en": "FF47 Product Info",
+                "zh": "FF47 販售物情報"
+            },
+            "content": {
+                "jp": null,
+                "en": "## Fancy Frontier 47 Product Info\n\nFor Hoshiyumetei's 15th anniversary, this FF47 lineup is richer than usual!\n<br>\nThe product menu is interactive — tap or click items on the image for details.\n<br>\nTaiwan pre-orders: [store.html?region=TW](./store.html?region=TW)\n<br>\nSee you this weekend!\n<br>\n<strong>Booth:</strong> Day 1 (Fri 8/21) Expo Hall <strong>U-35 / U-36</strong> / Day 2 (Sat 8/22) <strong>EZspace Yuanshan Hall Zone J</strong>\n<br>\n<strong>Last update:</strong> 2026/08/18",
+                "zh": "## FF47 販售物情報\n\n因為今年是星夢亭的成立 15週年紀念，這次 FF47 的販售物會比以往的豐富!\n<br>\n同時這次價目表的顯示方式也超絕強化，變成一個可以 \"互動\" 的價目表、\n<br>\n只需要按下價目表內對應的商品位置、就可以看到詳細的介紹資訊!\n<br>\n台灣地區亦可先到網店預約： [前往網店預約](./store.html?region=TW)\n<br>\n期待這個週末見面!\n<br>\n<strong>攤位：</strong>第1日（五）8/21 花博爭豔館 <strong>U-35 / U-36</strong> ／ 第2日（六）8/22 <strong>EZspace圓山館 J區</strong>\n<br>\n<strong>最終更新：</strong> 2026/08/18"
+            },
+            "langs": {
+                "jp": false,
+                "en": true,
+                "zh": true
+            }
         }
     ],
     "gallery": [

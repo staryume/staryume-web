@@ -1651,5 +1651,766 @@ const eventCatalog = {
             "en": null,
             "zh": null
         }
+    },
+    "ff47": {
+        "id": "ff47",
+        "title": {
+            "jp": "FF47 お品書き",
+            "en": "Fancy Frontier 47 Merch",
+            "zh": "FF47 販售物情報"
+        },
+        "meta": {
+            "event": "FANCY FRONTIER 47",
+            "booth": {
+                "jp": "1日目（金）U-35 / U-36 ／ 2日目（土）EZspace圓山館 J區",
+                "en": "Day1 (Fri) U-35 / U-36 · Day2 (Sat) EZspace Yuanshan Hall Zone J",
+                "zh": "第1日（五）U-35 / U-36 ／ 第2日（六）EZspace圓山館 J區"
+            },
+            "dates": "2026/08/21–22"
+        },
+        "defaultCta": {
+            "label": {
+                "jp": "ストアで予約",
+                "en": "Pre-order in store",
+                "zh": "前往網店預約"
+            },
+            "url": "store.html",
+            "external": false,
+            "boothUrl": "https://staryume.booth.pm",
+            "storeUrl": "store.html",
+            "storeRegion": "TW"
+        },
+        "menuImages": [
+            {
+                "id": "page1",
+                "src": "./blog/20260818/ff47pricelist1.jpg",
+                "label": {
+                    "jp": "新作",
+                    "en": "New Releases",
+                    "zh": "新作"
+                },
+                "langs": {
+                    "jp": false,
+                    "en": true,
+                    "zh": true
+                },
+                "hotspots": [
+                    {
+                        "productId": "anni-15-set",
+                        "coords": [
+                            1.8,
+                            12.6,
+                            95.8,
+                            41.9
+                        ]
+                    },
+                    {
+                        "productId": "sleeve-gagaga",
+                        "coords": [
+                            1.9,
+                            55.7,
+                            23.4,
+                            20.8
+                        ]
+                    },
+                    {
+                        "productId": "sleeve-dmg-2026",
+                        "coords": [
+                            25.3,
+                            55.7,
+                            23.7,
+                            20.8
+                        ]
+                    },
+                    {
+                        "productId": "mat-dmg-2026",
+                        "coords": [
+                            50.7,
+                            55.7,
+                            47,
+                            20.8
+                        ]
+                    },
+                    {
+                        "productId": "goods-deckbox",
+                        "coords": [
+                            1.9,
+                            77.8,
+                            47,
+                            20.9
+                        ]
+                    },
+                    {
+                        "productId": "tapestry-bmg2026",
+                        "coords": [
+                            50.7,
+                            77.8,
+                            32.2,
+                            20.9
+                        ]
+                    },
+                    {
+                        "productId": "tapestry-gagaga",
+                        "coords": [
+                            83.0,
+                            77.8,
+                            14.6,
+                            20.9
+                        ]
+                    }
+                ]
+            },
+            {
+                "id": "page2",
+                "src": "./blog/20260818/ff47pricelist2.jpg",
+                "label": {
+                    "jp": "既存商品",
+                    "en": "Catalog",
+                    "zh": "既有商品"
+                },
+                "langs": {
+                    "jp": false,
+                    "en": true,
+                    "zh": true
+                },
+                "hotspots": [
+                    {
+                        "productId": "set-makeine",
+                        "coords": [
+                            1.9,
+                            12.5,
+                            47,
+                            37
+                        ]
+                    },
+                    {
+                        "productId": "set-yugioh-2025",
+                        "coords": [
+                            51.7,
+                            2,
+                            46.9,
+                            47.5
+                        ]
+                    },
+                    {
+                        "productId": "goods-akkey",
+                        "coords": [
+                            1.9,
+                            50.6,
+                            47,
+                            14.5
+                        ]
+                    },
+                    {
+                        "productId": "mat-legacy",
+                        "coords": [
+                            1.9,
+                            66,
+                            47,
+                            14.5
+                        ]
+                    },
+                    {
+                        "productId": "sleeve-legacy",
+                        "coords": [
+                            50.7,
+                            50.6,
+                            46.9,
+                            30.2
+                        ]
+                    },
+                    {
+                        "productId": "book-too-many-seichi",
+                        "coords": [
+                            2.2,
+                            82.2,
+                            30.8,
+                            17.2
+                        ]
+                    },
+                    {
+                        "productId": "book-omc3",
+                        "coords": [
+                            34.7,
+                            82.2,
+                            30.8,
+                            17.2
+                        ]
+                    },
+                    {
+                        "productId": "book-om-gala",
+                        "coords": [
+                            66.8,
+                            82.2,
+                            30.8,
+                            17.2
+                        ]
+                    }
+                ]
+            }
+        ],
+        "productOrder": [
+            "anni-15-set",
+            "sleeve-gagaga",
+            "sleeve-dmg-2026",
+            "mat-dmg-2026",
+            "goods-deckbox",
+            "tapestry-bmg2026",
+            "tapestry-gagaga",
+            "set-makeine",
+            "set-yugioh-2025",
+            "goods-akkey",
+            "mat-legacy",
+            "sleeve-legacy",
+            "book-too-many-seichi",
+            "book-omc3",
+            "book-om-gala"
+        ],
+        "products": {
+            "anni-15-set": {
+                "id": "anni-15-set",
+                "category": "set",
+                "isNew": true,
+                "title": {
+                    "jp": "サークル15周年記念セット",
+                    "en": "Hoshiyumetei 15th Anniversary SET",
+                    "zh": "星夢亭15週年紀念SET"
+                },
+                "price": {
+                    "jp": "NT$ 900",
+                    "en": "NT$ 900",
+                    "zh": "NT$ 900"
+                },
+                "specs": {
+                    "jp": "新刊＋バッグ＋ストレージボックス＋アクスタ＋オリカ＋資料設定",
+                    "en": null,
+                    "zh": "新刊＋手提袋＋儲物盒＋亞加力＋自製卡＋資料設定"
+                },
+                "desc": {
+                    "jp": "サークル15周年記念セット。<br>① 新刊 - Overlay Magic Color 4（B5 20P フルカラー）<br>② 透明フィルムバッグ（30×40×10 cm）<br>③ 大型ストレージボックス（21×33×8 cm）<br>④ アクリルフィールドセンターカード<br>⑤ オリカ×2 ＋ 鑑定品風のケース×2 ＋ 化粧箱付き<br>⑥ ゲーム「ワープマキナ」資料設定 Vol.0<br>※オリカのレアリティ（UR / PSE / GMR）はランダムでの封入となります",
+                    "en": "15th anniversary set.<br>① New book Overlay Magic Color 4 (B5 20P full color / foil cover)<br>② Frosted tote bag (30×40×10 cm)<br>③ Large storage box (21×33×8 cm)<br>④ Acrylic field center card<br>⑤ Custom cards ×2 + cases ×2 + gift box<br>⑥ Warp Machina setting booklet",
+                    "zh": "星夢亭15週年紀念套組。<br>① 新刊 - Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子<br>（自製卡有不同稀有度：UR / PSE / GMR）"
+                },
+                "gallery": [
+                    "./blog/20260719/products/anni-15-set/01.jpg",
+                    "./blog/20260719/products/anni-15-set/02.jpg",
+                    "./blog/20260719/products/anni-15-set/03.jpg",
+                    "./blog/20260719/products/anni-15-set/04.jpg",
+                    "./blog/20260719/products/anni-15-set/05.jpg",
+                    "./blog/20260719/products/anni-15-set/06.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/anni-15-set/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "sleeve-gagaga": {
+                "id": "sleeve-gagaga",
+                "category": "sleeve",
+                "isNew": true,
+                "title": {
+                    "jp": "新作スリーブ ガガガガール",
+                    "en": "Sleeves - Gagaga Girl",
+                    "zh": "新作卡套 我我我女孩"
+                },
+                "price": {
+                    "jp": "NT$ 300",
+                    "en": "NT$ 300",
+                    "zh": "NT$ 300"
+                },
+                "specs": {
+                    "jp": "ミニサイズ／60枚入り",
+                    "en": "Yu-Gi-Oh! size / 60 pcs / pre-order",
+                    "zh": "遊戲王尺寸／60枚"
+                },
+                "desc": {
+                    "jp": "新作カードスリーブ。ガガガガール。<br>ミニサイズ（遊戯王ミニ）／60枚入り。",
+                    "en": "New card sleeves featuring Gagaga Girl.",
+                    "zh": "遊戲王尺寸、每包含60個／預購"
+                },
+                "gallery": [
+                    "./blog/20260719/products/sleeve-gagaga/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/sleeve-gagaga/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "sleeve-dmg-2026": {
+                "id": "sleeve-dmg-2026",
+                "category": "sleeve",
+                "isNew": true,
+                "title": {
+                    "jp": "新作スリーブ ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Sleeves - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作卡套 黑魔導女孩 (ver. 2026)"
+                },
+                "price": {
+                    "jp": "NT$ 300",
+                    "en": "NT$ 300",
+                    "zh": "NT$ 300"
+                },
+                "specs": {
+                    "jp": "ミニサイズ／60枚入り",
+                    "en": "Yu-Gi-Oh! size / 60 pcs / pre-order",
+                    "zh": "遊戲王尺寸／60枚"
+                },
+                "desc": {
+                    "jp": "新作カードスリーブ。ブラック・マジシャン・ガール（ver. 2026）。<br>ミニサイズ／60枚入り。<br>※ガガガガールとセット購入 ¥2,500（各 ¥1,500）",
+                    "en": "New card sleeves featuring Dark Magician Girl (ver. 2026).",
+                    "zh": "遊戲王尺寸、每包含60個／預購"
+                },
+                "gallery": [
+                    "./blog/20260719/products/sleeve-dmg-2026/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/sleeve-dmg-2026/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "mat-dmg-2026": {
+                "id": "mat-dmg-2026",
+                "category": "mat",
+                "isNew": true,
+                "title": {
+                    "jp": "新作プレイマット ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Playmat - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作遊戲墊 黑魔導女孩 (ver. 2026)"
+                },
+                "price": {
+                    "jp": "NT$ 600",
+                    "en": "NT$ 600",
+                    "zh": "NT$ 600"
+                },
+                "specs": {
+                    "jp": "プレイマット",
+                    "en": "New playmat",
+                    "zh": "新作遊戲墊"
+                },
+                "desc": {
+                    "jp": "新作プレイマット。ブラック・マジシャン・ガール（ver. 2026）。",
+                    "en": "New playmat featuring Dark Magician Girl (ver. 2026).",
+                    "zh": "新作遊戲墊 - 黑魔導女孩 (ver. 2026)。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/mat-dmg-2026/01.jpg",
+                    "./blog/20260719/products/mat-dmg-2026/02.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "goods-deckbox": {
+                "id": "goods-deckbox",
+                "category": "goods",
+                "isNew": false,
+                "title": {
+                    "jp": "マグネットデッキケース",
+                    "en": "Leather Card Deck Box",
+                    "zh": "皮質卡片收納盒"
+                },
+                "price": {
+                    "jp": "NT$ 800",
+                    "en": "NT$ 800",
+                    "zh": "NT$ 800"
+                },
+                "specs": {
+                    "jp": "マグネット式デッキケース",
+                    "en": "Leather deck box",
+                    "zh": "皮質卡片收納盒"
+                },
+                "desc": {
+                    "jp": "マグネットデッキケース。ブラック・マジシャン・ガールイラスト仕様。",
+                    "en": "Leather-style card deck box.",
+                    "zh": "皮質卡片收納盒。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/goods-deckbox/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "tapestry-bmg2026": {
+                "id": "tapestry-bmg2026",
+                "category": "goods",
+                "isNew": true,
+                "title": {
+                    "jp": "新作タペストリー ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Tapestry - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作掛軸 黑魔導女孩 (ver. 2026)"
+                },
+                "price": {
+                    "jp": "NT$ 600",
+                    "en": "NT$ 600",
+                    "zh": "NT$ 600"
+                },
+                "specs": {
+                    "jp": "日本製しろもうふ／サイズ：B2",
+                    "en": "Japanese-made shiromofu / Size: B2",
+                    "zh": "日本製 しろもうふ／尺寸：B2"
+                },
+                "desc": {
+                    "jp": "新作タペストリー。ブラック・マジシャン・ガール（ver. 2026）。<br>マイクロダブルスウェード素材。サイズ：B2。",
+                    "en": "New tapestry featuring Dark Magician Girl (ver. 2026).<br>Micro double suede. Size B2.",
+                    "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ。B2 尺寸。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "tapestry-gagaga": {
+                "id": "tapestry-gagaga",
+                "category": "goods",
+                "isNew": true,
+                "title": {
+                    "jp": "新作タペストリー ガガガガール",
+                    "en": "Tapestry - Gagaga Girl",
+                    "zh": "新作掛軸 我我我女孩"
+                },
+                "price": {
+                    "jp": "NT$ 600",
+                    "en": "NT$ 600",
+                    "zh": "NT$ 600"
+                },
+                "specs": {
+                    "jp": "日本製しろもうふ／サイズ：B2",
+                    "en": "Japanese-made shiromofu / Size: B2",
+                    "zh": "日本製 しろもうふ／尺寸：B2"
+                },
+                "desc": {
+                    "jp": "新作タペストリー。ガガガガール。<br>マイクロダブルスウェード素材。サイズ：B2。",
+                    "en": "New tapestry featuring Gagaga Girl.<br>Micro double suede. Size B2.",
+                    "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ。B2 尺寸。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/tapestry/tapestry-gagaga.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/tapestry/tapestry-gagaga.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "set-makeine": {
+                "id": "set-makeine",
+                "category": "set",
+                "isNew": false,
+                "title": {
+                    "jp": "負けヒロインが多すぎる！SET",
+                    "en": "Too Many Losing Heroines! SET",
+                    "zh": "敗北女角太多了!SET"
+                },
+                "price": {
+                    "jp": "NT$ 600",
+                    "en": "NT$ 600",
+                    "zh": "NT$ 600"
+                },
+                "specs": {
+                    "jp": "既存セット",
+                    "en": "Catalog set",
+                    "zh": "既有套組"
+                },
+                "desc": {
+                    "jp": "『負けヒロインが多すぎる！』関連セット商品。",
+                    "en": "Makeine-related catalog set.",
+                    "zh": "敗北女角相關既有套組商品。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/set-makeine/01.jpg",
+                    "./blog/20260719/products/set-makeine/02.jpg",
+                    "./blog/20260719/products/set-makeine/03.jpg",
+                    "./blog/20260719/products/set-makeine/04.jpg",
+                    "./blog/20260719/products/set-makeine/05.jpg",
+                    "./blog/20260719/products/set-makeine/06.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/set-makeine/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "set-yugioh-2025": {
+                "id": "set-yugioh-2025",
+                "category": "set",
+                "isNew": false,
+                "title": {
+                    "jp": "2025遊戯王 SET",
+                    "en": "2025 Yu-Gi-Oh! SET",
+                    "zh": "2025遊戲王 SET"
+                },
+                "price": {
+                    "jp": "NT$ 400",
+                    "en": "NT$ 400",
+                    "zh": "NT$ 400"
+                },
+                "specs": {
+                    "jp": "既存セット",
+                    "en": "Catalog set",
+                    "zh": "既有套組"
+                },
+                "desc": {
+                    "jp": "2025 遊戯王関連セット商品。",
+                    "en": "2025 Yu-Gi-Oh! related catalog set.",
+                    "zh": "2025 遊戲王相關既有套組商品。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/set-yugioh-2025/01.jpg",
+                    "./blog/20260719/products/set-yugioh-2025/02.jpg",
+                    "./blog/20260719/products/set-yugioh-2025/03.jpg",
+                    "./blog/20260719/products/set-yugioh-2025/04.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/set-yugioh-2025/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "goods-akkey": {
+                "id": "goods-akkey",
+                "category": "goods",
+                "isNew": false,
+                "title": {
+                    "jp": "アクキー 天愛星 + 八奈見杏菜",
+                    "en": "Acrylic Keychains - Tenaisei + Yanami",
+                    "zh": "敗北女角!天愛星+八奈見亞 加力匙扣"
+                },
+                "price": {
+                    "jp": "NT$ 200",
+                    "en": "NT$ 200",
+                    "zh": "NT$ 200"
+                },
+                "specs": {
+                    "jp": "アクリルキーホルダー",
+                    "en": "Acrylic keychains",
+                    "zh": "亞加力匙扣"
+                },
+                "desc": {
+                    "jp": "アクリルキーホルダー。天愛星＋八奈見杏菜。",
+                    "en": "Makeine acrylic keychain set.",
+                    "zh": "敗北女角太多了! \n天愛星 + 八奈見亞 亞加力匙扣。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/goods-akkey/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/goods-akkey/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "mat-legacy": {
+                "id": "mat-legacy",
+                "category": "mat",
+                "isNew": false,
+                "title": {
+                    "jp": "既存プレイマット",
+                    "en": "Legacy Playmat",
+                    "zh": "既作遊戲墊"
+                },
+                "price": {
+                    "jp": "NT$ 600",
+                    "en": "NT$ 600",
+                    "zh": "NT$ 600"
+                },
+                "specs": {
+                    "jp": "既存プレイマット",
+                    "en": "Catalog playmat",
+                    "zh": "既作遊戲墊"
+                },
+                "desc": {
+                    "jp": "既存プレイマット各種。",
+                    "en": "Legacy playmat.",
+                    "zh": "既作遊戲墊。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/mat-legacy/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/mat-legacy/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "sleeve-legacy": {
+                "id": "sleeve-legacy",
+                "category": "sleeve",
+                "isNew": false,
+                "title": {
+                    "jp": "既存スリーブ（各種）",
+                    "en": "Legacy Sleeves (Various)",
+                    "zh": "既存卡套（各種）"
+                },
+                "price": {
+                    "jp": "各 NT$ 300",
+                    "en": "各 NT$ 300",
+                    "zh": "各 NT$ 300"
+                },
+                "specs": {
+                    "jp": "既存スリーブ各種",
+                    "en": "6 designs / NT$ 300 each",
+                    "zh": "6款可選／各 NT$ 300"
+                },
+                "desc": {
+                    "jp": "既存キャラクタースリーブ各種。ギャラリーで柄を確認できます。",
+                    "en": "Legacy character sleeves. Multiple designs — swipe the gallery to preview each design.",
+                    "zh": "既存角色卡套，多款可選。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/sleeve-legacy/01.jpg",
+                    "./blog/20260719/products/sleeve-legacy/02.jpg",
+                    "./blog/20260719/products/sleeve-legacy/03.jpg",
+                    "./blog/20260719/products/sleeve-legacy/04.jpg",
+                    "./blog/20260719/products/sleeve-legacy/05.jpg",
+                    "./blog/20260719/products/sleeve-legacy/06.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/sleeve-legacy/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "book-too-many-seichi": {
+                "id": "book-too-many-seichi",
+                "category": "book",
+                "isNew": false,
+                "title": {
+                    "jp": "既刊 TOO MANY SEICHI!",
+                    "en": "TOO MANY SEICHI!",
+                    "zh": "既刊 TOO MANY SEICHI!"
+                },
+                "price": {
+                    "jp": "NT$ 200",
+                    "en": "NT$ 200",
+                    "zh": "NT$ 200"
+                },
+                "specs": {
+                    "jp": "既刊イラスト本",
+                    "en": "Catalog artbook",
+                    "zh": "既刊插圖本"
+                },
+                "desc": {
+                    "jp": "既刊『TOO MANY SEICHI!』フルカラーイラスト本。",
+                    "en": "Catalog full-color artbook TOO MANY SEICHI!",
+                    "zh": "既刊 TOO MANY SEICHI! 插圖本\n20P / 全彩"
+                },
+                "gallery": [
+                    "./blog/20260719/products/book-too-many-seichi/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/book-too-many-seichi/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "book-omc3": {
+                "id": "book-omc3",
+                "category": "book",
+                "isNew": false,
+                "title": {
+                    "jp": "既刊 Overlay Magic Color 3",
+                    "en": "Overlay Magic Color 3",
+                    "zh": "既刊 Overlay Magic Color 3"
+                },
+                "price": {
+                    "jp": "NT$ 150",
+                    "en": "NT$ 150",
+                    "zh": "NT$ 150"
+                },
+                "specs": {
+                    "jp": "既刊イラスト本",
+                    "en": "Catalog artbook",
+                    "zh": "既刊插圖本"
+                },
+                "desc": {
+                    "jp": "既刊 Overlay Magic Color 3。",
+                    "en": "Overlay Magic Color 3 catalog book.",
+                    "zh": "既刊 Overlay Magic Color 3。\n全彩 / 16P"
+                },
+                "gallery": [
+                    "./blog/20260719/products/book-omc3/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/book-omc3/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            },
+            "book-om-gala": {
+                "id": "book-om-gala",
+                "category": "book",
+                "isNew": false,
+                "title": {
+                    "jp": "既刊 Overlay Magic GALA",
+                    "en": "Overlay Magic GALA",
+                    "zh": "既刊 Overlay Magic GALA"
+                },
+                "price": {
+                    "jp": "NT$ 150",
+                    "en": "NT$ 150",
+                    "zh": "NT$ 150"
+                },
+                "specs": {
+                    "jp": "既刊イラスト本",
+                    "en": "Catalog artbook",
+                    "zh": "既刊插圖本"
+                },
+                "desc": {
+                    "jp": "既刊 Overlay Magic GALA。",
+                    "en": "Overlay Magic GALA catalog book.",
+                    "zh": "既刊 Overlay Magic GALA。\n全彩 / 32P"
+                },
+                "gallery": [
+                    "./blog/20260719/products/book-om-gala/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/book-om-gala/01.jpg",
+                "cta": {
+                    "enabled": true,
+                    "urlOverride": "store.html?region=TW",
+                    "label": null
+                }
+            }
+        }
     }
 };

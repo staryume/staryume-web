@@ -181,9 +181,10 @@ describe("ura passcode and visibility", () => {
 });
 
 describe("productUsesTwCart", () => {
-  it("true for useTwCart or acghk2026 eventSource", () => {
+  it("true for useTwCart or acghk2026/ff47 eventSource", () => {
     expect(api.productUsesTwCart(sampleProducts[3])).toBe(true);
     expect(api.productUsesTwCart({ id: 9, eventSource: "acghk2026" })).toBe(true);
+    expect(api.productUsesTwCart({ id: 10, eventSource: "ff47" })).toBe(true);
     expect(api.productUsesTwCart(sampleProducts[0])).toBe(false);
     expect(api.productUsesTwCart(null)).toBe(false);
   });

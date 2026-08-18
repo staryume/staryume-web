@@ -95,8 +95,8 @@ const storeConfig = {
                 "id": "ff47_day1",
                 "enabled": true,
                 "label": {
-                    "zh": "FF47 首日取貨 ·（8/21 五） 花博爭豔館會場 U-36 / U-36 星夢亭攤位上取貨",
-                    "en": "FF47 Day 1 pickup · (Fri 8/21) Expo Hall booth U-36 / U-36 STARYUME"
+                    "zh": "FF47 首日取貨 ·（8/21 五） 花博爭豔館會場 U-35 / U-36 星夢亭攤位上取貨",
+                    "en": "FF47 Day 1 pickup · (Fri 8/21) Expo Hall booth U-35 / U-36 STARYUME"
                 },
                 "desc": {
                     "zh": "Fancy Frontier 47 第一天攤位上領取預約商品並付款。",
@@ -108,12 +108,12 @@ const storeConfig = {
                 "id": "ff47_day2",
                 "enabled": true,
                 "label": {
-                    "zh": "FF47 次日取貨 ·（8/22 六） 花博會場附近的EZ空間星夢亭攤位上取貨",
-                    "en": "FF47 Day 2 pickup · (Sat 8/22) EZ Space near Expo · STARYUME booth"
+                    "zh": "FF47 次日取貨 ·（8/22 六） EZspace圓山館 J區 星夢亭攤位上取貨",
+                    "en": "FF47 Day 2 pickup · (Sat 8/22) EZspace Yuanshan Hall Zone J · STARYUME booth"
                 },
                 "desc": {
-                    "zh": "這次沒有參加 Fancy Frontier 47 第二天，故此可在場外空間領取預約商品並付款。",
-                    "en": "Not attending FF47 day 2; pick up pre-ordered items and pay at the off-venue EZ Space."
+                    "zh": "Fancy Frontier 47 第二天改在場外 EZspace圓山館 J區 領取預約商品並付款。",
+                    "en": "Day 2 pickup is at off-venue EZspace Yuanshan Hall Zone J; pay when you collect."
                 },
                 "fields": []
             }
@@ -369,6 +369,64 @@ const storeProducts = [
             "jp": "レザー素材のデッキケース／カード収納箱。",
             "en": "Leather-style card deck box.",
             "zh": "皮質卡片收納盒。"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+{
+        "id": 405,
+        "category": [
+            "featured",
+            "other"
+        ],
+        "regions": ["TW"],
+        "isNew": true,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "ff47",
+        "title": {
+            "jp": "タペストリー ブラック・マジシャン・ガール (ver. 2026)",
+            "en": "Tapestry - Dark Magician Girl (ver. 2026)",
+            "zh": "新作掛軸 黑魔導女孩 (ver. 2026)"
+        },
+        "priceTW": 600,
+        "priceHK": 180,
+        "imgs": ["./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"],
+        "desc": {
+            "jp": "新作タペストリー。ブラック・マジシャン・ガール ver. 2026。日本製しろもうふ／B2。",
+            "en": "New tapestry featuring Dark Magician Girl (ver. 2026). Japanese-made shiromofu / B2.",
+            "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ／尺寸：B2"
+        },
+        "linkTW": null,
+        "langs": { "jp": true, "en": true, "zh": true },
+        "linkHK": null
+    },
+{
+        "id": 406,
+        "category": [
+            "featured",
+            "other"
+        ],
+        "regions": ["TW"],
+        "isNew": true,
+        "isSoldOut": false,
+        "isPreorder": true,
+        "useTwCart": true,
+        "eventSource": "ff47",
+        "title": {
+            "jp": "タペストリー ガガガガール",
+            "en": "Tapestry - Gagaga Girl",
+            "zh": "新作掛軸 我我我女孩"
+        },
+        "priceTW": 600,
+        "priceHK": 180,
+        "imgs": ["./blog/20260719/products/tapestry/tapestry-gagaga.jpg"],
+        "desc": {
+            "jp": "新作タペストリー。ガガガガール。日本製しろもうふ／B2。",
+            "en": "New tapestry featuring Gagaga Girl. Japanese-made shiromofu / B2.",
+            "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ／尺寸：B2"
         },
         "linkTW": null,
         "langs": { "jp": true, "en": true, "zh": true },
@@ -1250,7 +1308,7 @@ function formatStoreMoney(amount, region) {
 function productUsesTwCart(product) {
     if (!product) return false;
     if (product.useTwCart === true) return true;
-    if (product.eventSource === "acghk2026") return true;
+    if (product.eventSource === "acghk2026" || product.eventSource === "ff47") return true;
     return false;
 }
 
