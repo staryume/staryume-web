@@ -158,22 +158,59 @@
     );
   }
 
-  async function loadProject(dirHandle) {
-    const dataText = await readTextFile(dirHandle, 'data.js');
-    const storeText = await readTextFile(dirHandle, 'store.js');
+  async function fetchText(relativePath) {
+    const res = await fetch('./' + String(relativePath).replace(/^\.\//, ''), { cache: 'no-store' });
+    if (!res.ok) throw new Error('Could not load ' + relativePath + ' (' + res.status + ')');
+    return res.text();
+  }
+
+  async function parseProjectTexts(dataText, storeText, eventsText) {
     const siteData = parseDataJs(dataText);
     const { storeConfig, storeProducts } = parseStoreJs(storeText);
     let eventCatalog = {};
     let eventUiStrings = {};
-    try {
-      const eventsText = await readTextFile(dirHandle, 'events.js');
-      const parsed = parseEventsJs(eventsText);
-      eventCatalog = parsed.eventCatalog || {};
-      eventUiStrings = parsed.eventUiStrings || {};
-    } catch (e) {
-      console.warn('events.js not loaded:', e.message);
+    if (eventsText) {
+      try {
+        const parsed = parseEventsJs(eventsText);
+        eventCatalog = parsed.eventCatalog || {};
+        eventUiStrings = parsed.eventUiStrings || {};
+      } catch (e) {
+        console.warn('events.js not parsed:', e.message);
+      }
     }
     return { siteData, storeConfig, storeProducts, eventCatalog, eventUiStrings };
+  }
+
+  async function loadProjectFromHttp() {
+    const dataText = await fetchText('data.js');
+    const storeText = await fetchText('store.js');
+    let eventsText = '';
+    try {
+      eventsText = await fetchText('event-catalog.js');
+    } catch (e) {
+      try {
+        eventsText = await fetchText('events.js');
+      } catch (e2) {
+        console.warn('event-catalog.js not loaded:', e.message);
+      }
+    }
+    return parseProjectTexts(dataText, storeText, eventsText);
+  }
+
+  async function loadProject(dirHandle) {
+    const dataText = await readTextFile(dirHandle, 'data.js');
+    const storeText = await readTextFile(dirHandle, 'store.js');
+    let eventsText = '';
+    try {
+      eventsText = await readTextFile(dirHandle, 'event-catalog.js');
+    } catch (e) {
+      try {
+        eventsText = await readTextFile(dirHandle, 'events.js');
+      } catch (e2) {
+        console.warn('event-catalog.js not loaded:', e.message);
+      }
+    }
+    return parseProjectTexts(dataText, storeText, eventsText);
   }
 
   async function saveProject(
@@ -185,7 +222,7 @@
     if (eventCatalog && typeof eventCatalog === 'object') {
       await writeTextFile(
         dirHandle,
-        'events.js',
+        'event-catalog.js',
         serializeEventsJs(eventCatalog, eventUiStrings)
       );
     }
@@ -257,12 +294,14 @@
     reopenLastDirectory,
     verifyPermission,
     loadProject,
+    loadProjectFromHttp,
     saveProject,
     saveImageBlob,
     createPlaceholderPng,
     sanitizeFilename,
     extFromMime,
     readTextFile,
+    writeTextFile,
     writeBinaryFile,
   };
 })(window);

@@ -63,6 +63,10 @@ export default async (request, context) => {
     });
 
     html = injectMeta(html, meta, fullTitle, htmlLangFor(lang));
+    html = html.replace(
+      /<script src="events\.js[^"]*"><\/script>/,
+      '<script src="event-catalog.js"><\/script>'
+    );
     return htmlResponse(html, response);
   } catch (err) {
     console.error("og-post edge error:", err);
@@ -238,8 +242,8 @@ function htmlResponse(html, original) {
   const headers = new Headers(original.headers);
   headers.set("content-type", "text/html; charset=utf-8");
   // Short cache so language/content updates show up; LINE still may cache longer client-side
-  headers.set("cache-control", "public, max-age=300");
-  // Vary on full URL query so CDN can cache JP/ZH separately
+  headers.set("cache-control", "no-store");
+  headers.set("netlify-cdn-cache-control", "no-store");
   headers.set("vary", "Accept-Encoding");
   return new Response(html, {
     status: original.status,
