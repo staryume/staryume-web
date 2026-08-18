@@ -364,7 +364,14 @@ const storeProducts = [
         },
         "priceTW": 800,
         "priceHK": 220,
-        "imgs": ["./blog/20260719/products/goods-deckbox/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/goods-deckbox/01.jpg",
+            "./blog/20260719/products/goods-deckbox/02.jpg",
+            "./blog/20260719/products/goods-deckbox/03.jpg",
+            "./blog/20260719/products/goods-deckbox/04.jpg",
+            "./blog/20260719/products/goods-deckbox/05.jpg",
+            "./blog/20260719/products/goods-deckbox/06.jpg"
+        ],
         "desc": {
             "jp": "レザー素材のデッキケース／カード収納箱。",
             "en": "Leather-style card deck box.",

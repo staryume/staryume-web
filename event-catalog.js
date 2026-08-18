@@ -1218,7 +1218,12 @@ const eventCatalog = {
                     "zh": "皮質卡片收納盒。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/goods-deckbox/01.jpg"
+                    "./blog/20260719/products/goods-deckbox/01.jpg",
+                    "./blog/20260719/products/goods-deckbox/02.jpg",
+                    "./blog/20260719/products/goods-deckbox/03.jpg",
+                    "./blog/20260719/products/goods-deckbox/04.jpg",
+                    "./blog/20260719/products/goods-deckbox/05.jpg",
+                    "./blog/20260719/products/goods-deckbox/06.jpg"
                 ],
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
@@ -2038,7 +2043,12 @@ const eventCatalog = {
                     "zh": "皮質卡片收納盒。"
                 },
                 "gallery": [
-                    "./blog/20260719/products/goods-deckbox/01.jpg"
+                    "./blog/20260719/products/goods-deckbox/01.jpg",
+                    "./blog/20260719/products/goods-deckbox/02.jpg",
+                    "./blog/20260719/products/goods-deckbox/03.jpg",
+                    "./blog/20260719/products/goods-deckbox/04.jpg",
+                    "./blog/20260719/products/goods-deckbox/05.jpg",
+                    "./blog/20260719/products/goods-deckbox/06.jpg"
                 ],
                 "pages": [],
                 "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
