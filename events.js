@@ -1745,16 +1745,16 @@ const eventCatalog = {
                         "coords": [
                             41.4,
                             77.8,
-                            33.0,
+                            34.1,
                             20.9
                         ]
                     },
                     {
                         "productId": "tapestry-gagaga",
                         "coords": [
-                            74.5,
+                            75.6,
                             77.8,
-                            23.2,
+                            22.1,
                             20.9
                         ]
                     }
