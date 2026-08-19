@@ -116,6 +116,19 @@ const storeConfig = {
                     "en": "Day 2 pickup is at off-venue EZspace Yuanshan Hall Zone J; pay when you collect."
                 },
                 "fields": []
+            },
+            {
+                "id": "ff47_day3",
+                "enabled": true,
+                "label": {
+                    "zh": "FF47 第3日取貨 ·（8/23 日） S27 / S28 ありぃずこーひー",
+                    "en": "FF47 Day 3 pickup · (Sun 8/23) S27 / S28 ありぃずこーひー"
+                },
+                "desc": {
+                    "zh": "第三天於 ありぃずこーひー 攤位 S27 / S28 領取預約商品並付款。",
+                    "en": "Pick up pre-ordered items and pay at ありぃずこーひー booth S27 / S28 on day 3."
+                },
+                "fields": []
             }
         ]
     },
