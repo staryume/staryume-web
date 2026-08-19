@@ -2421,6 +2421,39 @@ const eventCatalog = {
                     "label": null
                 }
             }
+        },
+        "afterShowcase": {
+            "zh": [
+                {
+                    "id": "ezspace-day2",
+                    "title": "第2日場外領取｜EZspace圓山館 怎麼走",
+                    "body": "第2日（六）8/22 星夢亭<strong>不在花博會場內</strong>，改於場外 <strong>EZspace圓山館 J區</strong> 領取預約／現場商品。<br><br>請由捷運圓山站 <strong>1號出口</strong> 步行前往（路線見下圖）。",
+                    "images": [
+                        {
+                            "src": "./blog/20260818/ezspace-yuanshan-map.png",
+                            "alt": "圓山捷運站1號出口步行至 EZspace圓山館",
+                            "caption": "捷運圓山站 1號出口 → EZspace圓山館",
+                            "wide": true
+                        }
+                    ]
+                }
+            ],
+            "en": [
+                {
+                    "id": "ezspace-day2",
+                    "title": "Day 2 off-venue — how to reach EZspace",
+                    "body": "On Day 2 (Sat 8/22) we are <strong>not inside the FF47 expo hall</strong>. Pickup is at off-venue <strong>EZspace Yuanshan Hall, Zone J</strong>.<br><br>Walk from MRT Yuanshan Station <strong>Exit 1</strong> (map below).",
+                    "images": [
+                        {
+                            "src": "./blog/20260818/ezspace-yuanshan-map.png",
+                            "alt": "Walking map from MRT Yuanshan Exit 1 to EZspace Yuanshan Hall",
+                            "caption": "MRT Yuanshan Exit 1 → EZspace Yuanshan Hall",
+                            "wide": true
+                        }
+                    ]
+                }
+            ],
+            "jp": null
         }
     }
 };

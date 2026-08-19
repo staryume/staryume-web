@@ -65,7 +65,7 @@ export default async (request, context) => {
     html = injectMeta(html, meta, fullTitle, htmlLangFor(lang));
     html = html.replace(
       /<script src="events\.js[^"]*"><\/script>/,
-      '<script src="event-catalog.js?v=20260819d"><\/script>'
+      '<script src="event-catalog.js?v=20260819e"><\/script>'
     );
     return htmlResponse(html, response);
   } catch (err) {

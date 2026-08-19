@@ -36,7 +36,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
 
     <script src="data.js"></script>
-    <script src="event-catalog.js?v=20260819d"></script>
+    <script src="event-catalog.js?v=20260819e"></script>
 
     <script>
         tailwind.config = {
@@ -440,10 +440,11 @@
                     const src = typeof img === 'string' ? img : img.src;
                     const alt = typeof img === 'string' ? title : (img.alt || title);
                     const caption = typeof img === 'string' ? '' : (img.caption || '');
+                    const wide = typeof img === 'object' && img.wide;
                     return `
                         <figure class="mt-4">
                             <img src="${escHtml(src)}" alt="${escHtml(alt)}"
-                                class="w-full max-w-md mx-auto rounded-lg border border-gray-200 shadow-sm object-contain bg-gray-50"
+                                class="w-full ${wide ? 'max-w-2xl' : 'max-w-md'} mx-auto rounded-lg border border-gray-200 shadow-sm object-contain bg-gray-50"
                                 loading="lazy">
                             ${caption ? `<figcaption class="text-center text-xs text-gray-500 font-mono mt-2">${escHtml(caption)}</figcaption>` : ''}
                         </figure>`;
