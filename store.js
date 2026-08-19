@@ -16,7 +16,7 @@ const storeConfig = {
      * Localhost falls back to scriptUrlDirect (Apps Script) — see docs/hk-store-checkout-apps-script.md
      */
     "hkCheckout": {
-        "enabled": true,
+        "enabled": false,
         "currency": "HKD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
