@@ -203,7 +203,8 @@ const storeConfig = {
         }
     ],
     /**
-     * 裏 store (R18) — unlock via ??? + 通關密碼 (Discord).
+     * 裏 store (R18) — HK unlock via ??? + 通關密碼 (Discord).
+     * TW catalog shows R18 openly (no passcode).
      * Passcode is client-side only (obscurity for fans, not true secrecy).
      * Rotate passcode and redeploy when Discord announces a new code.
      */
@@ -1121,7 +1122,8 @@ const storeProducts = [
         "priceTW": 150,
         "priceHK": 60,
         "imgs": [
-            "./blog/20251224/products/book-om6/01.jpg",
+            "./blog/20251224/products/book-om6/01.jpg?v=20260821",
+            "./blog/20251224/products/book-om6/01-uncensored.jpg",
             "./blog/20251224/products/book-om6/02.jpg",
             "./blog/20251224/products/book-om6/03.jpg",
             "./blog/20251224/products/book-om6/04.jpg",
@@ -1246,6 +1248,14 @@ function isUraUnlocked() {
     } catch (e) {
         return false;
     }
+}
+
+/** TW: R18 catalog is public (no passcode). HK: session unlock only. */
+function isUraCatalogOpen(region) {
+    const ura = getUraConfig();
+    if (!ura || ura.enabled === false) return false;
+    if (normalizeStoreRegion(region) === "TW") return true;
+    return isUraUnlocked();
 }
 
 function unlockUra() {

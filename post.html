@@ -35,8 +35,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
 
-    <script src="data.js"></script>
-    <script src="event-catalog.js?v=20260819e"></script>
+    <script src="data.js?v=20260822a"></script>
+    <script src="event-catalog.js?v=20260822a"></script>
 
     <script>
         tailwind.config = {
@@ -401,13 +401,13 @@
 
             root.innerHTML = `
                 <div class="bg-white border border-gray-200 shadow-sm rounded-sm overflow-hidden">
-                    <div class="px-4 py-3 md:px-6 bg-black text-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div>
+                    <div class="px-4 py-3 md:px-6 bg-black text-white flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                        <div class="min-w-0 flex-1">
                             <p class="text-[10px] font-mono text-tech-purple tracking-widest uppercase">${event.meta ? t(event.meta.event) : ''}</p>
                             <h2 class="text-lg md:text-xl font-bold font-tech">${t(event.title)}</h2>
-                            ${boothLine ? `<p class="text-xs text-gray-400 mt-1 font-mono">${strings.booth}: ${boothLine}</p>` : ''}
+                            ${boothLine ? `<p class="text-xs text-gray-400 mt-1 font-mono leading-relaxed break-words">${strings.booth}: ${boothLine}</p>` : ''}
                         </div>
-                        <p class="text-xs text-tech-purple font-bold">${strings.hint}</p>
+                        <p class="text-xs text-tech-purple font-bold shrink-0">${strings.hint}</p>
                     </div>
                     <div class="p-4 md:p-8">
                         ${mapsHtml}
@@ -456,7 +456,7 @@
                             <h3 class="text-base md:text-lg font-bold font-tech tracking-wide">${title}</h3>
                         </div>
                         <div class="p-4 md:p-8">
-                            <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed">${body}</div>
+                            <div class="prose prose-sm max-w-none text-gray-700 leading-relaxed font-normal [&_strong]:font-normal">${body}</div>
                             ${imgs}
                         </div>
                     </div>`;

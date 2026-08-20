@@ -263,7 +263,7 @@
     </div>
 
     <script>
-        let currentRegion = 'HK';
+        let currentRegion = regionFromTimezone() || 'HK';
         // Store UI supports EN / ZH (map site-wide JP → ZH for the button label)
         let currentLang = (() => {
             const saved = localStorage.getItem('siteLang') || 'zh';
@@ -279,11 +279,29 @@
             if (el) el.innerText = (currentLang || 'zh').toUpperCase();
         }
 
+        function countryToStoreRegion(code) {
+            const c = String(code || '').toUpperCase();
+            if (c === 'TW' || c === 'TWN') return 'TW';
+            if (c === 'HK' || c === 'HKG') return 'HK';
+            return null;
+        }
+
+        function regionFromTimezone() {
+            try {
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+                if (tz === 'Asia/Taipei') return 'TW';
+                if (tz === 'Asia/Hong_Kong') return 'HK';
+            } catch (e) { /* ignore */ }
+            return null;
+        }
+
         /**
          * Pick store region for first paint / visit:
          * 1) ?region=HK|TW (deep link / CTA) always wins
-         * 2) else Netlify /api/geo: TW → TW, HK and all others → HK
-         * 3) on failure (e.g. localhost) → HK
+         * 2) Netlify /api/geo: TW → TW, HK → HK
+         * 3) browser timezone (Asia/Taipei → TW) — covers localhost
+         * 4) public IP country (localhost when /api/geo is missing)
+         * 5) otherwise HK
          */
         async function resolveInitialRegion() {
             const regionParam = (new URLSearchParams(window.location.search).get('region') || '').toUpperCase();
@@ -301,12 +319,34 @@
                 clearTimeout(timer);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data && (data.region === 'TW' || data.country === 'TW')) return 'TW';
-                    if (data && (data.region === 'HK' || data.country === 'HK')) return 'HK';
+                    const mapped = countryToStoreRegion(data && data.region) || countryToStoreRegion(data && data.country);
+                    if (mapped) return mapped;
                 }
             } catch (e) {
                 /* offline / localhost / edge not available */
             }
+
+            const tzRegion = regionFromTimezone();
+            if (tzRegion) return tzRegion;
+
+            try {
+                const ctrl = new AbortController();
+                const timer = setTimeout(() => ctrl.abort(), 2000);
+                const res = await fetch('https://get.geojs.io/v1/ip/country.json', {
+                    method: 'GET',
+                    signal: ctrl.signal,
+                    headers: { 'Accept': 'application/json' },
+                });
+                clearTimeout(timer);
+                if (res.ok) {
+                    const data = await res.json();
+                    const mapped = countryToStoreRegion(data && data.country);
+                    if (mapped) return mapped;
+                }
+            } catch (e) {
+                /* blocked by CSP / offline */
+            }
+
             return 'HK';
         }
 
@@ -384,8 +424,13 @@
             renderAllSections();
         }
 
+        function uraCatalogOpen() {
+            if (typeof isUraCatalogOpen === 'function') return isUraCatalogOpen(currentRegion);
+            return typeof isUraUnlocked === 'function' && isUraUnlocked();
+        }
+
         function productPassesFilters(p) {
-            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            const unlocked = uraCatalogOpen();
             if (typeof isProductVisibleInStore === 'function') {
                 if (!isProductVisibleInStore(p, unlocked)) return false;
             } else if ((p.hidden || p.contentRating === 'r18') && !unlocked) {
@@ -438,7 +483,7 @@
 
         function renderCategories() {
             const container = document.getElementById('category-tabs');
-            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            const unlocked = uraCatalogOpen();
             const uraEnabled = storeConfig.ura && storeConfig.ura.enabled !== false;
 
             // Public categories only on the toolbar (skip ura / ura-daki as separate tabs).
@@ -464,7 +509,7 @@
         function renderAllSections() {
             const container = document.getElementById('store-container');
             container.innerHTML = '';
-            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            const unlocked = uraCatalogOpen();
 
             // Public categories first
             storeConfig.categories.forEach(cat => {
@@ -632,7 +677,7 @@
         function openModal(id) {
             const product = storeProducts.find(p => p.id === id);
             if (!product) return;
-            const unlocked = typeof isUraUnlocked === 'function' ? isUraUnlocked() : false;
+            const unlocked = uraCatalogOpen();
             if ((product.hidden || product.contentRating === 'r18') && !unlocked) {
                 openUraModal();
                 return;

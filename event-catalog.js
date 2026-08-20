@@ -673,7 +673,7 @@ const eventCatalog = {
                     "zh": "Overlay Magic 系列既刊。"
                 },
                 "gallery": [
-                    "./blog/20251224/products/book-om6/01.jpg",
+                    "./blog/20251224/products/book-om6/01.jpg?v=20260821",
                     "./blog/20251224/products/book-om6/02.jpg",
                     "./blog/20251224/products/book-om6/03.jpg"
                 ],
@@ -682,7 +682,7 @@ const eventCatalog = {
                     "./blog/20251224/products/book-om6/page-02.jpg",
                     "./blog/20251224/products/book-om6/page-03.jpg"
                 ],
-                "thumb": "./blog/20251224/products/book-om6/01.jpg",
+                "thumb": "./blog/20251224/products/book-om6/01.jpg?v=20260821",
                 "cta": null
             },
             "book-omc3": {
@@ -1667,11 +1667,11 @@ const eventCatalog = {
         "meta": {
             "event": "FANCY FRONTIER 47",
             "booth": {
-                "jp": "1日目（金）U-35 / U-36 ／ 2日目（土）EZspace圓山館 J區",
-                "en": "Day1 (Fri) U-35 / U-36 · Day2 (Sat) EZspace Yuanshan Hall Zone J",
-                "zh": "第1日（五）U-35 / U-36 ／ 第2日（六）EZspace圓山館 J區"
+                "jp": "1日目（金）8/21 花博爭豔館 U-35 / U-36<br>2日目（土）8/22 EZspace圓山館 J區（営業時間 10:30-18:30）<br>3日目（日）8/23 花博爭豔館 S-27 / S-28 ありぃずこーひー（委託/受取）",
+                "en": "Day 1 (Fri 8/21) Expo Hall U-35 / U-36<br>Day 2 (Sat 8/22) EZspace Yuanshan Hall Zone J (10:30-18:30)<br>Day 3 (Sun) 8/23 Expo Hall S-27 / S-28 ありぃずこーひー (consignment / pickup)",
+                "zh": "第一日（五）8/21 花博爭豔館 U-35 / U-36<br>第二日（六）8/22 EZspace圓山館 J區（營業時間 10:30-18:30）<br>第三日（日）8/23 花博爭豔館 S-27 / S-28 ありぃずこーひー (寄賣/取貨)"
             },
-            "dates": "2026/08/21–22"
+            "dates": "2026/08/21–23"
         },
         "defaultCta": {
             "label": {
@@ -2426,13 +2426,39 @@ const eventCatalog = {
             "zh": [
                 {
                     "id": "ezspace-day2",
-                    "title": "第2日場外領取｜EZspace圓山館 怎麼走",
-                    "body": "第2日（六）8/22 星夢亭<strong>不在花博會場內</strong>，改於場外 <strong>EZspace圓山館 J區</strong> 領取預約／現場商品。<br><br>請由捷運圓山站 <strong>1號出口</strong> 步行前往（路線見下圖）。",
+                    "title": "第二日場外攤位位置 EZspace 圓山館 怎麼走",
+                    "body": "第二日（六）8/22 星夢亭不在花博會場內，改於場外 EZspace圓山館 J區 出展。<br><br>營業時間：從上午 10:30 到晚上 18:30<br><br><span style='font-weight:400'>請由捷運圓山站 1號出口 步行前往（路線見下圖）。</span>",
                     "images": [
                         {
                             "src": "./blog/20260818/ezspace-yuanshan-map.png",
                             "alt": "圓山捷運站1號出口步行至 EZspace圓山館",
-                            "caption": "捷運圓山站 1號出口 → EZspace圓山館",
+                            "caption": "",
+                            "wide": true
+                        }
+                    ]
+                },
+                {
+                    "id": "poster-ezspace",
+                    "title": "特別活動1 - FF47宣傳大海報猜拳領取｜第二天 EZspace",
+                    "body": "歡迎到場外 EZspace圓山館 J區 星夢亭攤位進行猜拳活動，取得這次的活動海報!<br><br>日時：第二日（六）8/22<br>場所：EZspace圓山館 J區「星夢亭」攤位<br>猜拳開始時間: 17:40<br><br>假如有多於一人想要海報，將會於現場以猜拳的方式決定由勝者免費取得海報。",
+                    "images": [
+                        {
+                            "src": "./blog/20260818/event-poster-ezspace.jpg?v=20260821c",
+                            "alt": "FF47 活動海報（ブラマジガール）",
+                            "caption": "",
+                            "wide": true
+                        }
+                    ]
+                },
+                {
+                    "id": "shikishi-ezspace",
+                    "title": "特別活動2 - 色紙競標｜第二天 EZspace",
+                    "body": "歡迎到場外 EZspace圓山館 J區 星夢亭攤位參加色紙競標！<br><br><strong>日時：</strong>第二日（六）8/22<br><strong>場所：</strong>EZspace圓山館 J區「星夢亭」攤位<br><strong>競標開始價格:</strong> NT2000 ， 往後每一口價以 NT100 為單位<br><strong>猜拳結束 / 色紙領取時間:</strong> 17:30<br><br>（今天稍後將會設立一個競標專用網站頁面，頁面連結稍候公開）<br><br>色紙將於特設的競標頁面決定最高競標金額得主 / 色紙圖片將會於 8/22 早上公開!",
+                    "images": [
+                        {
+                            "src": "./blog/20260818/shikishi-now-printing.jpg",
+                            "alt": "FF47 色紙競標（NOW PRINTING）",
+                            "caption": "",
                             "wide": true
                         }
                     ]
@@ -2441,13 +2467,39 @@ const eventCatalog = {
             "en": [
                 {
                     "id": "ezspace-day2",
-                    "title": "Day 2 off-venue — how to reach EZspace",
-                    "body": "On Day 2 (Sat 8/22) we are <strong>not inside the FF47 expo hall</strong>. Pickup is at off-venue <strong>EZspace Yuanshan Hall, Zone J</strong>.<br><br>Walk from MRT Yuanshan Station <strong>Exit 1</strong> (map below).",
+                    "title": "Day 2 off-venue booth location — how to reach EZspace",
+                    "body": "On Day 2 (Sat 8/22) we are not inside the FF47 expo hall. We will exhibit at off-venue EZspace Yuanshan Hall, Zone J.<br><br>Hours: 10:30–18:30<br><br><span style='font-weight:400'>Walk from MRT Yuanshan Station Exit 1 (map below).</span>",
                     "images": [
                         {
                             "src": "./blog/20260818/ezspace-yuanshan-map.png",
                             "alt": "Walking map from MRT Yuanshan Exit 1 to EZspace Yuanshan Hall",
-                            "caption": "MRT Yuanshan Exit 1 → EZspace Yuanshan Hall",
+                            "caption": "",
+                            "wide": true
+                        }
+                    ]
+                },
+                {
+                    "id": "poster-ezspace",
+                    "title": "Special event 1 — FF47 promo poster janken giveaway | Day 2 EZspace",
+                    "body": "Come to the STARYUME booth at EZspace Yuanshan Hall, Zone J for the janken event to get this event poster!<br><br>When: Day 2 (Sat) 8/22<br>Where: EZspace Yuanshan Hall Zone J · STARYUME booth<br>Janken start: 17:40<br><br>If more than one person wants the poster, we will decide on-site by janken (rock-paper-scissors); the winner gets it for free.",
+                    "images": [
+                        {
+                            "src": "./blog/20260818/event-poster-ezspace.jpg?v=20260821c",
+                            "alt": "FF47 event poster (Dark Magician Girl)",
+                            "caption": "",
+                            "wide": true
+                        }
+                    ]
+                },
+                {
+                    "id": "shikishi-ezspace",
+                    "title": "Special event 2 — shikishi auction | Day 2 EZspace",
+                    "body": "Join the shikishi (signed art board) auction at the STARYUME booth in EZspace Yuanshan Hall, Zone J.<br><br><strong>When:</strong> Day 2 (Sat) 8/22<br><strong>Where:</strong> EZspace Yuanshan Hall Zone J · STARYUME booth<br><strong>Starting bid:</strong> NT2000, each raise NT100<br><strong>Janken ends / shikishi pickup:</strong> 17:30<br><br>(An auction page will be set up later today; the link will be posted here.)<br><br>The winner is the highest bidder on the dedicated auction page / the shikishi image will be revealed on the morning of 8/22!",
+                    "images": [
+                        {
+                            "src": "./blog/20260818/shikishi-now-printing.jpg",
+                            "alt": "FF47 shikishi auction (NOW PRINTING)",
+                            "caption": "",
                             "wide": true
                         }
                     ]

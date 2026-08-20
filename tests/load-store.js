@@ -71,6 +71,7 @@ export function loadStore() {
       storeProducts,
       getUraConfig,
       isUraUnlocked,
+      isUraCatalogOpen,
       unlockUra,
       lockUra,
       normalizeUraPasscode,

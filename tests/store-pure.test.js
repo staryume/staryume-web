@@ -178,6 +178,16 @@ describe("ura passcode and visibility", () => {
     api.lockUra();
     expect(api.isUraUnlocked()).toBe(false);
   });
+
+  it("TW opens R18 catalog without passcode; HK still needs unlock", () => {
+    const ura = api.getUraConfig();
+    if (!ura || ura.enabled === false) return;
+    api.lockUra();
+    expect(api.isUraCatalogOpen("TW")).toBe(true);
+    expect(api.isUraCatalogOpen("HK")).toBe(false);
+    expect(api.unlockUra()).toBe(true);
+    expect(api.isUraCatalogOpen("HK")).toBe(true);
+  });
 });
 
 describe("productUsesTwCart", () => {

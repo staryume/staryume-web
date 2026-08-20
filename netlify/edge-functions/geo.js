@@ -19,9 +19,9 @@ export default async (request, context) => {
     return json({ ok: false, error: "method_not_allowed" }, 405);
   }
 
-  const country = String(context?.geo?.country?.code || "").toUpperCase();
+  const country = visitorCountry(request, context);
   // Taiwan → TW store; Hong Kong and everyone else → HK
-  const region = country === "TW" ? "TW" : "HK";
+  const region = country === "TW" || country === "TWN" ? "TW" : "HK";
 
   return json(
     {
@@ -36,6 +36,23 @@ export default async (request, context) => {
 export const config = {
   path: "/api/geo",
 };
+
+function visitorCountry(request, context) {
+  const geo = context?.geo || {};
+  const countryObj = geo.country;
+  const fromGeo =
+    (typeof countryObj === "string" && countryObj) ||
+    (countryObj && countryObj.code) ||
+    geo.countryCode ||
+    "";
+  const headers = request.headers;
+  const fromHeader =
+    headers.get("x-nf-country") ||
+    headers.get("x-country") ||
+    headers.get("cf-ipcountry") ||
+    "";
+  return String(fromGeo || fromHeader || "").trim().toUpperCase();
+}
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), {
