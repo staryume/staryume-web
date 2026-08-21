@@ -32,15 +32,12 @@ var HEADERS = [
 ];
 
 function doPost(e) {
+  var lock = LockService.getScriptLock();
   try {
     if (!e || !e.postData || !e.postData.contents) {
       return jsonOut_({ ok: false, error: 'empty_body' });
     }
     var data = JSON.parse(e.postData.contents);
-    var sheet = orderSheet_();
-    ensureHeaders_(sheet);
-
-    var serial = String(data.serial || '').trim().replace(/\s+/g, '').toUpperCase();
     var name = String(data.name || '').trim();
     var email = String(data.email || '').trim();
     var phone = String(data.phone || '').trim();
@@ -49,7 +46,6 @@ function doPost(e) {
     var address = String(data.address || '').trim();
     var notes = String(data.notes || '').trim();
 
-    if (!serial) return jsonOut_({ ok: false, error: 'missing_serial' });
     if (!name || !email || !phone || !address) {
       return jsonOut_({ ok: false, error: 'missing_fields' });
     }
@@ -57,14 +53,10 @@ function doPost(e) {
     var priced = priceItems_(data.items);
     if (!priced.ok) return jsonOut_({ ok: false, error: priced.error });
 
-    if (serialExists_(sheet, serial)) {
-      if (email) {
-        try { sendDuplicateEmail_({ email: email, name: name, serial: serial }); } catch (mailErr) {
-          console.error('Duplicate mail failed: ' + mailErr);
-        }
-      }
-      return jsonOut_({ ok: false, error: 'duplicate_serial' });
-    }
+    lock.waitLock(20000);
+    var sheet = orderSheet_();
+    ensureHeaders_(sheet);
+    var serial = nextSerial_(sheet);
 
     sheet.appendRow([
       new Date(),
@@ -82,6 +74,7 @@ function doPost(e) {
       notes,
       'new'
     ]);
+    lock.releaseLock();
 
     var info = {
       serial: serial,
@@ -102,6 +95,7 @@ function doPost(e) {
 
     return jsonOut_({ ok: true, serial: serial, total: priced.total });
   } catch (err) {
+    try { lock.releaseLock(); } catch (e2) { /* ignore */ }
     return jsonOut_({ ok: false, error: String(err) });
   }
 }
@@ -181,16 +175,22 @@ function ensureHeaders_(sheet) {
   }
 }
 
-function serialExists_(sheet, serial) {
+function nextSerial_(sheet) {
   var lastRow = sheet.getLastRow();
-  if (lastRow < 2) return false;
-  var values = sheet.getRange(2, SERIAL_COL, lastRow - 1, 1).getValues();
-  var target = String(serial).toLowerCase();
-  for (var i = 0; i < values.length; i++) {
-    var cell = String(values[i][0] || '').trim().replace(/\s+/g, '').toLowerCase();
-    if (cell && cell === target) return true;
+  var max = 0;
+  if (lastRow >= 2) {
+    var values = sheet.getRange(2, SERIAL_COL, lastRow - 1, 1).getValues();
+    for (var i = 0; i < values.length; i++) {
+      var m = String(values[i][0] || '').match(/FF47-(\d+)/i);
+      if (m) {
+        var n = parseInt(m[1], 10);
+        if (n > max) max = n;
+      }
+    }
   }
-  return false;
+  var next = max + 1;
+  var pad = next < 1000 ? ('000' + next).slice(-3) : String(next);
+  return 'FF47-' + pad;
 }
 
 function sendConfirmationEmail_(info) {
@@ -223,23 +223,6 @@ function sendConfirmationEmail_(info) {
   MailApp.sendEmail({
     to: info.email,
     subject: '【staryume】FF47 會場預購確認 · ' + info.serial,
-    body: lines.join('\n')
-  });
-}
-
-function sendDuplicateEmail_(info) {
-  var lines = [];
-  lines.push(info.name ? (info.name + ' 你好，') : '你好，');
-  lines.push('');
-  lines.push('你提交的流水號「' + info.serial + '」已經登記過，系統沒有建立重複預購。');
-  lines.push('');
-  lines.push('若要更改宅配地址，請透過 Discord 聯絡我們：');
-  lines.push(DISCORD_INVITE_URL);
-  lines.push('');
-  lines.push('— ' + STORE_NAME);
-  MailApp.sendEmail({
-    to: info.email,
-    subject: '【staryume】流水號已登記 · ' + info.serial,
     body: lines.join('\n')
   });
 }

@@ -58,7 +58,7 @@
       <p class="text-sm text-gray-500 mt-3 leading-relaxed text-left">
         限量商品現場售完後，可在攤位<strong>先付清商品與郵資</strong>，我們於
         <strong>2026 年 9 月中</strong>從香港以<strong>順豐快遞宅配台灣</strong>寄出。<br><br>
-        請先向攤位工作人員取得<strong>流水號</strong>並完成付款，再填本表。沒有流水號無法提交。
+        請先在攤位<strong>付清商品與郵資</strong>，再填本表。流水號會依提交順序自動編號（FF47-001 起），並寫在確認信裡。
       </p>
       <div class="mt-4 text-left text-xs text-gray-600 bg-white border border-gray-100 rounded-xl p-4 leading-relaxed">
         <p><strong>寄送：</strong>順豐快遞（香港 → 台灣宅配）</p>
@@ -73,7 +73,7 @@
       <h2 class="text-xl font-bold mb-2">提交成功！</h2>
       <p class="text-sm text-gray-600 leading-relaxed">
         已收到你的會場預購資料。<br>
-        確認電郵已發送到你填寫的電郵地址（請檢查垃圾郵件匣）。<br>
+        流水號已依序自動產生，請查看確認電郵（請檢查垃圾郵件匣）。<br>
         商品預計 <strong>9 月中</strong>以順豐宅配寄出。
       </p>
       <div class="mt-6 p-4 bg-tech-gray rounded-xl text-left text-sm">
@@ -90,20 +90,9 @@
     </div>
 
     <form id="eventForm" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-6" novalidate>
-      <div>
-        <label for="serial" class="block text-sm font-bold mb-2">
-          1. 流水號 <span class="text-red-500">*</span>
-        </label>
-        <input id="serial" name="serial" type="text" inputmode="text" autocomplete="off"
-          placeholder="例如：FF47-001（攤位付款後取得）"
-          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition font-mono tracking-wide">
-        <p class="text-xs text-gray-400 mt-1.5">每個流水號只能登記一次，請與攤位小紙上的號碼一致。</p>
-        <p id="err-serial" class="hidden text-xs text-red-500 mt-2">請填寫流水號</p>
-      </div>
-
       <fieldset>
         <legend class="block text-sm font-bold mb-3">
-          2. 預購商品 <span class="text-red-500">*</span>
+          1. 預購商品 <span class="text-red-500">*</span>
         </legend>
         <p class="text-xs text-gray-400 mb-3">只填你已經在攤位付過款的商品與數量。</p>
         <div id="productList" class="space-y-2"></div>
@@ -138,7 +127,7 @@
 
       <div>
         <label for="name" class="block text-sm font-bold mb-2">
-          3. 收件人姓名 <span class="text-red-500">*</span>
+          2. 收件人姓名 <span class="text-red-500">*</span>
         </label>
         <input id="name" name="name" type="text" autocomplete="name" placeholder="與身分證件／門牌相符的中文姓名"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
@@ -147,17 +136,17 @@
 
       <div>
         <label for="email" class="block text-sm font-bold mb-2">
-          4. 電郵 <span class="text-red-500">*</span>
+          3. 電郵 <span class="text-red-500">*</span>
         </label>
         <input id="email" name="email" type="email" autocomplete="email" placeholder="用於接收確認信"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
-        <p class="text-xs text-gray-400 mt-1.5">提交後會寄出確認信，內容包括流水號、商品與宅配地址。</p>
+        <p class="text-xs text-gray-400 mt-1.5">提交後會寄出確認信，內容包括自動流水號、商品與宅配地址。</p>
         <p id="err-email" class="hidden text-xs text-red-500 mt-2">請填寫有效的電郵地址</p>
       </div>
 
       <div>
         <label for="phone" class="block text-sm font-bold mb-2">
-          5. 台灣手機 <span class="text-red-500">*</span>
+          4. 台灣手機 <span class="text-red-500">*</span>
         </label>
         <input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="例如：0912 345 678"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
@@ -168,7 +157,7 @@
       <div class="space-y-4">
         <div>
           <label for="snsType" class="block text-sm font-bold mb-2">
-            6. SNS 聯絡方式 <span class="text-red-500">*</span>
+            5. SNS 聯絡方式 <span class="text-red-500">*</span>
           </label>
           <select id="snsType" name="snsType"
             class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
@@ -193,7 +182,7 @@
 
       <div>
         <label for="address" class="block text-sm font-bold mb-2">
-          7. 台灣宅配地址 <span class="text-red-500">*</span>
+          6. 台灣宅配地址 <span class="text-red-500">*</span>
         </label>
         <textarea id="address" name="address" rows="3" placeholder="縣市、鄉鎮市區、路街巷弄號、樓層／室"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
@@ -203,7 +192,7 @@
 
       <div>
         <label for="notes" class="block text-sm font-bold mb-2">
-          8. 其他備註 <span class="text-gray-400 font-normal">(選填)</span>
+          7. 其他備註 <span class="text-gray-400 font-normal">(選填)</span>
         </label>
         <textarea id="notes" name="notes" rows="3" placeholder="例如：白天不在、放管理室…"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
@@ -347,7 +336,7 @@
       });
     });
 
-    ['serial', 'name', 'email', 'phone', 'snsType', 'snsContact', 'address'].forEach((id) => {
+    ['name', 'email', 'phone', 'snsType', 'snsContact', 'address'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
       el.addEventListener('input', () => showError(id, false));
@@ -357,15 +346,9 @@
     function isValidEmail(value) {
       return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
     }
-    function normalizeSerial(value) {
-      return String(value || '').trim().replace(/\s+/g, '').toUpperCase();
-    }
-
     function validate() {
       let ok = true;
       formError.classList.add('hidden');
-      const serial = normalizeSerial(document.getElementById('serial').value);
-      if (!serial) { showError('serial', true); ok = false; } else showError('serial', false);
       const extra = extraItem();
       if (extra.used && !(extra.title && extra.unit > 0 && extra.unit <= 99999)) {
         showError('extra', true); ok = false;
@@ -398,7 +381,6 @@
       }
       const t = totals();
       const payload = {
-        serial: normalizeSerial(document.getElementById('serial').value),
         items: t.items,
         itemsText: t.items.map((it) => it.title + ' ×' + it.qty + ' @ NT$' + it.unit).join('\n'),
         goodsTwd: t.goods,

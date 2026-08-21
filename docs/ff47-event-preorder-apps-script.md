@@ -4,7 +4,7 @@ Form page: **`ff47-event-preorder.html`**
 Live URL: **`https://staryu.me/ff47-event-preorder.html`**  
 Local: from `web/`, `python3 -m http.server 8000` → `http://localhost:8000/ff47-event-preorder.html`
 
-Booth flow: cash at stall (goods + postage) → write serial on paper → customer fills this form → Sheet row + emails.
+Booth flow: cash at stall (goods + postage) → customer fills this form → Sheet assigns **FF47-001, FF47-002, …** in submit order → emails.
 
 ---
 
@@ -64,12 +64,11 @@ Redeploy / push the site. Until this is set, the form shows the amber “尚未�
 
 ## D. What happens on submit
 
-1. Serial required, normalized (`FF47-001`), **unique**
-2. Items priced from server catalog
-3. New row if serial is new
-4. Confirmation email to the customer
+1. Items priced from server catalog
+2. Script lock → next serial `FF47-001`, `FF47-002`, … (ignore any client serial)
+3. New row
+4. Confirmation email to the customer (includes serial)
 5. Notify email to `staryume@gmail.com`
-6. Duplicate serial → **no second row**; customer may get “已登記” mail
 
 The public form uses `no-cors` fetch (same as `hk-form.html`), so the **browser always shows success**. The **Sheet is the source of truth**.
 
@@ -77,23 +76,10 @@ The public form uses `no-cors` fetch (same as `hk-form.html`), so the **browser 
 
 ## E. Test
 
-1. New serial → row + two emails (customer + you)
-2. Same serial again → no second row
+1. Submit → row with auto serial + two emails (customer + you)
+2. Second submit → `FF47-002` (not a duplicate of 001)
 3. Empty items / unknown product id → no row
 4. `/exec` GET → health text
-
----
-
-## F. Booth serials
-
-Use `FF47-001`, `FF47-002`, … on paper with:
-
-- items × qty
-- goods subtotal
-- postage NT$200 (or 0 if goods ≥ NT$2000)
-- cash collected
-
-Customer types the same serial into the form.
 
 QR:
 
