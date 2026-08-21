@@ -63,8 +63,7 @@
       <div class="mt-4 text-left text-xs text-gray-600 bg-white border border-gray-100 rounded-xl p-4 leading-relaxed">
         <p><strong>寄送：</strong>順豐快遞（香港 → 台灣宅配）</p>
         <p><strong>預計寄出：</strong>2026 年 9 月中</p>
-        <p><strong>基本郵資：</strong>NT$300 / 每單（現場連商品一起付清）</p>
-        <p><strong>大型件：</strong>遊戲墊／掛軸合計 2 件（含）以上，加收 NT$100</p>
+        <p><strong>劃一郵資：</strong>NT$200，購物滿 NT$2000 的話免郵費</p>
         <p class="mt-2 text-gray-400">進口若需 EZ WAY 實名認證或關稅，由收件人配合／負擔。</p>
       </div>
     </div>
@@ -113,10 +112,10 @@
 
       <div class="bg-tech-gray rounded-xl p-4 text-sm space-y-1">
         <div class="flex justify-between"><span>商品小計</span><span id="sumGoods">NT$ 0</span></div>
-        <div class="flex justify-between"><span>順豐郵資（香港→台灣）</span><span id="sumPostage">NT$ 300</span></div>
-        <p id="bulkyNote" class="hidden text-xs text-amber-800">遊戲墊／掛軸合計 2 件以上，已加收大型件 NT$100。</p>
+        <div class="flex justify-between"><span>順豐郵資（香港→台灣）</span><span id="sumPostage">NT$ 200</span></div>
+        <p id="freeShipNote" class="hidden text-xs text-emerald-700">購物滿 NT$2000，本次免郵費。</p>
         <div class="flex justify-between font-bold text-base pt-2 border-t border-gray-200 mt-2">
-          <span>應付（現場已付）</span><span id="sumTotal">NT$ 300</span>
+          <span>應付（現場已付）</span><span id="sumTotal">NT$ 200</span>
         </div>
       </div>
 
@@ -214,8 +213,8 @@
     // ── Paste your Google Apps Script Web App URL here after deploy ──
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqUNlWTjXB3CO4M6GpiAHg4SOPKeuZYFJmxsDz27M_OlFxgeJgyuTAC5Rh7gvxsuPu/exec';
     const DISCORD_INVITE_URL = 'https://discord.gg/staryume';
-    const POSTAGE_BASE = 300;
-    const POSTAGE_BULKY_EXTRA = 100;
+    const POSTAGE_BASE = 200;
+    const FREE_SHIP_MIN = 2000;
     const PRODUCTS = [
       { id: 'sleeve-dmg', title: '新作卡套 黑魔導女孩 (ver. 2026)', price: 300, bulky: false },
       { id: 'sleeve-gogo', title: '新作卡套 我我我女孩', price: 300, bulky: false },
@@ -250,17 +249,14 @@
         qty: qty[p.id],
         unit: p.price,
         lineTotal: qty[p.id] * p.price,
-        bulky: p.bulky,
       }));
     }
 
     function totals() {
       const items = selectedItems();
       const goods = items.reduce((s, it) => s + it.lineTotal, 0);
-      const bulkyQty = items.reduce((s, it) => s + (it.bulky ? it.qty : 0), 0);
-      const extra = bulkyQty >= 2 ? POSTAGE_BULKY_EXTRA : 0;
-      const postage = POSTAGE_BASE + extra;
-      return { items, goods, postage, extra, bulkyQty, total: goods + postage };
+      const postage = goods >= FREE_SHIP_MIN ? 0 : POSTAGE_BASE;
+      return { items, goods, postage, freeShip: postage === 0 && goods >= FREE_SHIP_MIN, total: goods + postage };
     }
 
     function renderProducts() {
@@ -269,7 +265,7 @@
         <div class="flex items-center gap-3 p-3 border border-gray-200 rounded-xl">
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium leading-snug">${p.title}</p>
-            <p class="text-xs text-gray-400 mt-0.5">${ntd(p.price)}${p.bulky ? ' · 大型件' : ''}</p>
+            <p class="text-xs text-gray-400 mt-0.5">${ntd(p.price)}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <button type="button" data-id="${p.id}" data-d="-1" class="qty-btn w-8 h-8 rounded-lg border border-gray-200 text-lg leading-none hover:bg-gray-50">−</button>
@@ -293,9 +289,9 @@
     function updateSums() {
       const t = totals();
       document.getElementById('sumGoods').textContent = ntd(t.goods);
-      document.getElementById('sumPostage').textContent = ntd(t.postage);
+      document.getElementById('sumPostage').textContent = t.freeShip ? '免郵費' : ntd(t.postage);
       document.getElementById('sumTotal').textContent = ntd(t.total);
-      document.getElementById('bulkyNote').classList.toggle('hidden', t.extra === 0);
+      document.getElementById('freeShipNote').classList.toggle('hidden', !t.freeShip);
     }
 
     function showError(id, show) {

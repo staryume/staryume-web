@@ -6,8 +6,8 @@ var DISCORD_INVITE_URL = 'https://discord.gg/staryume';
 var SELLER_NOTIFY_EMAIL = 'staryume@gmail.com';
 var STORE_NAME = 'staryume';
 var SERIAL_COL = 2;
-var POSTAGE_BASE = 300;
-var POSTAGE_BULKY_EXTRA = 100;
+var POSTAGE_BASE = 200;
+var FREE_SHIP_MIN = 2000;
 var MAX_QTY_EACH = 9;
 
 var PRODUCT_CATALOG = {
@@ -124,7 +124,6 @@ function priceItems_(rawItems) {
   if (!rawItems || !rawItems.length) return { ok: false, error: 'missing_items' };
   var lines = [];
   var goods = 0;
-  var bulkyQty = 0;
   var seen = {};
   for (var i = 0; i < rawItems.length; i++) {
     var it = rawItems[i] || {};
@@ -139,10 +138,9 @@ function priceItems_(rawItems) {
     }
     var line = catalog.price * qty;
     goods += line;
-    if (catalog.bulky) bulkyQty += qty;
     lines.push(catalog.title + ' ×' + qty + ' @ NT$' + catalog.price + ' = NT$' + line);
   }
-  var postage = POSTAGE_BASE + (bulkyQty >= 2 ? POSTAGE_BULKY_EXTRA : 0);
+  var postage = goods >= FREE_SHIP_MIN ? 0 : POSTAGE_BASE;
   return {
     ok: true,
     goods: goods,
@@ -193,7 +191,7 @@ function sendConfirmationEmail_(info) {
   lines.push('【商品】');
   lines.push(info.itemsText || '(無)');
   lines.push('【商品小計】 NT$' + info.goods);
-  lines.push('【郵資】 NT$' + info.postage);
+  lines.push('【郵資】 ' + (info.postage ? ('NT$' + info.postage) : '免郵費（滿 NT$' + FREE_SHIP_MIN + '）'));
   lines.push('【合計（現場已付）】 NT$' + info.total);
   lines.push('');
   lines.push('【收件人】 ' + info.name);

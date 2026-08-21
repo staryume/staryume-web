@@ -10,8 +10,8 @@ Booth flow: cash at stall (goods + postage) → write serial on paper → custom
 
 ## Postage (also shown on the form)
 
-- Base **NT$300** per order (SF Express Hong Kong → Taiwan home delivery, ship mid-September 2026)
-- Extra **NT$100** if playmats + hanging scrolls **qty ≥ 2**
+- Flat **NT$200** per order (SF Express Hong Kong → Taiwan home delivery, ship mid-September 2026)
+- **Free postage** if goods subtotal **≥ NT$2000**
 - Server **recomputes** totals from a fixed catalog (do not trust client money fields)
 
 ---
@@ -90,7 +90,7 @@ Use `FF47-001`, `FF47-002`, … on paper with:
 
 - items × qty
 - goods subtotal
-- postage NT$300 (or NT$400 if 2+ bulky)
+- postage NT$200 (or 0 if goods ≥ NT$2000)
 - cash collected
 
 Customer types the same serial into the form.
