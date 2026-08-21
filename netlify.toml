@@ -32,3 +32,8 @@
 [[edge_functions]]
   function = "pos"
   path = "/api/pos"
+
+# FF47 booth backorder (returns auto serial to the form)
+[[edge_functions]]
+  function = "ff47-event-preorder"
+  path = "/api/ff47-event-preorder"

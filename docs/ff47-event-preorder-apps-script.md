@@ -70,7 +70,7 @@ Redeploy / push the site. Until this is set, the form shows the amber “尚未�
 4. Confirmation email to the customer (includes serial)
 5. Notify email to `staryume@gmail.com`
 
-The public form uses `no-cors` fetch (same as `hk-form.html`), so the **browser always shows success**. The **Sheet is the source of truth**.
+Production posts to **`/api/ff47-event-preorder`** (Netlify edge → Apps Script) so the success page can show the auto serial. The Sheet remains the source of truth.
 
 ---
 

@@ -71,9 +71,14 @@
     <div id="successCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
       <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-tech-purple/40 flex items-center justify-center text-2xl">✓</div>
       <h2 class="text-xl font-bold mb-2">提交成功！</h2>
+      <div id="successSerialBox" class="my-5 py-4 px-3 bg-tech-gray rounded-xl">
+        <p class="text-xs text-gray-400 tracking-wider">訂單編號 / 流水號</p>
+        <p id="successSerial" class="mt-1 text-3xl font-mono font-bold tracking-widest">—</p>
+        <p class="text-xs text-gray-400 mt-2">請截圖保存，出貨核對用</p>
+      </div>
       <p class="text-sm text-gray-600 leading-relaxed">
         已收到你的會場預購資料。<br>
-        流水號已依序自動產生，請查看確認電郵（請檢查垃圾郵件匣）。<br>
+        同一組編號也會寄到你的電郵（請檢查垃圾郵件匣）。<br>
         商品預計 <strong>9 月中</strong>以順豐宅配寄出。
       </p>
       <div class="mt-6 p-4 bg-tech-gray rounded-xl text-left text-sm">
@@ -217,7 +222,8 @@
 
   <script>
     // ── Paste your Google Apps Script Web App URL here after deploy ──
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqUNlWTjXB3CO4M6GpiAHg4SOPKeuZYFJmxsDz27M_OlFxgeJgyuTAC5Rh7gvxsuPu/exec';
+    const SCRIPT_URL = '/api/ff47-event-preorder';
+    const SCRIPT_URL_DIRECT = 'https://script.google.com/macros/s/AKfycbxqUNlWTjXB3CO4M6GpiAHg4SOPKeuZYFJmxsDz27M_OlFxgeJgyuTAC5Rh7gvxsuPu/exec';
     const DISCORD_INVITE_URL = 'https://discord.gg/staryume';
     const POSTAGE_BASE = 200;
     const FREE_SHIP_MIN = 2000;
@@ -238,7 +244,15 @@
     PRODUCTS.forEach((p) => { qty[p.id] = 0; });
 
     if (DISCORD_INVITE_URL) discordLink.href = DISCORD_INVITE_URL;
-    if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
+
+    function isLocalHost() {
+      const h = location.hostname;
+      return h === 'localhost' || h === '127.0.0.1';
+    }
+    function resolveEndpoint() {
+      return isLocalHost() ? SCRIPT_URL_DIRECT : SCRIPT_URL;
+    }
+    if (!resolveEndpoint()) {
       configHint.classList.remove('hidden');
     }
 
@@ -373,7 +387,8 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       if (!validate()) return;
-      if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
+      const endpoint = resolveEndpoint();
+      if (!endpoint) {
         configHint.classList.remove('hidden');
         formError.textContent = '尚未設定表單後端，暫時無法提交。';
         formError.classList.remove('hidden');
@@ -398,12 +413,27 @@
       submitBtn.textContent = '提交中…';
       formError.classList.add('hidden');
       try {
-        await fetch(SCRIPT_URL, {
+        const useProxy = endpoint.startsWith('/');
+        const res = await fetch(endpoint, {
           method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          mode: useProxy ? 'cors' : 'no-cors',
+          headers: { 'Content-Type': useProxy ? 'application/json' : 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload),
         });
+        let serial = '';
+        if (useProxy) {
+          const body = await res.json().catch(() => null);
+          if (!res.ok || !body || body.ok === false) {
+            const msg = (body && body.message) || '提交失敗，請稍後再試，或向攤位工作人員確認。';
+            formError.textContent = msg;
+            formError.classList.remove('hidden');
+            submitBtn.disabled = false;
+            submitBtn.textContent = '提交預購資料';
+            return;
+          }
+          serial = String(body.serial || '').trim();
+        }
+        document.getElementById('successSerial').textContent = serial || '請見確認電郵';
         form.classList.add('hidden');
         successCard.classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
