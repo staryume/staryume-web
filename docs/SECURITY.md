@@ -13,6 +13,7 @@
 | Payment proofs | Apps Script does **not** set “anyone with link” |
 | HTTP headers | CSP (+ base-uri, object-src, form-action, upgrade-insecure-requests), XFO, nosniff, HSTS (Netlify) |
 | Checkout indexing | `noindex` + robots Disallow |
+| FF47 booth backorder | `ff47-event-preorder.html`: serial unique, server-side prices, `noindex` + robots Disallow |
 
 ## Operator checklist
 

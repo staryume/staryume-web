@@ -28,7 +28,7 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 ```text
 /
 ├── index.html, blog.html, post.html, gallery.html
-├── store.html, checkout.html, preorder.html, hk-form.html
+├── store.html, checkout.html, preorder.html, hk-form.html, ff47-event-preorder.html
 ├── data.js                 # site posts / translations / global site data
 ├── store.js                # storeConfig, storeProducts, cart/checkout helpers
 ├── events.js               # event definitions
@@ -45,6 +45,8 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 │   ├── SECURITY.md
 │   ├── hk-store-checkout-apps-script.md
 │   ├── hk-store-checkout-Code.gs
+│   ├── ff47-event-preorder-apps-script.md
+│   ├── ff47-event-preorder-Code.gs
 │   └── ...
 └── INSTRUCTIONS.md         # this file
 ```
@@ -78,9 +80,10 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 2. **Store catalog** — `storeProducts` + categories; sold-out flags; external links (BOOTH etc.) vs in-site cart.
 3. **HK checkout** — bag → `checkout.html` → payment (FPS/PayMe) + proof upload → `/api/hk-order` (prod) or Apps Script direct (localhost).
 4. **TW pre-order** — region `TW`, `twCheckout`, cart key separate from HK; manage via `preorder.html`.
-5. **裏 (ura) store** — passcode gate in client `store.js`; **fan obscurity only** (see security).
-6. **Events & blog** — posts in `data.js`, event linkage, OG images for social crawlers.
-7. **Admin CMS** — local tooling to edit data; never exposed publicly.
+5. **FF47 booth backorder** — `ff47-event-preorder.html` (cash at stall + serial, SF home delivery mid-Sep). Setup: `docs/ff47-event-preorder-apps-script.md`.
+6. **裏 (ura) store** — passcode gate in client `store.js`; **fan obscurity only** (see security).
+7. **Events & blog** — posts in `data.js`, event linkage, OG images for social crawlers.
+8. **Admin CMS** — local tooling to edit data; never exposed publicly.
 
 When requesting work, name the **domain** so the agent loads the right files and risk rules.
 
