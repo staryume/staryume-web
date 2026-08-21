@@ -12,7 +12,7 @@ Booth flow: cash at stall (goods + postage) → write serial on paper → custom
 
 - Flat **NT$200** per order (SF Express Hong Kong → Taiwan home delivery, ship mid-September 2026)
 - **Free postage** if goods subtotal **≥ NT$2000**
-- Server **recomputes** totals from a fixed catalog (do not trust client money fields)
+- Catalog prices are recomputed server-side. Optional **其他品項** uses the name + NT$ amount typed on the form (what was already collected at the stall).
 
 ---
 

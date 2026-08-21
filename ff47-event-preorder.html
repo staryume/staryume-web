@@ -107,7 +107,24 @@
         </legend>
         <p class="text-xs text-gray-400 mb-3">只填你已經在攤位付過款的商品與數量。</p>
         <div id="productList" class="space-y-2"></div>
-        <p id="err-items" class="hidden text-xs text-red-500 mt-2">請至少選擇 1 件商品</p>
+        <div class="mt-3 p-4 border border-dashed border-gray-300 rounded-xl space-y-3">
+          <p class="text-sm font-bold">其他品項 <span class="text-gray-400 font-normal">(選填)</span></p>
+          <p class="text-xs text-gray-400">不在上列的商品可寫在這裡，金額由攤位自行填入。</p>
+          <div>
+            <label for="extraTitle" class="block text-xs font-bold mb-1.5">商品名稱</label>
+            <input id="extraTitle" name="extraTitle" type="text" maxlength="120" autocomplete="off"
+              placeholder="例如：舊作卡套、色紙…"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+          </div>
+          <div>
+            <label for="extraPrice" class="block text-xs font-bold mb-1.5">金額 NT$</label>
+            <input id="extraPrice" name="extraPrice" type="number" inputmode="numeric" min="1" max="99999" step="1"
+              placeholder="例如：400"
+              class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition font-mono">
+          </div>
+          <p id="err-extra" class="hidden text-xs text-red-500">請同時填寫其他品項的名稱與金額</p>
+        </div>
+        <p id="err-items" class="hidden text-xs text-red-500 mt-2">請至少選擇 1 件商品，或填寫其他品項</p>
       </fieldset>
 
       <div class="bg-tech-gray rounded-xl p-4 text-sm space-y-1">
@@ -188,7 +205,7 @@
         <label for="notes" class="block text-sm font-bold mb-2">
           8. 其他備註 <span class="text-gray-400 font-normal">(選填)</span>
         </label>
-        <textarea id="notes" name="notes" rows="3" placeholder="例如：白天不在、放管理室、大型件已加收…"
+        <textarea id="notes" name="notes" rows="3" placeholder="例如：白天不在、放管理室…"
           class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
       </div>
 
@@ -216,12 +233,10 @@
     const POSTAGE_BASE = 200;
     const FREE_SHIP_MIN = 2000;
     const PRODUCTS = [
-      { id: 'sleeve-dmg', title: '新作卡套 黑魔導女孩 (ver. 2026)', price: 300, bulky: false },
-      { id: 'sleeve-gogo', title: '新作卡套 我我我女孩', price: 300, bulky: false },
-      { id: 'leather-box', title: '皮質卡片收納盒', price: 800, bulky: false },
-      { id: 'mat-dmg', title: '新作遊戲墊 黑魔導女孩 (ver. 2026)', price: 600, bulky: true },
-      { id: 'scroll-dmg', title: '新作掛軸 黑魔導女孩 (ver. 2026)', price: 600, bulky: true },
-      { id: 'scroll-gogo', title: '新作掛軸 我我我女孩', price: 600, bulky: true },
+      { id: 'sleeve-dmg', title: '新作卡套 黑魔導女孩 (ver. 2026)', price: 300 },
+      { id: 'sleeve-gogo', title: '新作卡套 我我我女孩', price: 300 },
+      { id: 'leather-box', title: '皮質卡片收納盒', price: 800 },
+      { id: 'mat-dmg', title: '新作遊戲墊 黑魔導女孩 (ver. 2026)', price: 600 },
     ];
 
     const form = document.getElementById('eventForm');
@@ -242,14 +257,32 @@
       return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW');
     }
 
+    function extraItem() {
+      const title = (document.getElementById('extraTitle').value || '').trim();
+      const raw = String(document.getElementById('extraPrice').value || '').trim();
+      const unit = raw === '' ? 0 : Math.round(Number(raw));
+      return { title, unit, used: !!(title || raw) };
+    }
+
     function selectedItems() {
-      return PRODUCTS.filter((p) => qty[p.id] > 0).map((p) => ({
+      const items = PRODUCTS.filter((p) => qty[p.id] > 0).map((p) => ({
         id: p.id,
         title: p.title,
         qty: qty[p.id],
         unit: p.price,
         lineTotal: qty[p.id] * p.price,
       }));
+      const extra = extraItem();
+      if (extra.title && extra.unit > 0) {
+        items.push({
+          id: 'extra',
+          title: extra.title,
+          qty: 1,
+          unit: extra.unit,
+          lineTotal: extra.unit,
+        });
+      }
+      return items;
     }
 
     function totals() {
@@ -304,6 +337,16 @@
       }
     }
 
+    ['extraTitle', 'extraPrice'].forEach((id) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('input', () => {
+        showError('extra', false);
+        showError('items', false);
+        updateSums();
+      });
+    });
+
     ['serial', 'name', 'email', 'phone', 'snsType', 'snsContact', 'address'].forEach((id) => {
       const el = document.getElementById(id);
       if (!el) return;
@@ -323,6 +366,10 @@
       formError.classList.add('hidden');
       const serial = normalizeSerial(document.getElementById('serial').value);
       if (!serial) { showError('serial', true); ok = false; } else showError('serial', false);
+      const extra = extraItem();
+      if (extra.used && !(extra.title && extra.unit > 0 && extra.unit <= 99999)) {
+        showError('extra', true); ok = false;
+      } else showError('extra', false);
       const t = totals();
       if (!t.items.length) { showError('items', true); ok = false; } else showError('items', false);
       const name = document.getElementById('name').value.trim();

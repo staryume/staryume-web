@@ -10,13 +10,12 @@ var POSTAGE_BASE = 200;
 var FREE_SHIP_MIN = 2000;
 var MAX_QTY_EACH = 9;
 
+var MAX_EXTRA_PRICE = 99999;
 var PRODUCT_CATALOG = {
-  'sleeve-dmg': { title: '新作卡套 黑魔導女孩 (ver. 2026)', price: 300, bulky: false },
-  'sleeve-gogo': { title: '新作卡套 我我我女孩', price: 300, bulky: false },
-  'leather-box': { title: '皮質卡片收納盒', price: 800, bulky: false },
-  'mat-dmg': { title: '新作遊戲墊 黑魔導女孩 (ver. 2026)', price: 600, bulky: true },
-  'scroll-dmg': { title: '新作掛軸 黑魔導女孩 (ver. 2026)', price: 600, bulky: true },
-  'scroll-gogo': { title: '新作掛軸 我我我女孩', price: 600, bulky: true }
+  'sleeve-dmg': { title: '新作卡套 黑魔導女孩 (ver. 2026)', price: 300 },
+  'sleeve-gogo': { title: '新作卡套 我我我女孩', price: 300 },
+  'leather-box': { title: '皮質卡片收納盒', price: 800 },
+  'mat-dmg': { title: '新作遊戲墊 黑魔導女孩 (ver. 2026)', price: 600 }
 };
 
 var SNS_LABELS = {
@@ -128,17 +127,30 @@ function priceItems_(rawItems) {
   for (var i = 0; i < rawItems.length; i++) {
     var it = rawItems[i] || {};
     var id = String(it.id || '').trim();
-    var catalog = PRODUCT_CATALOG[id];
-    if (!catalog) return { ok: false, error: 'unknown_item' };
     if (seen[id]) return { ok: false, error: 'duplicate_item' };
     seen[id] = true;
     var qty = parseInt(it.qty, 10);
     if (!isFinite(qty) || qty < 1 || qty > MAX_QTY_EACH) {
       return { ok: false, error: 'invalid_qty' };
     }
-    var line = catalog.price * qty;
+    var title;
+    var unit;
+    if (id === 'extra') {
+      title = String(it.title || '').trim().replace(/\s+/g, ' ');
+      if (title.length > 120) title = title.substring(0, 120);
+      unit = Math.round(Number(it.unit));
+      if (!title || !isFinite(unit) || unit < 1 || unit > MAX_EXTRA_PRICE) {
+        return { ok: false, error: 'invalid_extra' };
+      }
+    } else {
+      var catalog = PRODUCT_CATALOG[id];
+      if (!catalog) return { ok: false, error: 'unknown_item' };
+      title = catalog.title;
+      unit = catalog.price;
+    }
+    var line = unit * qty;
     goods += line;
-    lines.push(catalog.title + ' ×' + qty + ' @ NT$' + catalog.price + ' = NT$' + line);
+    lines.push(title + ' ×' + qty + ' @ NT$' + unit + ' = NT$' + line);
   }
   var postage = goods >= FREE_SHIP_MIN ? 0 : POSTAGE_BASE;
   return {
