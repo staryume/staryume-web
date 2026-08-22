@@ -55,7 +55,11 @@ Apps Script → Triggers → `autoCloseTick_` → Time-driven → **every 5 minu
 - copies the full list to **Snapshots** + **SnapshotBids**
   - **hourly** until 14:00
   - **every minute** in the final hour (14:00–15:00, plus a short window after close)
-- emails you the list on each hourly snapshot, on close, and in the last hour **only when the high bid changes** (so you are not mailed 60 times)
+- emails **staryume@gmail.com** a full bid-list copy:
+  - **every hour** (inbox backup, even if nobody new bid)
+  - in the last hour: still one mail per hour, plus extra mail if the high bid changes
+  - one mail when you first run `installBackupTriggers` / `snapshotNow`
+  - subject looks like `【色紙競標備份】3筆 · 最高 NT$1200 …`
 
 If the live **Bids** tab is wiped or corrupted, recover from **BidsLog** (every accepted bid) or the latest **Snapshots** row.
 
@@ -73,4 +77,5 @@ You can also run `snapshotNow` in the editor for an immediate copy.
 |-------|-----------|
 | Bid accepted | Bidder |
 | Outbid | Previous leader |
+| Hourly snapshot backup | you (`staryume@gmail.com`) — full list |
 | Close | Winner + you (full table) |

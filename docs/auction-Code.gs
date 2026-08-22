@@ -691,38 +691,25 @@ function snapshotBids_(kind) {
     sb.getRange(sb.getLastRow() + 1, 1, rows.length, SNAPSHOT_BID_HEADERS.length).setValues(rows);
   }
 
-  var shouldMail = kind === 'hourly' || kind === 'manual';
+  var props = PropertiesService.getScriptProperties();
+  var fp = String(bids.length) + ':' + (high ? high.amount : 0) + ':' + (high ? high.bidId : '');
+  var lastMailMs = Number(props.getProperty('lastBackupMailMs') || 0);
+  var hourDue = !lastMailMs || (Date.now() - lastMailMs >= 50 * 60 * 1000);
+  var shouldMail = kind === 'hourly' || kind === 'manual' || kind === 'close';
   if (kind === 'minute') {
-    var props = PropertiesService.getScriptProperties();
     var prev = props.getProperty('lastMailedFingerprint') || '';
-    var fp = String(bids.length) + ':' + (high ? high.amount : 0) + ':' + (high ? high.bidId : '');
-    if (fp !== prev) {
-      shouldMail = true;
-      props.setProperty('lastMailedFingerprint', fp);
-    }
-  } else if (kind === 'hourly' || kind === 'close' || kind === 'manual') {
-    var highFp = String(bids.length) + ':' + (high ? high.amount : 0) + ':' + (high ? high.bidId : '');
-    PropertiesService.getScriptProperties().setProperty('lastMailedFingerprint', highFp);
+    // last hour: still send the hourly inbox copy, plus extra mail when the high changes
+    if (fp !== prev || hourDue) shouldMail = true;
   }
-
   if (kind === 'close') {
-    PropertiesService.getScriptProperties().setProperty('closedSnapshotDone', '1');
+    props.setProperty('closedSnapshotDone', '1');
   }
 
   if (shouldMail && STAFF_NOTIFY_EMAIL) {
     try {
-      MailApp.sendEmail({
-        to: STAFF_NOTIFY_EMAIL,
-        subject: '[色紙競標備份] ' + (kind || '') + ' · ' + bids.length + ' 筆' +
-          (high ? (' · NT$' + high.amount + ' ' + high.name) : ' · 無出價'),
-        body:
-          '時間：' + stamp + '（台北）\n' +
-          '種類：' + (kind || '') + '\n' +
-          '截標：' + (cfg.endAt || '') + '\n' +
-          'closed：' + cfg.closed + '\n\n' +
-          listText + '\n\n' +
-          '完整列在試算表分頁 Snapshots / SnapshotBids / BidsLog。'
-      });
+      sendBackupEmail_(kind, stamp, cfg, bids, high, listText);
+      props.setProperty('lastMailedFingerprint', fp);
+      props.setProperty('lastBackupMailMs', String(Date.now()));
     } catch (mailErr) { /* sheet snapshot still saved */ }
   }
 
@@ -732,6 +719,34 @@ function snapshotBids_(kind) {
     bidCount: bids.length,
     high: high ? high.amount : 0
   };
+}
+
+function sendBackupEmail_(kind, stamp, cfg, bids, high, listText) {
+  var reason =
+    kind === 'hourly' ? '每小時自動備份（不是新出價通知）' :
+    kind === 'minute' ? '截標前一小時備份（最高價有變，或已滿一小時）' :
+    kind === 'close' ? '截標備份' :
+    kind === 'manual' ? '手動備份（installBackupTriggers / snapshotNow）' :
+    ('備份 · ' + (kind || ''));
+  MailApp.sendEmail({
+    to: STAFF_NOTIFY_EMAIL,
+    subject:
+      '【色紙競標備份】' + bids.length + '筆 · ' +
+      (high ? ('最高 NT$' + high.amount + ' ' + high.name) : '無出價') +
+      ' · ' + stamp,
+    body:
+      reason + '\n\n' +
+      '時間：' + stamp + '（台北）\n' +
+      '截標：' + (cfg.endAt || '') + '\n' +
+      '目前最高：' + (high ? ('NT$' + high.amount + '  ' + high.name + '  <' + high.email + '>') : '尚無出價') + '\n' +
+      '筆數：' + bids.length + '\n' +
+      'closed：' + cfg.closed + '\n\n' +
+      '完整列表（高→低）：\n' +
+      '金額\t姓名\t電郵\tDiscord\t電話\t時間\t來源\n' +
+      listText + '\n\n' +
+      '試算表分頁：Snapshots / SnapshotBids / BidsLog\n' +
+      '競標頁：' + PUBLIC_SITE_ORIGIN + PAGE_PATH + '\n'
+  });
 }
 
 function snapshotNow() {
