@@ -2453,11 +2453,11 @@ const eventCatalog = {
                 {
                     "id": "shikishi-ezspace",
                     "title": "特別活動2 - 色紙競標｜第三日 S27 / S28",
-                    "body": "歡迎參加色紙競標！<br><br><strong>日時：</strong>第三日（日）8/23<br><strong>場所：</strong>花博爭豔館 S-27 / S-28 ありぃずこーひー<br><strong>競標開始價格:</strong> NT2000 ， 往後每一口價以 NT100 為單位<br><strong>色紙領取時間:</strong> 8/23（日）15:00<br><br>若得標者無法進入 FF 會場，可安排於花博入口交接色紙。<br><br>（今天稍後將會設立一個競標專用網站頁面，頁面連結稍候公開）<br><br>色紙將於特設的競標頁面決定最高競標金額得主 / 色紙圖片將會於 8/22 早上公開!",
+                    "body": "歡迎參加色紙競標！<br><br><strong>日時：</strong>第三日（日）8/23<br><strong>場所：</strong>花博爭豔館 S-27 / S-28 ありぃずこーひー<br><strong>競標開始價格:</strong> NT2000 ， 往後每一口價以 NT100 為單位<br><strong>色紙領取時間:</strong> 8/23（日）15:00<br><br>若得標者無法進入 FF 會場，可安排於花博入口交接色紙。<br><br>（今天稍後將會設立一個競標專用網站頁面，頁面連結稍候公開）<br><br>色紙將於特設的競標頁面決定最高競標金額得主。",
                     "images": [
                         {
-                            "src": "./blog/20260818/shikishi-now-printing.jpg",
-                            "alt": "FF47 色紙競標（NOW PRINTING）",
+                            "src": "./blog/20260818/shikishi-ff47.jpg?v=20260822",
+                            "alt": "FF47 色紙競標（ブラマジガール）",
                             "caption": "",
                             "wide": true
                         }
@@ -2494,11 +2494,11 @@ const eventCatalog = {
                 {
                     "id": "shikishi-ezspace",
                     "title": "Special event 2 — shikishi auction | Day 3 S27 / S28",
-                    "body": "Join the shikishi (signed art board) auction.<br><br><strong>When:</strong> Day 3 (Sun) 8/23<br><strong>Where:</strong> Expo Hall S-27 / S-28 ありぃずこーひー<br><strong>Starting bid:</strong> NT2000, each raise NT100<br><strong>Shikishi pickup:</strong> Sun 8/23 15:00<br><br>If the winner cannot enter the FF venue, handover can be arranged at the Huabo (Expo) entrance.<br><br>(An auction page will be set up later today; the link will be posted here.)<br><br>The winner is the highest bidder on the dedicated auction page / the shikishi image will be revealed on the morning of 8/22!",
+                    "body": "Join the shikishi (signed art board) auction.<br><br><strong>When:</strong> Day 3 (Sun) 8/23<br><strong>Where:</strong> Expo Hall S-27 / S-28 ありぃずこーひー<br><strong>Starting bid:</strong> NT2000, each raise NT100<br><strong>Shikishi pickup:</strong> Sun 8/23 15:00<br><br>If the winner cannot enter the FF venue, handover can be arranged at the Huabo (Expo) entrance.<br><br>(An auction page will be set up later today; the link will be posted here.)<br><br>The winner is the highest bidder on the dedicated auction page.",
                     "images": [
                         {
-                            "src": "./blog/20260818/shikishi-now-printing.jpg",
-                            "alt": "FF47 shikishi auction (NOW PRINTING)",
+                            "src": "./blog/20260818/shikishi-ff47.jpg?v=20260822",
+                            "alt": "FF47 shikishi auction (Dark Magician Girl)",
                             "caption": "",
                             "wide": true
                         }
