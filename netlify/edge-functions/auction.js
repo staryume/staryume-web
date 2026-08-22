@@ -5,7 +5,9 @@
  * After deploying docs/auction-Code.gs, paste the /exec URL here
  * (or set Netlify env AUCTION_APPS_SCRIPT_URL).
  */
-const APPS_SCRIPT_URL = Deno.env.get("AUCTION_APPS_SCRIPT_URL") || "";
+const APPS_SCRIPT_URL =
+  Deno.env.get("AUCTION_APPS_SCRIPT_URL") ||
+  "https://script.google.com/macros/s/AKfycbxfD2ufRNgLyEieH4htuZK63acboxz4SSBgu0p_rCZRAj2YzZO9QJMQwFJTlmvjq_RtLg/exec";
 
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 8;
