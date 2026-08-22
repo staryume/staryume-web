@@ -183,10 +183,13 @@
     }
 
     const LS_KEY = 'staryume-auction-state-v1';
+    const FALLBACK_END_MS = Date.parse('2026-08-23T15:00:00+08:00');
     let state = null;
     let timer = null;
     let pollTimer = null;
     let refreshInFlight = false;
+    let refreshStartedAt = 0;
+    let lastSuccessAt = 0;
 
     function ntd(n) {
       return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW');
@@ -199,14 +202,21 @@
 
     async function api(payload) {
       const url = endpointPost();
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(payload),
-      });
-      const t = await res.text();
-      if (t && t.trim().startsWith('{')) return JSON.parse(t);
-      throw new Error('bad_response');
+      const ac = new AbortController();
+      const to = setTimeout(function () { ac.abort(); }, 15000);
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+          signal: ac.signal,
+        });
+        const t = await res.text();
+        if (t && t.trim().startsWith('{')) return JSON.parse(t);
+        throw new Error('bad_response');
+      } finally {
+        clearTimeout(to);
+      }
     }
 
     function nowMs() {
@@ -215,27 +225,34 @@
       }
       return Date.now();
     }
+    function endMs() {
+      return (state && state.endAtMs) || FALLBACK_END_MS;
+    }
+    function msLeft() {
+      return endMs() - nowMs();
+    }
     function tick() {
-      if (!state || !state.endAtMs) return;
-      const left = Math.max(0, state.endAtMs - nowMs());
+      const left = Math.max(0, msLeft());
       const s = Math.floor(left / 1000);
       document.getElementById('cdH').textContent = String(Math.floor(s / 3600)).padStart(2, '0');
       document.getElementById('cdM').textContent = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
       document.getElementById('cdS').textContent = String(s % 60).padStart(2, '0');
+      if (lastSuccessAt && msLeft() <= 15 * 60 * 1000 && Date.now() - lastSuccessAt > 20000) {
+        setSyncLabel('連線不穩，倒數仍繼續 · 列表可能延遲');
+      }
     }
     function pollMs() {
-      if (!state || !state.endAtMs) return 15000;
-      const left = state.endAtMs - nowMs();
-      if (left <= 10 * 60 * 1000) return 5000;
-      if (left <= 60 * 60 * 1000) return 8000;
-      return 15000;
+      const left = msLeft();
+      if (left <= 5 * 60 * 1000) return 2000;
+      if (left <= 15 * 60 * 1000) return 2500;
+      if (left <= 60 * 60 * 1000) return 6000;
+      return 12000;
     }
-    function schedulePoll() {
-      if (pollTimer) clearTimeout(pollTimer);
-      pollTimer = setTimeout(async () => {
-        await refresh();
-        schedulePoll();
-      }, pollMs());
+    function startPollLoop() {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(function () {
+        refresh();
+      }, 1000);
     }
     function setSyncLabel(text) {
       const el = document.getElementById('syncLabel');
@@ -294,15 +311,22 @@
       tick();
     }
 
-    async function refresh() {
-      if (refreshInFlight) return;
+    async function refresh(force) {
+      if (refreshInFlight && Date.now() - refreshStartedAt < 8000) return;
+      if (!force && refreshStartedAt && Date.now() - refreshStartedAt < pollMs()) return;
       refreshInFlight = true;
+      refreshStartedAt = Date.now();
+      const ac = new AbortController();
+      const timeoutMs = msLeft() <= 15 * 60 * 1000 ? 4000 : 8000;
+      const to = setTimeout(function () { ac.abort(); }, timeoutMs);
       try {
-        const res = await fetch(endpointGet(), { method: 'GET', cache: 'no-store' });
+        const url = endpointGet() + (endpointGet().indexOf('?') >= 0 ? '&' : '?') + 't=' + Date.now();
+        const res = await fetch(url, { method: 'GET', cache: 'no-store', signal: ac.signal });
         const t = await res.text();
         const s = t && t.trim().startsWith('{') ? JSON.parse(t) : null;
         if (s && s.ok) {
           applyState(s);
+          lastSuccessAt = Date.now();
           try { localStorage.setItem(LS_KEY, JSON.stringify({ t: Date.now(), s })); } catch (e) { /* ignore */ }
           document.getElementById('configHint').classList.add('hidden');
           return;
@@ -315,11 +339,11 @@
           setSyncLabel('更新稍繁忙，稍後再試');
           return;
         }
-        if (!state) setSyncLabel('暫時無法更新，倒數仍會繼續');
+        setSyncLabel(state ? '暫時無法更新，倒數仍會繼續' : '正在取得最新出價…');
       } catch (e) {
-        if (!state) document.getElementById('configHint').classList.remove('hidden');
-        else setSyncLabel('暫時無法更新，倒數仍會繼續');
+        setSyncLabel(state ? '暫時無法更新，倒數仍會繼續' : '正在取得最新出價…');
       } finally {
+        clearTimeout(to);
         refreshInFlight = false;
       }
     }
@@ -391,7 +415,7 @@
         document.getElementById('successCard').classList.remove('hidden');
         document.getElementById('successBidId').textContent = res.bidId || '';
         document.getElementById('successAmt').textContent = String(res.amount || amount);
-        await refresh();
+        await refresh(true);
       } catch (e) {
         err.textContent = '無法送出，請稍後再試。';
         err.classList.remove('hidden');
@@ -401,8 +425,16 @@
       }
     });
 
-    refresh().then(schedulePoll);
-    timer = setInterval(tick, 1000);
+    tick();
+    refresh(true);
+    startPollLoop();
+    timer = setInterval(tick, 250);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') refresh(true);
+    });
+    window.addEventListener('focus', function () { refresh(true); });
+    window.addEventListener('online', function () { refresh(true); });
+    window.addEventListener('pageshow', function () { refresh(true); });
   </script>
 </body>
 </html>

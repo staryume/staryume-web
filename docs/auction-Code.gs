@@ -261,8 +261,15 @@ function publicList_(bids) {
 
 function publicState_() {
   var state = computePublicState_();
+  var ttl = PUBLIC_CACHE_SEC;
+  if (state.endAtMs) {
+    var left = state.endAtMs - Date.now();
+    if (left <= 2 * 60 * 1000) ttl = 1;
+    else if (left <= 15 * 60 * 1000) ttl = 2;
+    else if (left <= 60 * 60 * 1000) ttl = 4;
+  }
   try {
-    CacheService.getScriptCache().put(PUBLIC_CACHE_KEY, JSON.stringify(state), PUBLIC_CACHE_SEC);
+    CacheService.getScriptCache().put(PUBLIC_CACHE_KEY, JSON.stringify(state), ttl);
   } catch (e) { /* ignore */ }
   return state;
 }
@@ -301,7 +308,12 @@ function computePublicState_() {
 function cachedOrFreshPublicState_() {
   try {
     var hit = CacheService.getScriptCache().get(PUBLIC_CACHE_KEY);
-    if (hit) return JSON.parse(hit);
+    if (hit) {
+      var cached = JSON.parse(hit);
+      var left = (cached.endAtMs || 0) - Date.now();
+      // Last 2 minutes: always re-read so close lands on time.
+      if (left > 2 * 60 * 1000) return cached;
+    }
   } catch (e) { /* ignore */ }
   maybeCloseIfDue_();
   return publicState_();
@@ -671,7 +683,8 @@ function snapshotBids_(kind) {
   ]);
 
   var sb = ss.getSheetByName(SNAPSHOT_BIDS_SHEET);
-  if (bids.length) {
+  // Minute ticks in the last hour only write the summary row; BidsLog already has every bid.
+  if (bids.length && kind !== 'minute') {
     var rows = [];
     for (var j = 0; j < bids.length; j++) {
       var x = bids[j];

@@ -14,14 +14,15 @@ const APPS_SCRIPT_URL =
 
 const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 20;
-const CONFIG_CACHE_MS = 5000;
 const STALE_CACHE_MS = 120 * 1000;
+const FALLBACK_END_MS = Date.parse("2026-08-23T15:00:00+08:00");
 
 /** @type {Map<string, number[]>} */
 const hitsByIp = new Map();
 
 /** Isolate-local cache so many open tabs share one Apps Script round-trip. */
 let configCache = { body: "", expires: 0, stored: 0 };
+let lastEndAtMs = FALLBACK_END_MS;
 
 export default async (request) => {
   if (request.method === "OPTIONS") {
@@ -137,10 +138,34 @@ function looksOk(text) {
   }
 }
 
+function msLeft() {
+  return lastEndAtMs - Date.now();
+}
+
+/** Collapse duplicate polls, but stay tight in the final minutes. Never CDN-cache. */
+function configCacheMs() {
+  const left = msLeft();
+  if (left <= 2 * 60 * 1000) return 0;
+  if (left <= 15 * 60 * 1000) return 1000;
+  if (left <= 60 * 60 * 1000) return 2500;
+  return 5000;
+}
+
 function rememberConfig(text) {
   if (!looksOk(text)) return;
+  try {
+    const obj = JSON.parse(text);
+    if (obj && obj.endAtMs) lastEndAtMs = obj.endAtMs;
+  } catch {
+    /* keep lastEndAtMs */
+  }
   const now = Date.now();
-  configCache = { body: text, expires: now + CONFIG_CACHE_MS, stored: now };
+  const ttl = configCacheMs();
+  configCache = {
+    body: text,
+    expires: ttl > 0 ? now + ttl : 0,
+    stored: now,
+  };
 }
 
 function invalidateConfigCache() {
@@ -148,7 +173,7 @@ function invalidateConfigCache() {
 }
 
 function serveFreshCache() {
-  if (configCache.body && Date.now() < configCache.expires) {
+  if (configCache.body && configCache.expires && Date.now() < configCache.expires) {
     return jsonText(configCache.body, 200, cacheHeaders());
   }
   return null;
@@ -163,8 +188,8 @@ function serveStaleCache() {
 
 function cacheHeaders() {
   return {
-    "Cache-Control": "public, max-age=0, s-maxage=5, stale-while-revalidate=30",
-    "Netlify-CDN-Cache-Control": "public, s-maxage=5, stale-while-revalidate=30",
+    "Cache-Control": "no-store",
+    "Netlify-CDN-Cache-Control": "no-store",
   };
 }
 
