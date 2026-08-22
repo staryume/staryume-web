@@ -45,9 +45,21 @@ Optional localhost: in `auction.html` set `SCRIPT_DIRECT` to the same URL.
 | `accessKey` | leave empty for public blog link; or a Discord-only key |
 | `staffKey` | random secret for booth bids (`auction.html?staff=KEY`) |
 
-## 4. Trigger (winner email)
+## 4. Trigger (winner email + bid backups)
 
 Apps Script → Triggers → `autoCloseTick_` → Time-driven → **every 5 minutes**.
+
+**Bid backups (do this once, today):** in the Apps Script editor, select `installBackupTriggers` → Run (authorize if asked). That creates a 1-minute trigger which:
+
+- writes an append-only copy of every new bid to **BidsLog** (also happens on each bid)
+- copies the full list to **Snapshots** + **SnapshotBids**
+  - **hourly** until 14:00
+  - **every minute** in the final hour (14:00–15:00, plus a short window after close)
+- emails you the list on each hourly snapshot, on close, and in the last hour **only when the high bid changes** (so you are not mailed 60 times)
+
+If the live **Bids** tab is wiped or corrupted, recover from **BidsLog** (every accepted bid) or the latest **Snapshots** row.
+
+You can also run `snapshotNow` in the editor for an immediate copy.
 
 ## 5. Share
 

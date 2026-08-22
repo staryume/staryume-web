@@ -134,10 +134,10 @@
       <div class="pt-2 space-y-3">
         <p class="text-sm text-gray-700 leading-relaxed">順便宣傳一下 “ありぃずこーひー" 的社團販售物情報 ：</p>
         <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-          <img src="./blog/20260818/allie-cos-dmg.png?v=20260823" alt="ありぃずこーひー 天音ありい" class="w-full h-auto object-contain">
+          <img src="./blog/20260818/allie-cos-dmg.png?v=20260823" alt="ありぃずこーひー 天音ありい" class="w-full h-auto object-contain" loading="lazy" decoding="async">
         </div>
         <div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
-          <img src="./blog/20260818/allie-ff47-goods.png?v=20260823" alt="ありぃずこーひー FF47 販售物情報" class="w-full h-auto object-contain">
+          <img src="./blog/20260818/allie-ff47-goods.png?v=20260823" alt="ありぃずこーひー FF47 販售物情報" class="w-full h-auto object-contain" loading="lazy" decoding="async">
         </div>
       </div>
       <p id="formError" class="hidden text-sm text-red-600"></p>
@@ -150,10 +150,11 @@
     <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
       <div class="flex justify-between items-baseline mb-3">
         <h2 class="font-bold">出價列表</h2>
-        <span id="bidCount" class="text-xs text-gray-400">0 筆</span>
+        <span id="bidCount" class="text-xs text-gray-400">載入中…</span>
       </div>
+      <p id="syncLabel" class="text-[11px] text-gray-400 -mt-2 mb-2">正在取得最新出價…</p>
       <div id="bidList" class="divide-y divide-gray-100 text-sm">
-        <p class="text-gray-400 py-4 text-center">尚無出價</p>
+        <p class="text-gray-400 py-4 text-center">載入中…</p>
       </div>
     </section>
 
@@ -168,15 +169,24 @@
     const accessKey = params.get('k') || params.get('key') || '';
     const staffKey = params.get('staff') || '';
 
-    function endpointPost() {
+    function isLocalHost() {
       const host = location.hostname;
-      const local = host === 'localhost' || host === '127.0.0.1';
-      if (local && SCRIPT_DIRECT) return SCRIPT_DIRECT;
+      return host === 'localhost' || host === '127.0.0.1';
+    }
+    function endpointPost() {
+      if (isLocalHost() && SCRIPT_DIRECT) return SCRIPT_DIRECT;
       return '/api/auction';
     }
+    function endpointGet() {
+      if (isLocalHost() && SCRIPT_DIRECT) return SCRIPT_DIRECT + '?action=config';
+      return '/api/auction?action=config';
+    }
 
+    const LS_KEY = 'staryume-auction-state-v1';
     let state = null;
     let timer = null;
+    let pollTimer = null;
+    let refreshInFlight = false;
 
     function ntd(n) {
       return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW');
@@ -199,17 +209,42 @@
       throw new Error('bad_response');
     }
 
+    function nowMs() {
+      if (state && state.serverNowMs && state.fetchedAt) {
+        return state.serverNowMs + (Date.now() - state.fetchedAt);
+      }
+      return Date.now();
+    }
     function tick() {
       if (!state || !state.endAtMs) return;
-      const left = Math.max(0, state.endAtMs - Date.now());
+      const left = Math.max(0, state.endAtMs - nowMs());
       const s = Math.floor(left / 1000);
       document.getElementById('cdH').textContent = String(Math.floor(s / 3600)).padStart(2, '0');
       document.getElementById('cdM').textContent = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
       document.getElementById('cdS').textContent = String(s % 60).padStart(2, '0');
     }
+    function pollMs() {
+      if (!state || !state.endAtMs) return 15000;
+      const left = state.endAtMs - nowMs();
+      if (left <= 10 * 60 * 1000) return 5000;
+      if (left <= 60 * 60 * 1000) return 8000;
+      return 15000;
+    }
+    function schedulePoll() {
+      if (pollTimer) clearTimeout(pollTimer);
+      pollTimer = setTimeout(async () => {
+        await refresh();
+        schedulePoll();
+      }, pollMs());
+    }
+    function setSyncLabel(text) {
+      const el = document.getElementById('syncLabel');
+      if (el) el.textContent = text;
+    }
 
-    function applyState(s) {
+    function applyState(s, fetchedAt) {
       state = s;
+      state.fetchedAt = fetchedAt || Date.now();
       const high = s.high || 0;
       document.getElementById('highAmount').textContent = high ? ntd(high) : '尚無出價';
       document.getElementById('highName').textContent = high
@@ -225,6 +260,12 @@
       }
       const list = s.bids || [];
       document.getElementById('bidCount').textContent = list.length + ' 筆';
+      try {
+        const stamp = new Date().toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setSyncLabel('已更新 ' + stamp);
+      } catch (e) {
+        setSyncLabel('已更新');
+      }
       const box = document.getElementById('bidList');
       if (!list.length) {
         box.innerHTML = '<p class="text-gray-400 py-4 text-center">尚無出價</p>';
@@ -254,16 +295,42 @@
     }
 
     async function refresh() {
+      if (refreshInFlight) return;
+      refreshInFlight = true;
       try {
-        const s = await api({ action: 'config' });
-        if (s && s.ok) applyState(s);
-        else if (s && s.error === 'not_configured') {
-          document.getElementById('configHint').classList.remove('hidden');
+        const res = await fetch(endpointGet(), { method: 'GET', cache: 'no-store' });
+        const t = await res.text();
+        const s = t && t.trim().startsWith('{') ? JSON.parse(t) : null;
+        if (s && s.ok) {
+          applyState(s);
+          try { localStorage.setItem(LS_KEY, JSON.stringify({ t: Date.now(), s })); } catch (e) { /* ignore */ }
+          document.getElementById('configHint').classList.add('hidden');
+          return;
         }
+        if (s && s.error === 'not_configured') {
+          document.getElementById('configHint').classList.remove('hidden');
+          return;
+        }
+        if (s && s.error === 'rate_limited') {
+          setSyncLabel('更新稍繁忙，稍後再試');
+          return;
+        }
+        if (!state) setSyncLabel('暫時無法更新，倒數仍會繼續');
       } catch (e) {
-        document.getElementById('configHint').classList.remove('hidden');
+        if (!state) document.getElementById('configHint').classList.remove('hidden');
+        else setSyncLabel('暫時無法更新，倒數仍會繼續');
+      } finally {
+        refreshInFlight = false;
       }
     }
+
+    try {
+      const cached = JSON.parse(localStorage.getItem(LS_KEY) || '');
+      if (cached && cached.s && cached.s.ok) {
+        applyState(cached.s, cached.t);
+        setSyncLabel('顯示上次紀錄，正在同步…');
+      }
+    } catch (e) { /* ignore */ }
 
     if (staffKey) {
       document.getElementById('staffNote').classList.remove('hidden');
@@ -334,8 +401,7 @@
       }
     });
 
-    refresh();
-    setInterval(refresh, 15000);
+    refresh().then(schedulePoll);
     timer = setInterval(tick, 1000);
   </script>
 </body>

@@ -3,6 +3,7 @@
 //   Execute as: Me · Who has access: Anyone
 // After edit: Manage deployments → Edit → New version → Deploy
 // Trigger: Triggers → Add trigger → autoCloseTick_ → Time-driven → Every 5 minutes
+// Backup: run installBackupTriggers() once (hourly snapshots; every minute in last hour)
 // Setup: docs/auction-apps-script.md
 
 var PUBLIC_SITE_ORIGIN = 'https://staryu.me';
@@ -12,6 +13,11 @@ var STAFF_NOTIFY_EMAIL = 'staryume@gmail.com';
 var CONFIG_SHEET = 'Config';
 var BIDS_SHEET = 'Bids';
 var RESULT_SHEET = 'Result';
+var BIDS_LOG_SHEET = 'BidsLog';
+var SNAPSHOT_SHEET = 'Snapshots';
+var SNAPSHOT_BIDS_SHEET = 'SnapshotBids';
+var PUBLIC_CACHE_KEY = 'publicStateV1';
+var PUBLIC_CACHE_SEC = 8;
 
 var BID_HEADERS = [
   'Timestamp', 'BidId', 'Email', 'Name', 'Discord', 'Phone',
@@ -21,6 +27,14 @@ var RESULT_HEADERS = [
   'ClosedAt', 'WinnerBidId', 'WinnerName', 'WinnerEmail', 'WinnerAmount',
   'BidCount', 'Note'
 ];
+var SNAPSHOT_HEADERS = [
+  'TakenAt', 'Kind', 'BidCount', 'HighAmount', 'HighName', 'HighEmail',
+  'HighBidId', 'EndAt', 'Closed', 'ListText'
+];
+var SNAPSHOT_BID_HEADERS = [
+  'SnapshotAt', 'Kind', 'Timestamp', 'BidId', 'Email', 'Name', 'Discord',
+  'Phone', 'Amount', 'Source'
+];
 
 function doGet(e) {
   try {
@@ -29,8 +43,7 @@ function doGet(e) {
     var action = String(p.action || 'config').toLowerCase();
     ensureSheets_();
     if (action === 'config' || action === 'status') {
-      maybeCloseIfDue_();
-      return jsonOut_(publicState_());
+      return jsonOut_(cachedOrFreshPublicState_());
     }
     return jsonOut_({ ok: true, service: 'staryume-auction' });
   } catch (err) {
@@ -47,11 +60,17 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var action = String(data.action || 'bid').toLowerCase();
     if (action === 'config' || action === 'status') {
-      maybeCloseIfDue_();
-      return jsonOut_(publicState_());
+      return jsonOut_(cachedOrFreshPublicState_());
     }
     if (action === 'bid') return handleBid_(data, 'web');
     if (action === 'staff_bid') return handleStaffBid_(data);
+    if (action === 'snapshot') {
+      var cfgSnap = readConfig_();
+      if (!data.staffKey || !cfgSnap.staffKey || data.staffKey !== cfgSnap.staffKey) {
+        return jsonOut_({ ok: false, error: 'forbidden' });
+      }
+      return jsonOut_(snapshotBids_('manual'));
+    }
     if (action === 'close') {
       var cfg = readConfig_();
       if (!data.staffKey || !cfg.staffKey || data.staffKey !== cfg.staffKey) {
@@ -103,6 +122,30 @@ function ensureSheets_() {
     var r = ss.insertSheet(RESULT_SHEET);
     r.getRange(1, 1, 1, RESULT_HEADERS.length).setValues([RESULT_HEADERS]);
   }
+  if (!ss.getSheetByName(BIDS_LOG_SHEET)) {
+    var log = ss.insertSheet(BIDS_LOG_SHEET);
+    log.getRange(1, 1, 1, BID_HEADERS.length).setValues([BID_HEADERS]);
+  }
+  if (!ss.getSheetByName(SNAPSHOT_SHEET)) {
+    var snap = ss.insertSheet(SNAPSHOT_SHEET);
+    snap.getRange(1, 1, 1, SNAPSHOT_HEADERS.length).setValues([SNAPSHOT_HEADERS]);
+  }
+  if (!ss.getSheetByName(SNAPSHOT_BIDS_SHEET)) {
+    var sb = ss.insertSheet(SNAPSHOT_BIDS_SHEET);
+    sb.getRange(1, 1, 1, SNAPSHOT_BID_HEADERS.length).setValues([SNAPSHOT_BID_HEADERS]);
+  }
+}
+
+function backfillBidsLogIfEmpty_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var log = ss.getSheetByName(BIDS_LOG_SHEET);
+  var bidsSh = ss.getSheetByName(BIDS_SHEET);
+  if (!log || !bidsSh) return;
+  if (log.getLastRow() > 1) return;
+  if (bidsSh.getLastRow() < 2) return;
+  var width = BID_HEADERS.length;
+  var values = bidsSh.getRange(2, 1, bidsSh.getLastRow() - 1, width).getValues();
+  log.getRange(2, 1, values.length, width).setValues(values);
 }
 
 function readConfig_() {
@@ -217,6 +260,14 @@ function publicList_(bids) {
 }
 
 function publicState_() {
+  var state = computePublicState_();
+  try {
+    CacheService.getScriptCache().put(PUBLIC_CACHE_KEY, JSON.stringify(state), PUBLIC_CACHE_SEC);
+  } catch (e) { /* ignore */ }
+  return state;
+}
+
+function computePublicState_() {
   var cfg = readConfig_();
   var bids = allBids_();
   var high = highBid_(bids);
@@ -245,6 +296,19 @@ function publicState_() {
     closed: cfg.closed || pastEnd,
     accessKeyRequired: !!cfg.accessKey
   };
+}
+
+function cachedOrFreshPublicState_() {
+  try {
+    var hit = CacheService.getScriptCache().get(PUBLIC_CACHE_KEY);
+    if (hit) return JSON.parse(hit);
+  } catch (e) { /* ignore */ }
+  maybeCloseIfDue_();
+  return publicState_();
+}
+
+function invalidatePublicCache_() {
+  try { CacheService.getScriptCache().remove(PUBLIC_CACHE_KEY); } catch (e) {}
 }
 
 function handleStaffBid_(data) {
@@ -354,6 +418,23 @@ function handleBid_(data, source) {
       source || 'web',
       ''
     ]);
+    try {
+      var log = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BIDS_LOG_SHEET);
+      if (log) {
+        log.appendRow([
+          ts,
+          bidId,
+          email,
+          name,
+          discord,
+          phone,
+          amount,
+          source || 'web',
+          ''
+        ]);
+      }
+    } catch (logErr) { /* bid still recorded */ }
+    invalidatePublicCache_();
 
     var pageUrl = PUBLIC_SITE_ORIGIN + PAGE_PATH;
     try {
@@ -413,6 +494,8 @@ function runClose_(note) {
   var high = highBid_(bids);
   setConfig_('closed', 'TRUE');
   setConfig_('enrollOpen', 'FALSE');
+  invalidatePublicCache_();
+  try { snapshotBids_('close'); } catch (snapErr) { /* still close */ }
   var closedAt = new Date();
   var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(RESULT_SHEET);
   sh.appendRow([
@@ -501,4 +584,182 @@ function sendWinnerEmail_(high, cfg) {
 function testPublicConfig() {
   ensureSheets_();
   Logger.log(JSON.stringify(publicState_()));
+}
+
+/**
+ * Run once in the Apps Script editor (authorize if asked).
+ * Creates a 1-minute trigger that writes:
+ *   - hourly snapshots until the last hour
+ *   - every-minute snapshots in the final 60 minutes
+ * Also takes one snapshot immediately.
+ */
+function installBackupTriggers() {
+  ensureSheets_();
+  backfillBidsLogIfEmpty_();
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    var fn = t.getHandlerFunction();
+    if (fn === 'backupTick_' || fn === 'hourlySnapshot_' || fn === 'minuteSnapshot_') {
+      ScriptApp.deleteTrigger(t);
+    }
+  });
+  ScriptApp.newTrigger('backupTick_').timeBased().everyMinutes(1).create();
+  var first = snapshotBids_('manual');
+  PropertiesService.getScriptProperties().setProperty('lastHourlySnapshotMs', String(Date.now()));
+  Logger.log('backupTick_ every 1 minute installed. first snapshot bidCount=' + (first && first.bidCount));
+}
+
+function backupTick_() {
+  ensureSheets_();
+  var cfg = readConfig_();
+  var now = Date.now();
+  var end = cfg.effectiveEndMs;
+  var props = PropertiesService.getScriptProperties();
+
+  if (end != null) {
+    var msLeft = end - now;
+    var inLastHour = msLeft <= 60 * 60 * 1000 && msLeft >= -10 * 60 * 1000;
+    if (inLastHour) {
+      snapshotBids_('minute');
+      return;
+    }
+  }
+
+  if (cfg.closed) {
+    if (props.getProperty('closedSnapshotDone') !== '1') {
+      snapshotBids_('close');
+      props.setProperty('closedSnapshotDone', '1');
+    }
+    return;
+  }
+
+  var lastHourly = Number(props.getProperty('lastHourlySnapshotMs') || 0);
+  if (!lastHourly || now - lastHourly >= 50 * 60 * 1000) {
+    snapshotBids_('hourly');
+    props.setProperty('lastHourlySnapshotMs', String(now));
+  }
+}
+
+function snapshotBids_(kind) {
+  ensureSheets_();
+  var cfg = readConfig_();
+  var bids = allBids_();
+  var high = highBid_(bids);
+  var takenAt = new Date();
+  var stamp = Utilities.formatDate(takenAt, 'Asia/Taipei', 'yyyy/MM/dd HH:mm:ss');
+  var lines = [];
+  for (var i = 0; i < bids.length; i++) {
+    var b = bids[i];
+    lines.push(
+      'NT$' + b.amount + '\t' + b.name + '\t' + b.email + '\t' +
+      (b.discord || '') + '\t' + (b.phone || '') + '\t' + b.tsLabel + '\t' + (b.source || '')
+    );
+  }
+  var listText = lines.length ? lines.join('\n') : '(no bids)';
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var snap = ss.getSheetByName(SNAPSHOT_SHEET);
+  snap.appendRow([
+    takenAt,
+    kind || '',
+    bids.length,
+    high ? high.amount : 0,
+    high ? high.name : '',
+    high ? high.email : '',
+    high ? high.bidId : '',
+    cfg.endAt || '',
+    cfg.closed ? 'TRUE' : 'FALSE',
+    stamp + '\n' + listText
+  ]);
+
+  var sb = ss.getSheetByName(SNAPSHOT_BIDS_SHEET);
+  if (bids.length) {
+    var rows = [];
+    for (var j = 0; j < bids.length; j++) {
+      var x = bids[j];
+      rows.push([
+        takenAt,
+        kind || '',
+        x.ts || '',
+        x.bidId,
+        x.email,
+        x.name,
+        x.discord,
+        x.phone,
+        x.amount,
+        x.source || ''
+      ]);
+    }
+    sb.getRange(sb.getLastRow() + 1, 1, rows.length, SNAPSHOT_BID_HEADERS.length).setValues(rows);
+  }
+
+  var shouldMail = kind === 'hourly' || kind === 'manual';
+  if (kind === 'minute') {
+    var props = PropertiesService.getScriptProperties();
+    var prev = props.getProperty('lastMailedFingerprint') || '';
+    var fp = String(bids.length) + ':' + (high ? high.amount : 0) + ':' + (high ? high.bidId : '');
+    if (fp !== prev) {
+      shouldMail = true;
+      props.setProperty('lastMailedFingerprint', fp);
+    }
+  } else if (kind === 'hourly' || kind === 'close' || kind === 'manual') {
+    var highFp = String(bids.length) + ':' + (high ? high.amount : 0) + ':' + (high ? high.bidId : '');
+    PropertiesService.getScriptProperties().setProperty('lastMailedFingerprint', highFp);
+  }
+
+  if (kind === 'close') {
+    PropertiesService.getScriptProperties().setProperty('closedSnapshotDone', '1');
+  }
+
+  if (shouldMail && STAFF_NOTIFY_EMAIL) {
+    try {
+      MailApp.sendEmail({
+        to: STAFF_NOTIFY_EMAIL,
+        subject: '[色紙競標備份] ' + (kind || '') + ' · ' + bids.length + ' 筆' +
+          (high ? (' · NT$' + high.amount + ' ' + high.name) : ' · 無出價'),
+        body:
+          '時間：' + stamp + '（台北）\n' +
+          '種類：' + (kind || '') + '\n' +
+          '截標：' + (cfg.endAt || '') + '\n' +
+          'closed：' + cfg.closed + '\n\n' +
+          listText + '\n\n' +
+          '完整列在試算表分頁 Snapshots / SnapshotBids / BidsLog。'
+      });
+    } catch (mailErr) { /* sheet snapshot still saved */ }
+  }
+
+  return {
+    ok: true,
+    kind: kind || '',
+    bidCount: bids.length,
+    high: high ? high.amount : 0
+  };
+}
+
+function snapshotNow() {
+  ensureSheets_();
+  var r = snapshotBids_('manual');
+  Logger.log(JSON.stringify(r));
+  return r;
+}
+
+/**
+ * Run this in the Apps Script editor after a test bid to wipe bids and reopen.
+ * Does not send emails. Keeps Config rules (startBid / endAt).
+ */
+function resetAuctionForTest() {
+  ensureSheets_();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var bids = ss.getSheetByName(BIDS_SHEET);
+  if (bids.getLastRow() > 1) {
+    bids.deleteRows(2, bids.getLastRow() - 1);
+  }
+  var result = ss.getSheetByName(RESULT_SHEET);
+  if (result.getLastRow() > 1) {
+    result.deleteRows(2, result.getLastRow() - 1);
+  }
+  setConfig_('closed', 'FALSE');
+  setConfig_('enrollOpen', 'TRUE');
+  setConfig_('extendedEndAt', '');
+  invalidatePublicCache_();
+  PropertiesService.getScriptProperties().deleteProperty('closedSnapshotDone');
+  Logger.log('Auction reset: no bids, open. BidsLog / Snapshots kept.');
 }
