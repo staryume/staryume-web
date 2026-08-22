@@ -1,0 +1,64 @@
+# FF47 色紙競標 — Web form + Sheet + email
+
+Fans bid on the shikishi from the FF47 post. Highest bid at close wins; pay cash at pickup.
+
+| Page | URL |
+|------|-----|
+| Bid + public list | `https://staryu.me/auction.html` |
+| Backend | this doc + `docs/auction-Code.gs` |
+| Edge proxy | `/api/auction` |
+
+## Rules (already in Config defaults)
+
+- Start **NT$ 2000**, step **NT$ 100**
+- Close **2026-08-23 15:00 +08** (soft-close: last 5 min +3 min, cap +30 min)
+- Pickup: 花博 S-27 / S-28 ありぃずこーひー；無法進場可花博入口交接
+- One email = raise own bid (must beat current high)
+- Public list: name / Discord / amount / time — **no email**
+
+## 1. Google Sheet
+
+1. Drive → New spreadsheet: `STARYUME Auction · FF47 色紙`
+2. Extensions → Apps Script → paste **all of** `docs/auction-Code.gs`
+3. Set `STAFF_NOTIFY_EMAIL` if needed (default `staryume@gmail.com`)
+4. Save → run `testPublicConfig` once (authorize Sheets + Gmail)
+5. Confirm tabs **Config**, **Bids**, **Result**
+6. Deploy → New deployment → Web app  
+   - Execute as: **Me**  
+   - Who has access: **Anyone**
+7. Copy the `/exec` URL
+
+## 2. Wire Netlify
+
+In `netlify/edge-functions/auction.js`, set `APPS_SCRIPT_URL` to that `/exec` URL.  
+Redeploy the site.
+
+Optional localhost: in `auction.html` set `SCRIPT_DIRECT` to the same URL.
+
+## 3. Config sheet
+
+| key | value |
+|-----|--------|
+| `endAt` | `2026-08-23T15:00:00+08:00` |
+| `startBid` | `2000` |
+| `step` | `100` |
+| `accessKey` | leave empty for public blog link; or a Discord-only key |
+| `staffKey` | random secret for booth bids (`auction.html?staff=KEY`) |
+
+## 4. Trigger (winner email)
+
+Apps Script → Triggers → `autoCloseTick_` → Time-driven → **every 5 minutes**.
+
+## 5. Share
+
+- Fans: `https://staryu.me/auction.html`
+- FF47 post 色紙 block already links here after deploy
+- Booth bid: `https://staryu.me/auction.html?staff=YOUR_STAFF_KEY`
+
+## Emails
+
+| Event | Recipient |
+|-------|-----------|
+| Bid accepted | Bidder |
+| Outbid | Previous leader |
+| Close | Winner + you (full table) |

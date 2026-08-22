@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FF47 色紙競標 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="Fancy Frontier 47 手繪色紙競標。起標 NT$ 2000，每口 NT$ 100。">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    .hp-field { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-center sticky top-0 z-50">
+    <a href="./index.html" class="hover:opacity-80 transition-opacity">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+    </a>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
+    <div class="mb-6 text-center">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">FANCY FRONTIER 47</p>
+      <h1 class="text-2xl font-bold tracking-tight">色紙競標</h1>
+      <div class="mt-4 mb-3 mx-auto w-full max-w-[420px] rounded-xl overflow-hidden border border-gray-200 bg-gray-50">
+        <img src="./blog/20260818/shikishi-ff47.jpg?v=20260822" alt="FF47 色紙" class="w-full h-auto object-contain">
+      </div>
+      <p class="text-sm text-gray-500 mt-2 leading-relaxed">
+        最高出價者得標。截標後於第三日攤位以現金支付得標金額領取。
+      </p>
+    </div>
+
+    <div id="closedBanner" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900"></div>
+    <div id="configHint" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900">
+      後端尚未連接。請完成 Google Sheet 部署（docs/auction-apps-script.md）。
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4 text-center">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">CURRENT HIGH</p>
+      <p id="highAmount" class="text-4xl font-bold font-tech">NT$ —</p>
+      <p id="highName" class="text-sm text-gray-500 mt-1">尚無出價</p>
+      <p id="nextMin" class="text-xs text-gray-400 mt-2">下一手最低 NT$ 2000</p>
+      <div id="countdown" class="mt-4 grid grid-cols-3 gap-2 font-mono text-center">
+        <div class="bg-tech-gray rounded-xl py-2"><div id="cdH" class="text-xl font-bold">—</div><div class="text-[10px] text-gray-400">時</div></div>
+        <div class="bg-tech-gray rounded-xl py-2"><div id="cdM" class="text-xl font-bold">—</div><div class="text-[10px] text-gray-400">分</div></div>
+        <div class="bg-tech-gray rounded-xl py-2"><div id="cdS" class="text-xl font-bold">—</div><div class="text-[10px] text-gray-400">秒</div></div>
+      </div>
+      <p id="endLabel" class="text-xs text-gray-400 mt-3">截標：8/23（日）15:00</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 text-sm leading-relaxed space-y-1">
+      <p><span class="font-bold">起標</span> NT$ 2000　<span class="font-bold">每口</span> NT$ 100</p>
+      <p><span class="font-bold">截標</span> 2026/8/23（日）15:00（台北）</p>
+      <p><span class="font-bold">領取</span> 花博爭豔館 S-27 / S-28 ありぃずこーひー</p>
+      <p class="text-gray-500">若得標者無法進入 FF 會場，可安排於花博入口交接。</p>
+      <p class="text-gray-500">同一電郵可多次加價；必須高於目前最高價至少 100 元。</p>
+    </div>
+
+    <div id="successCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center mb-4">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-tech-purple/40 flex items-center justify-center text-2xl">✓</div>
+      <h2 class="text-xl font-bold mb-2">出價已送出</h2>
+      <p class="text-sm text-gray-600 leading-relaxed">確認電郵已發送。若被超標會再寄信。請同時檢查垃圾郵件匣。</p>
+      <p class="text-xs text-gray-400 mt-3">編號 <span id="successBidId" class="font-mono font-bold text-black"></span> · NT$ <span id="successAmt"></span></p>
+    </div>
+
+    <form id="bidForm" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-4 mb-6" novalidate>
+      <div id="staffNote" class="hidden text-xs font-bold text-purple-800 bg-purple-50 border border-purple-100 rounded-xl px-3 py-2">現場出價模式（staff）</div>
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="name">姓名 / Name <span class="text-red-500">*</span></label>
+        <input id="name" type="text" required maxlength="80" autocomplete="name"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple" placeholder="領取時核對">
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="email">電郵 / Email <span class="text-red-500">*</span></label>
+        <input id="email" type="email" required autocomplete="email"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple" placeholder="接收出價確認與超標通知">
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="discord">Discord 顯示名稱</label>
+        <input id="discord" type="text" maxlength="80"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple" placeholder="例如 staryume">
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="phone">電話（選填）</label>
+        <input id="phone" type="tel" maxlength="40" autocomplete="tel"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple">
+      </div>
+      <div>
+        <label class="block text-sm font-bold mb-1.5" for="amount">出價 NT$ <span class="text-red-500">*</span></label>
+        <input id="amount" type="number" required min="2000" step="100"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple font-mono" placeholder="2000">
+        <p class="text-xs text-gray-400 mt-1">必須為 100 的倍數，且 ≥ 目前最高 + 100</p>
+      </div>
+      <div class="hp-field" aria-hidden="true">
+        <label for="website">Website</label>
+        <input id="website" name="website" type="text" tabindex="-1" autocomplete="off">
+      </div>
+      <fieldset class="space-y-2">
+        <legend class="text-sm font-bold mb-1">承諾 <span class="text-red-500">*</span></legend>
+        <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple has-[:checked]:bg-tech-purple/10">
+          <input type="checkbox" id="pledgePay" class="mt-1 accent-black" required>
+          <span class="text-sm">得標後我會以<strong>得標金額現場現金</strong>付款。</span>
+        </label>
+        <label class="flex items-start gap-3 p-3 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple has-[:checked]:bg-tech-purple/10">
+          <input type="checkbox" id="pledgePickup" class="mt-1 accent-black" required>
+          <span class="text-sm">我能於 8/23 15:00 在 <strong>S-27 / S-28</strong> 領取，或無法進場時於<strong>花博入口</strong>交接。</span>
+        </label>
+      </fieldset>
+      <p id="formError" class="hidden text-sm text-red-600"></p>
+      <button type="submit" id="submitBtn"
+        class="w-full py-3.5 bg-tech-black text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50">
+        送出出價
+      </button>
+    </form>
+
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+      <div class="flex justify-between items-baseline mb-3">
+        <h2 class="font-bold">出價列表</h2>
+        <span id="bidCount" class="text-xs text-gray-400">0 筆</span>
+      </div>
+      <div id="bidList" class="divide-y divide-gray-100 text-sm">
+        <p class="text-gray-400 py-4 text-center">尚無出價</p>
+      </div>
+    </section>
+
+    <p class="text-center text-xs text-gray-400 mt-8">
+      <a href="./post.html?id=7&lang=zh" class="underline decoration-tech-purple underline-offset-2">返回 FF47 販售物情報</a>
+    </p>
+  </main>
+
+  <script>
+    const SCRIPT_DIRECT = ''; // localhost: paste Apps Script /exec URL
+    const params = new URLSearchParams(location.search);
+    const accessKey = params.get('k') || params.get('key') || '';
+    const staffKey = params.get('staff') || '';
+
+    function endpointPost() {
+      const host = location.hostname;
+      const local = host === 'localhost' || host === '127.0.0.1';
+      if (local && SCRIPT_DIRECT) return SCRIPT_DIRECT;
+      return '/api/auction';
+    }
+
+    let state = null;
+    let timer = null;
+
+    function ntd(n) {
+      return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW');
+    }
+    function esc(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    async function api(payload) {
+      const url = endpointPost();
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload),
+      });
+      const t = await res.text();
+      if (t && t.trim().startsWith('{')) return JSON.parse(t);
+      throw new Error('bad_response');
+    }
+
+    function tick() {
+      if (!state || !state.endAtMs) return;
+      const left = Math.max(0, state.endAtMs - Date.now());
+      const s = Math.floor(left / 1000);
+      document.getElementById('cdH').textContent = String(Math.floor(s / 3600)).padStart(2, '0');
+      document.getElementById('cdM').textContent = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      document.getElementById('cdS').textContent = String(s % 60).padStart(2, '0');
+    }
+
+    function applyState(s) {
+      state = s;
+      const high = s.high || 0;
+      document.getElementById('highAmount').textContent = high ? ntd(high) : '尚無出價';
+      document.getElementById('highName').textContent = high
+        ? ((s.highName || '匿名') + (s.highDiscord ? ' · ' + s.highDiscord : ''))
+        : '等待第一手';
+      document.getElementById('nextMin').textContent = '下一手最低 ' + ntd(s.nextMin || 2000);
+      document.getElementById('amount').min = String(s.nextMin || 2000);
+      document.getElementById('amount').placeholder = String(s.nextMin || 2000);
+      if (s.endAtMs) {
+        const d = new Date(s.endAtMs);
+        document.getElementById('endLabel').textContent =
+          '截標：' + d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' }) + '（台北）';
+      }
+      const list = s.bids || [];
+      document.getElementById('bidCount').textContent = list.length + ' 筆';
+      const box = document.getElementById('bidList');
+      if (!list.length) {
+        box.innerHTML = '<p class="text-gray-400 py-4 text-center">尚無出價</p>';
+      } else {
+        box.innerHTML = list.map((b, i) => `
+          <div class="flex justify-between gap-3 py-2.5 ${i === 0 ? 'bg-tech-purple/15 -mx-2 px-2 rounded-lg' : ''}">
+            <div>
+              <div class="font-bold">${esc(b.name || '匿名')}${b.discord ? ' <span class="font-normal text-gray-500">· ' + esc(b.discord) + '</span>' : ''}</div>
+              <div class="text-[11px] text-gray-400">${esc(b.tsLabel || '')}${b.source === 'booth' ? ' · 現場' : ''}</div>
+            </div>
+            <div class="font-mono font-bold whitespace-nowrap">${ntd(b.amount)}</div>
+          </div>`).join('');
+      }
+      const closed = !!s.closed || s.open === false;
+      const banner = document.getElementById('closedBanner');
+      const form = document.getElementById('bidForm');
+      const btn = document.getElementById('submitBtn');
+      if (closed) {
+        banner.classList.remove('hidden');
+        banner.textContent = high
+          ? ('競標已結束。目前最高 ' + ntd(high) + (s.highName ? '（' + s.highName + '）' : '') + '。')
+          : '競標已結束。';
+        btn.disabled = true;
+        form.querySelectorAll('input, button[type="submit"]').forEach((el) => { el.disabled = true; });
+      }
+      tick();
+    }
+
+    async function refresh() {
+      try {
+        const s = await api({ action: 'config' });
+        if (s && s.ok) applyState(s);
+        else if (s && s.error === 'not_configured') {
+          document.getElementById('configHint').classList.remove('hidden');
+        }
+      } catch (e) {
+        document.getElementById('configHint').classList.remove('hidden');
+      }
+    }
+
+    if (staffKey) {
+      document.getElementById('staffNote').classList.remove('hidden');
+    }
+
+    document.getElementById('bidForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const err = document.getElementById('formError');
+      err.classList.add('hidden');
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const amount = Number(document.getElementById('amount').value);
+      const pledgePay = document.getElementById('pledgePay').checked;
+      const pledgePickup = document.getElementById('pledgePickup').checked;
+      if (!name || !email || !amount || !pledgePay || !pledgePickup) {
+        err.textContent = '請填寫必填欄位並勾選承諾。';
+        err.classList.remove('hidden');
+        return;
+      }
+      const btn = document.getElementById('submitBtn');
+      btn.disabled = true;
+      btn.textContent = '送出中…';
+      try {
+        const payload = {
+          action: staffKey ? 'staff_bid' : 'bid',
+          staffKey: staffKey || undefined,
+          accessKey: accessKey,
+          k: accessKey,
+          name,
+          email,
+          discord: document.getElementById('discord').value.trim(),
+          phone: document.getElementById('phone').value.trim(),
+          amount,
+          pledgePay: true,
+          pledgePickup: true,
+          website: document.getElementById('website').value,
+        };
+        const res = await api(payload);
+        if (!res.ok) {
+          const map = {
+            too_low: '出價太低。下一手最低 NT$ ' + (res.nextMin || ''),
+            bad_amount: '金額須為 100 的倍數。',
+            bad_email: '請輸入有效電郵。',
+            bad_name: '請輸入姓名。',
+            pledges_required: '請勾選全部承諾。',
+            ended: '已截標。',
+            closed: '競標已關閉。',
+            not_higher_than_own: '必須高於你目前的出價。',
+            rate_limited: '太頻繁，請稍後再試。',
+            not_configured: '後端尚未連接。',
+            forbidden: '現場金鑰不正確。',
+          };
+          err.textContent = map[res.error] || ('失敗：' + (res.error || 'unknown'));
+          err.classList.remove('hidden');
+          return;
+        }
+        document.getElementById('bidForm').classList.add('hidden');
+        document.getElementById('successCard').classList.remove('hidden');
+        document.getElementById('successBidId').textContent = res.bidId || '';
+        document.getElementById('successAmt').textContent = String(res.amount || amount);
+        await refresh();
+      } catch (e) {
+        err.textContent = '無法送出，請稍後再試。';
+        err.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '送出出價';
+      }
+    });
+
+    refresh();
+    setInterval(refresh, 15000);
+    timer = setInterval(tick, 1000);
+  </script>
+</body>
+</html>
