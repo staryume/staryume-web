@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FF47 色紙競標 | STARYUME</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="Fancy Frontier 47 手繪色紙競標。起標 NT$ 2000，每口 NT$ 100。">
+  <meta name="description" content="Fancy Frontier 47 手繪色紙競標。起標 NT$ 1000，每口 NT$ 100。">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
@@ -62,7 +62,7 @@
       <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">CURRENT HIGH</p>
       <p id="highAmount" class="text-4xl font-bold font-tech">NT$ —</p>
       <p id="highName" class="text-sm text-gray-500 mt-1">尚無出價</p>
-      <p id="nextMin" class="text-xs text-gray-400 mt-2">下一手最低 NT$ 2000</p>
+      <p id="nextMin" class="text-xs text-gray-400 mt-2">下一手最低 NT$ 1000</p>
       <div id="countdown" class="mt-4 grid grid-cols-3 gap-2 font-mono text-center">
         <div class="bg-tech-gray rounded-xl py-2"><div id="cdH" class="text-xl font-bold">—</div><div class="text-[10px] text-gray-400">時</div></div>
         <div class="bg-tech-gray rounded-xl py-2"><div id="cdM" class="text-xl font-bold">—</div><div class="text-[10px] text-gray-400">分</div></div>
@@ -72,7 +72,7 @@
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 text-sm leading-relaxed space-y-1">
-      <p><span class="font-bold">起標</span> NT$ 2000　<span class="font-bold">每口</span> NT$ 100</p>
+      <p><span class="font-bold">起標</span> NT$ 1000　<span class="font-bold">每口</span> NT$ 100</p>
       <p><span class="font-bold">截標</span> 2026/8/23（日）15:00（台北）</p>
       <p><span class="font-bold">領取</span> 花博爭豔館 S-27 / S-28 ありぃずこーひー</p>
       <p class="text-gray-500">若得標者無法進入 FF 會場，可安排於花博入口交接。</p>
@@ -110,8 +110,8 @@
       </div>
       <div>
         <label class="block text-sm font-bold mb-1.5" for="amount">出價 NT$ <span class="text-red-500">*</span></label>
-        <input id="amount" type="number" required min="2000" step="100"
-          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple font-mono" placeholder="2000">
+        <input id="amount" type="number" required min="1000" step="100"
+          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:outline-none focus:border-tech-purple font-mono" placeholder="1000">
         <p class="text-xs text-gray-400 mt-1">必須為 100 的倍數，且 ≥ 目前最高 + 100</p>
       </div>
       <div class="hp-field" aria-hidden="true">
@@ -204,9 +204,9 @@
       document.getElementById('highName').textContent = high
         ? ((s.highName || '匿名') + (s.highDiscord ? ' · ' + s.highDiscord : ''))
         : '等待第一手';
-      document.getElementById('nextMin').textContent = '下一手最低 ' + ntd(s.nextMin || 2000);
-      document.getElementById('amount').min = String(s.nextMin || 2000);
-      document.getElementById('amount').placeholder = String(s.nextMin || 2000);
+      document.getElementById('nextMin').textContent = '下一手最低 ' + ntd(s.nextMin || 1000);
+      document.getElementById('amount').min = String(s.nextMin || 1000);
+      document.getElementById('amount').placeholder = String(s.nextMin || 1000);
       if (s.endAtMs) {
         const d = new Date(s.endAtMs);
         document.getElementById('endLabel').textContent =

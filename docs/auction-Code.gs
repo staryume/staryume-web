@@ -79,7 +79,7 @@ function ensureSheets_() {
     var defaults = [
       ['title', 'FF47 色紙競標'],
       ['eventName', 'Fancy Frontier 47'],
-      ['startBid', '2000'],
+      ['startBid', '1000'],
       ['step', '100'],
       ['endAt', '2026-08-23T15:00:00+08:00'],
       ['extendedEndAt', ''],
@@ -122,7 +122,7 @@ function readConfig_() {
   return {
     title: String(map.title || 'FF47 色紙競標'),
     eventName: String(map.eventName || 'Fancy Frontier 47'),
-    startBid: int_(map.startBid, 2000),
+    startBid: int_(map.startBid, 1000),
     step: int_(map.step, 100),
     endAt: endAtRaw,
     endAtMs: isNaN(endAtMs) ? null : endAtMs,

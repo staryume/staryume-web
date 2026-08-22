@@ -10,7 +10,7 @@ Fans bid on the shikishi from the FF47 post. Highest bid at close wins; pay cash
 
 ## Rules (already in Config defaults)
 
-- Start **NT$ 2000**, step **NT$ 100**
+- Start **NT$ 1000**, step **NT$ 100**
 - Close **2026-08-23 15:00 +08** (soft-close: last 5 min +3 min, cap +30 min)
 - Pickup: 花博 S-27 / S-28 ありぃずこーひー；無法進場可花博入口交接
 - One email = raise own bid (must beat current high)
@@ -40,7 +40,7 @@ Optional localhost: in `auction.html` set `SCRIPT_DIRECT` to the same URL.
 | key | value |
 |-----|--------|
 | `endAt` | `2026-08-23T15:00:00+08:00` |
-| `startBid` | `2000` |
+| `startBid` | `1000` |
 | `step` | `100` |
 | `accessKey` | leave empty for public blog link; or a Discord-only key |
 | `staffKey` | random secret for booth bids (`auction.html?staff=KEY`) |
