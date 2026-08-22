@@ -2440,7 +2440,7 @@ const eventCatalog = {
                 {
                     "id": "poster-ezspace",
                     "title": "特別活動1 - FF47宣傳大海報猜拳領取｜第二天 EZspace",
-                    "body": "歡迎到場外 EZspace圓山館 J區 星夢亭攤位進行猜拳活動，取得這次的活動海報!<br><br>日時：第二日（六）8/22<br>場所：EZspace圓山館 J區「星夢亭」攤位<br>猜拳開始時間: 17:40<br><br>假如有多於一人想要海報，將會於現場以猜拳的方式決定由勝者免費取得海報。",
+                    "body": "歡迎到場外 EZspace圓山館 J區 星夢亭攤位進行猜拳活動，取得這次的活動海報!<br><br>日時：第二日（六）8/22<br>場所：EZspace圓山館 J區「星夢亭」攤位<br>猜拳開始時間: 17:30<br><br>假如有多於一人想要海報，將會於現場以猜拳的方式決定由勝者免費取得海報。",
                     "images": [
                         {
                             "src": "./blog/20260818/event-poster-ezspace.jpg?v=20260821c",
@@ -2452,8 +2452,8 @@ const eventCatalog = {
                 },
                 {
                     "id": "shikishi-ezspace",
-                    "title": "特別活動2 - 色紙競標｜第二天 EZspace",
-                    "body": "歡迎到場外 EZspace圓山館 J區 星夢亭攤位參加色紙競標！<br><br><strong>日時：</strong>第二日（六）8/22<br><strong>場所：</strong>EZspace圓山館 J區「星夢亭」攤位<br><strong>競標開始價格:</strong> NT2000 ， 往後每一口價以 NT100 為單位<br><strong>猜拳結束 / 色紙領取時間:</strong> 17:30<br><br>（今天稍後將會設立一個競標專用網站頁面，頁面連結稍候公開）<br><br>色紙將於特設的競標頁面決定最高競標金額得主 / 色紙圖片將會於 8/22 早上公開!",
+                    "title": "特別活動2 - 色紙競標｜第三日 S27 / S28",
+                    "body": "歡迎參加色紙競標！<br><br><strong>日時：</strong>第三日（日）8/23<br><strong>場所：</strong>花博爭豔館 S-27 / S-28 ありぃずこーひー<br><strong>競標開始價格:</strong> NT2000 ， 往後每一口價以 NT100 為單位<br><strong>色紙領取時間:</strong> 8/23（日）15:00<br><br>若得標者無法進入 FF 會場，可安排於花博入口交接色紙。<br><br>（今天稍後將會設立一個競標專用網站頁面，頁面連結稍候公開）<br><br>色紙將於特設的競標頁面決定最高競標金額得主 / 色紙圖片將會於 8/22 早上公開!",
                     "images": [
                         {
                             "src": "./blog/20260818/shikishi-now-printing.jpg",
@@ -2481,7 +2481,7 @@ const eventCatalog = {
                 {
                     "id": "poster-ezspace",
                     "title": "Special event 1 — FF47 promo poster janken giveaway | Day 2 EZspace",
-                    "body": "Come to the STARYUME booth at EZspace Yuanshan Hall, Zone J for the janken event to get this event poster!<br><br>When: Day 2 (Sat) 8/22<br>Where: EZspace Yuanshan Hall Zone J · STARYUME booth<br>Janken start: 17:40<br><br>If more than one person wants the poster, we will decide on-site by janken (rock-paper-scissors); the winner gets it for free.",
+                    "body": "Come to the STARYUME booth at EZspace Yuanshan Hall, Zone J for the janken event to get this event poster!<br><br>When: Day 2 (Sat) 8/22<br>Where: EZspace Yuanshan Hall Zone J · STARYUME booth<br>Janken start: 17:30<br><br>If more than one person wants the poster, we will decide on-site by janken (rock-paper-scissors); the winner gets it for free.",
                     "images": [
                         {
                             "src": "./blog/20260818/event-poster-ezspace.jpg?v=20260821c",
@@ -2493,8 +2493,8 @@ const eventCatalog = {
                 },
                 {
                     "id": "shikishi-ezspace",
-                    "title": "Special event 2 — shikishi auction | Day 2 EZspace",
-                    "body": "Join the shikishi (signed art board) auction at the STARYUME booth in EZspace Yuanshan Hall, Zone J.<br><br><strong>When:</strong> Day 2 (Sat) 8/22<br><strong>Where:</strong> EZspace Yuanshan Hall Zone J · STARYUME booth<br><strong>Starting bid:</strong> NT2000, each raise NT100<br><strong>Janken ends / shikishi pickup:</strong> 17:30<br><br>(An auction page will be set up later today; the link will be posted here.)<br><br>The winner is the highest bidder on the dedicated auction page / the shikishi image will be revealed on the morning of 8/22!",
+                    "title": "Special event 2 — shikishi auction | Day 3 S27 / S28",
+                    "body": "Join the shikishi (signed art board) auction.<br><br><strong>When:</strong> Day 3 (Sun) 8/23<br><strong>Where:</strong> Expo Hall S-27 / S-28 ありぃずこーひー<br><strong>Starting bid:</strong> NT2000, each raise NT100<br><strong>Shikishi pickup:</strong> Sun 8/23 15:00<br><br>If the winner cannot enter the FF venue, handover can be arranged at the Huabo (Expo) entrance.<br><br>(An auction page will be set up later today; the link will be posted here.)<br><br>The winner is the highest bidder on the dedicated auction page / the shikishi image will be revealed on the morning of 8/22!",
                     "images": [
                         {
                             "src": "./blog/20260818/shikishi-now-printing.jpg",
