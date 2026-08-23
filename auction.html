@@ -199,6 +199,15 @@
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
       }[c]));
     }
+    function maskName(name) {
+      const raw = String(name || '').trim();
+      if (!raw || raw === '匿名') return '匿名';
+      const chars = Array.from(raw);
+      if (chars.length === 1) return chars[0] + '*';
+      if (chars[1] === '*') return raw;
+      chars[1] = '*';
+      return chars.join('');
+    }
 
     async function api(payload) {
       const url = endpointPost();
@@ -265,7 +274,7 @@
       const high = s.high || 0;
       document.getElementById('highAmount').textContent = high ? ntd(high) : '尚無出價';
       document.getElementById('highName').textContent = high
-        ? ((s.highName || '匿名') + (s.highDiscord ? ' · ' + s.highDiscord : ''))
+        ? (maskName(s.highName || '匿名') + (s.highDiscord ? ' · ' + s.highDiscord : ''))
         : '等待第一手';
       document.getElementById('nextMin').textContent = '下一手最低 ' + ntd(s.nextMin || 1000);
       document.getElementById('amount').min = String(s.nextMin || 1000);
@@ -290,7 +299,7 @@
         box.innerHTML = list.map((b, i) => `
           <div class="flex justify-between gap-3 py-2.5 ${i === 0 ? 'bg-tech-purple/15 -mx-2 px-2 rounded-lg' : ''}">
             <div>
-              <div class="font-bold">${esc(b.name || '匿名')}${b.discord ? ' <span class="font-normal text-gray-500">· ' + esc(b.discord) + '</span>' : ''}</div>
+              <div class="font-bold">${esc(maskName(b.name || '匿名'))}${b.discord ? ' <span class="font-normal text-gray-500">· ' + esc(b.discord) + '</span>' : ''}</div>
               <div class="text-[11px] text-gray-400">${esc(b.tsLabel || '')}${b.source === 'booth' ? ' · 現場' : ''}</div>
             </div>
             <div class="font-mono font-bold whitespace-nowrap">${ntd(b.amount)}</div>
@@ -303,7 +312,7 @@
       if (closed) {
         banner.classList.remove('hidden');
         banner.textContent = high
-          ? ('競標已結束。目前最高 ' + ntd(high) + (s.highName ? '（' + s.highName + '）' : '') + '。')
+          ? ('競標已結束。目前最高 ' + ntd(high) + (s.highName ? '（' + maskName(s.highName) + '）' : '') + '。')
           : '競標已結束。';
         btn.disabled = true;
         form.querySelectorAll('input, button[type="submit"]').forEach((el) => { el.disabled = true; });
