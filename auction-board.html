@@ -104,6 +104,14 @@
     function ntd(n) {
       return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW');
     }
+    function maskName(name) {
+      const raw = String(name || '').trim();
+      if (!raw || raw === '匿名') return '匿名';
+      const chars = Array.from(raw);
+      if (chars.length === 1) return chars[0] + '*';
+      chars[1] = '*';
+      return chars.join('');
+    }
     function nowMs() {
       if (state && state.serverNowMs && state.fetchedAt) {
         return state.serverNowMs + (Date.now() - state.fetchedAt);
@@ -135,7 +143,7 @@
       document.getElementById('highCaption').textContent = closed ? '得標' : '目前最高';
       document.getElementById('highAmount').textContent = high ? ntd(high) : (closed ? '無出價' : '尚無出價');
       document.getElementById('highName').textContent = high
-        ? ((s.highName || '匿名') + (s.highDiscord ? ' · ' + s.highDiscord : ''))
+        ? maskName(s.highName || '匿名')
         : (closed ? '競標已結束' : '等待第一手');
       if (s.endAtMs) {
         const d = new Date(s.endAtMs);
