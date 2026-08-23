@@ -102,8 +102,8 @@ function ensureSheets_() {
       ['step', '100'],
       ['endAt', '2026-08-23T15:00:00+08:00'],
       ['extendedEndAt', ''],
-      ['softCloseMinutes', '5'],
-      ['extendMinutes', '3'],
+      ['softCloseSeconds', '30'],
+      ['extendSeconds', '60'],
       ['extendCapMinutes', '30'],
       ['pickup', '8/23（日）15:00 花博爭豔館 S-27 / S-28 ありぃずこーひー'],
       ['pickupNote', '若得標者無法進入 FF 會場，可安排於花博入口交接。'],
@@ -114,6 +114,9 @@ function ensureSheets_() {
     ];
     c.getRange(2, 1, defaults.length, 2).setValues(defaults);
   }
+  ensureConfigDefault_('softCloseSeconds', '30');
+  ensureConfigDefault_('extendSeconds', '60');
+  ensureConfigDefault_('extendCapMinutes', '30');
   if (!ss.getSheetByName(BIDS_SHEET)) {
     var b = ss.insertSheet(BIDS_SHEET);
     b.getRange(1, 1, 1, BID_HEADERS.length).setValues([BID_HEADERS]);
@@ -171,8 +174,8 @@ function readConfig_() {
     endAtMs: isNaN(endAtMs) ? null : endAtMs,
     extendedEndAt: extRaw,
     effectiveEndMs: isNaN(effectiveMs) ? null : effectiveMs,
-    softCloseMinutes: int_(map.softCloseMinutes, 5),
-    extendMinutes: int_(map.extendMinutes, 3),
+    softCloseSeconds: int_(map.softCloseSeconds, 30),
+    extendSeconds: int_(map.extendSeconds, 60),
     extendCapMinutes: int_(map.extendCapMinutes, 30),
     pickup: String(map.pickup || ''),
     pickupNote: String(map.pickupNote || ''),
@@ -181,6 +184,16 @@ function readConfig_() {
     closed: String(map.closed || 'FALSE').toUpperCase() === 'TRUE',
     enrollOpen: String(map.enrollOpen || 'TRUE').toUpperCase() !== 'FALSE'
   };
+}
+
+function ensureConfigDefault_(key, value) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONFIG_SHEET);
+  if (!sheet) return;
+  var values = sheet.getDataRange().getValues();
+  for (var i = 1; i < values.length; i++) {
+    if (String(values[i][0] || '').trim() === key) return;
+  }
+  sheet.appendRow([key, value]);
 }
 
 function setConfig_(key, value) {
@@ -198,6 +211,14 @@ function setConfig_(key, value) {
 function int_(v, fallback) {
   var n = parseInt(v, 10);
   return isFinite(n) ? n : (fallback || 0);
+}
+
+function formatEndForMail_(cfg) {
+  var ms = (cfg && (cfg.effectiveEndMs || cfg.endAtMs)) || null;
+  if (ms) {
+    return Utilities.formatDate(new Date(ms), 'Asia/Taipei', 'yyyy/MM/dd HH:mm') + '（台北）';
+  }
+  return (cfg && cfg.endAt) || '';
 }
 
 function normalizeEmail_(e) {
@@ -296,6 +317,8 @@ function computePublicState_() {
     bids: publicList_(bids),
     endAt: cfg.endAt,
     endAtMs: cfg.effectiveEndMs,
+    originalEndAtMs: cfg.endAtMs,
+    extended: !!(cfg.effectiveEndMs && cfg.endAtMs && cfg.effectiveEndMs > cfg.endAtMs),
     serverNowMs: now,
     pickup: cfg.pickup,
     pickupNote: cfg.pickupNote,
@@ -401,18 +424,21 @@ function handleBid_(data, source) {
     }
 
     var prevLeader = high;
+    var extendedThisBid = false;
 
-    if (cfg.endAtMs != null && cfg.softCloseMinutes > 0) {
-      var capMs = cfg.endAtMs + cfg.extendCapMinutes * 60 * 1000;
-      var windowMs = cfg.softCloseMinutes * 60 * 1000;
-      var effective = cfg.effectiveEndMs || cfg.endAtMs;
-      if (now >= effective - windowMs && now < capMs) {
-        var extended = now + cfg.extendMinutes * 60 * 1000;
+    if (cfg.effectiveEndMs != null && cfg.softCloseSeconds > 0) {
+      var originalEnd = cfg.endAtMs != null ? cfg.endAtMs : cfg.effectiveEndMs;
+      var capMs = originalEnd + cfg.extendCapMinutes * 60 * 1000;
+      var windowMs = cfg.softCloseSeconds * 1000;
+      var effective = cfg.effectiveEndMs;
+      if (now >= effective - windowMs && now < effective) {
+        var extended = effective + cfg.extendSeconds * 1000;
         if (extended > capMs) extended = capMs;
         if (extended > effective) {
           var iso = Utilities.formatDate(new Date(extended), 'Asia/Taipei', "yyyy-MM-dd'T'HH:mm:ss'+08:00'");
           setConfig_('extendedEndAt', iso);
           cfg.effectiveEndMs = extended;
+          extendedThisBid = true;
         }
       }
     }
@@ -466,7 +492,8 @@ function handleBid_(data, source) {
         MailApp.sendEmail({
           to: STAFF_NOTIFY_EMAIL,
           subject: '[色紙競標] NT$' + amount + ' · ' + name,
-          body: name + ' <' + email + '>\nDiscord: ' + discord + '\nNT$ ' + amount + '\nsource: ' + (source || 'web') + '\n' + pageUrl
+          body: name + ' <' + email + '>\nDiscord: ' + discord + '\nNT$ ' + amount + '\nsource: ' + (source || 'web') +
+            (extendedThisBid ? ('\n截標已延長至 ' + formatEndForMail_(cfg)) : '') + '\n' + pageUrl
         });
       } catch (e3) { /* ignore */ }
     }
@@ -477,7 +504,8 @@ function handleBid_(data, source) {
       amount: amount,
       high: amount,
       nextMin: amount + cfg.step,
-      endAtMs: cfg.effectiveEndMs
+      endAtMs: cfg.effectiveEndMs,
+      extended: extendedThisBid
     });
   } finally {
     lock.releaseLock();
@@ -557,10 +585,10 @@ function sendBidConfirmEmail_(name, email, amount, cfg, pageUrl) {
       name + ' 你好，\n\n' +
       '已收到你的出價：NT$ ' + amount + '\n' +
       '競標頁：' + pageUrl + '\n\n' +
-      '截標：' + cfg.endAt + '\n' +
+      '截標：' + formatEndForMail_(cfg) + '\n' +
       '領取：' + cfg.pickup + '\n' +
       cfg.pickupNote + '\n\n' +
-      '若被超標，會再寄信通知。得標者以現場現金支付得標金額。\n\n' +
+      '若被超標，會再寄信通知。中標者以現場現金支付中標金額。\n\n' +
       '— STARYUME'
   });
 }
@@ -574,7 +602,7 @@ function sendOutbidEmail_(name, email, oldAmt, newAmt, pageUrl, cfg) {
       '目前最高價已更新為 NT$ ' + newAmt + '。\n' +
       '若要繼續競標，請到：' + pageUrl + '\n' +
       '下一手最低：NT$ ' + (newAmt + cfg.step) + '\n\n' +
-      '截標：' + cfg.endAt + '\n\n' +
+      '截標：' + formatEndForMail_(cfg) + '\n\n' +
       '— STARYUME'
   });
 }
@@ -582,13 +610,13 @@ function sendOutbidEmail_(name, email, oldAmt, newAmt, pageUrl, cfg) {
 function sendWinnerEmail_(high, cfg) {
   MailApp.sendEmail({
     to: high.email,
-    subject: '【STARYUME】你得標了 FF47 色紙 · NT$' + high.amount,
+    subject: '【STARYUME】你中標了 FF47 色紙 · NT$' + high.amount,
     body:
       high.name + ' 你好，\n\n' +
       '恭喜，你是最高出價者：NT$ ' + high.amount + '\n\n' +
       '領取：' + cfg.pickup + '\n' +
       cfg.pickupNote + '\n' +
-      '請以現金支付得標金額。\n\n' +
+      '請以現金支付中標金額。\n\n' +
       '— STARYUME'
   });
 }
@@ -622,6 +650,7 @@ function installBackupTriggers() {
 
 function backupTick_() {
   ensureSheets_();
+  maybeCloseIfDue_();
   var cfg = readConfig_();
   var now = Date.now();
   var end = cfg.effectiveEndMs;

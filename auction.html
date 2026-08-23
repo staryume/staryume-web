@@ -73,12 +73,13 @@
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 text-sm leading-relaxed space-y-1">
       <p><span class="font-bold">起標</span> NT$ 1000　<span class="font-bold">每口</span> NT$ 100</p>
-      <p><span class="font-bold">截標</span> 2026/8/23（日）15:00（台北）</p>
+      <p><span class="font-bold">截標</span> 2026/8/23（日）15:00（台北）；最後 30 秒有新出價則延長 1 分鐘</p>
       <p><span class="font-bold">領取</span> 花博爭豔館 S-27 / S-28 ありぃずこーひー</p>
       <p class="text-gray-500">若中標者無法進入 FF 會場，可安排於花博入口交接。</p>
       <p class="text-gray-500">同一電郵可多次加價；必須高於目前最高價至少 100 元。</p>
       <p class="text-gray-600 mt-2">*1：假如中標者最後無故不出現交收色紙，中標者將會由第二名補上，並且以後黑名單禁止參與本社團所有的預約 / 抽獎 / 競標等活動。</p>
       <p class="text-gray-600">*2：若在FF花博會場內交收的話，說不定會有特別的好康驚喜...???</p>
+      <p class="text-gray-600">*3：截標前 30 秒內如有新出價，截標時間自動延長 1 分鐘。</p>
     </div>
 
     <div id="successCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center mb-4">
@@ -272,8 +273,11 @@
       document.getElementById('amount').placeholder = String(s.nextMin || 1000);
       if (s.endAtMs) {
         const d = new Date(s.endAtMs);
+        const closed = !!s.closed || s.open === false;
         document.getElementById('endLabel').textContent =
-          '截標：' + d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' }) + '（台北）';
+          (closed ? '已截標：' : '截標：') +
+          d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
+          '（台北）' + (s.extended ? ' · 已延長' : '');
       }
       const list = s.bids || [];
       document.getElementById('bidCount').textContent = list.length + ' 筆';

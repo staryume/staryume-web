@@ -11,7 +11,7 @@ Fans bid on the shikishi from the FF47 post. Highest bid at close wins; pay cash
 ## Rules (already in Config defaults)
 
 - Start **NT$ 1000**, step **NT$ 100**
-- Close **2026-08-23 15:00 +08** (soft-close: last 5 min +3 min, cap +30 min)
+- Close **2026-08-23 15:00 +08** (if a bid lands in the last **30 seconds**, extend close by **1 minute**; cap +30 min from original)
 - Pickup: 花博 S-27 / S-28 ありぃずこーひー；無法進場可花博入口交接
 - One email = raise own bid (must beat current high)
 - Public list: name / Discord / amount / time — **no email**

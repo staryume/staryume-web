@@ -126,7 +126,8 @@
       return endMs() - nowMs();
     }
     function pollMs() {
-      if (msLeft() <= 2 * 60 * 1000) return 15 * 1000;
+      if (msLeft() <= 2 * 60 * 1000) return 2000;
+      if (msLeft() <= 15 * 60 * 1000) return 5000;
       return 5 * 60 * 1000;
     }
     function tick() {
@@ -150,8 +151,8 @@
         const d = new Date(s.endAtMs);
         document.getElementById('endLabel').textContent =
           (closed ? '已截標：' : '截標：') +
-          d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' }) +
-          '（台北）';
+          d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
+          '（台北）' + (s.extended ? ' · 已延長' : '');
       }
       tick();
     }
