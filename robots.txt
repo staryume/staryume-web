@@ -12,6 +12,7 @@ Disallow: /ff47-event-preorder.html
 Disallow: /lottery.html
 Disallow: /lottery-status.html
 Disallow: /auction.html
+Disallow: /auction-board.html
 Disallow: /pos.html
 Disallow: /pos.js
 Disallow: /api/

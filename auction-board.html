@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FF47 色紙競標看板 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="色紙競標">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <link rel="apple-touch-icon" href="./assets/coreimg/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    html, body { height: 100%; }
+    body {
+      overscroll-behavior: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    @media (orientation: portrait) {
+      body { overflow: hidden; }
+    }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans h-[100dvh] flex flex-col">
+
+  <div class="flex-1 min-h-0 flex flex-col max-w-3xl w-full mx-auto px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+
+    <header class="flex items-center gap-4 shrink-0">
+      <img src="./assets/coreimg/logo.png" class="w-12 h-12 object-contain" alt="staryume">
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-tech tracking-widest text-gray-400">FANCY FRONTIER 47</p>
+        <h1 class="text-3xl font-bold leading-tight">色紙競標</h1>
+      </div>
+      <img src="./blog/20260818/shikishi-ff47.jpg?v=20260822" alt="FF47 色紙" class="w-20 h-20 rounded-xl object-cover border border-gray-200 bg-white shrink-0">
+    </header>
+
+    <section class="mt-5 bg-white rounded-3xl border border-gray-100 shadow-sm px-5 py-5 text-center shrink-0">
+      <p class="text-sm font-tech tracking-widest text-gray-400">截標倒數</p>
+      <div class="mt-3 grid grid-cols-3 gap-3 font-mono">
+        <div class="bg-tech-gray rounded-2xl py-3">
+          <div id="cdH" class="text-6xl font-bold font-tech leading-none">—</div>
+          <div class="text-sm text-gray-400 mt-1">時</div>
+        </div>
+        <div class="bg-tech-gray rounded-2xl py-3">
+          <div id="cdM" class="text-6xl font-bold font-tech leading-none">—</div>
+          <div class="text-sm text-gray-400 mt-1">分</div>
+        </div>
+        <div class="bg-tech-gray rounded-2xl py-3">
+          <div id="cdS" class="text-6xl font-bold font-tech leading-none">—</div>
+          <div class="text-sm text-gray-400 mt-1">秒</div>
+        </div>
+      </div>
+      <p id="endLabel" class="text-sm text-gray-400 mt-3">截標：8/23（日）15:00（台北）</p>
+    </section>
+
+    <section class="mt-5 bg-white rounded-3xl border border-gray-100 shadow-sm px-5 py-6 text-center flex-1 min-h-0 flex flex-col justify-center">
+      <p id="highCaption" class="text-sm font-tech tracking-widest text-gray-400">目前最高</p>
+      <p id="highAmount" class="mt-2 text-7xl font-bold font-tech leading-none tracking-tight">NT$ —</p>
+      <p id="highName" class="mt-4 text-3xl font-bold leading-snug">載入中…</p>
+    </section>
+
+    <section class="mt-5 bg-white rounded-3xl border border-gray-100 shadow-sm px-5 py-5 text-center shrink-0">
+      <p class="text-lg leading-relaxed">
+        有意參加競投者可到以下網站:<br>
+        <span class="font-mono text-base font-bold tracking-tight">https://staryu.me/auction.html</span>
+      </p>
+      <img src="./blog/20260818/auction-qr.png?v=20260823" alt="掃描前往色紙競標頁" width="512" height="512" class="mt-3 mx-auto w-44 h-44 object-contain bg-white">
+    </section>
+  </div>
+
+  <script>
+    const FALLBACK_END_MS = Date.parse('2026-08-23T15:00:00+08:00');
+    const AUCTION_GET = '/api/auction?action=config';
+    let state = null;
+    let refreshInFlight = false;
+    let refreshStartedAt = 0;
+    let lastSuccessAt = 0;
+    let wakeLock = null;
+
+    function ntd(n) {
+      return 'NT$ ' + Number(n || 0).toLocaleString('zh-Hant-TW');
+    }
+    function nowMs() {
+      if (state && state.serverNowMs && state.fetchedAt) {
+        return state.serverNowMs + (Date.now() - state.fetchedAt);
+      }
+      return Date.now();
+    }
+    function endMs() {
+      return (state && state.endAtMs) || FALLBACK_END_MS;
+    }
+    function msLeft() {
+      return endMs() - nowMs();
+    }
+    function pollMs() {
+      if (msLeft() <= 2 * 60 * 1000) return 15 * 1000;
+      return 5 * 60 * 1000;
+    }
+    function tick() {
+      const left = Math.max(0, msLeft());
+      const s = Math.floor(left / 1000);
+      document.getElementById('cdH').textContent = String(Math.floor(s / 3600)).padStart(2, '0');
+      document.getElementById('cdM').textContent = String(Math.floor((s % 3600) / 60)).padStart(2, '0');
+      document.getElementById('cdS').textContent = String(s % 60).padStart(2, '0');
+    }
+    function applyState(s, fetchedAt) {
+      state = s;
+      state.fetchedAt = fetchedAt || Date.now();
+      const high = s.high || 0;
+      const closed = !!s.closed || s.open === false;
+      document.getElementById('highCaption').textContent = closed ? '得標' : '目前最高';
+      document.getElementById('highAmount').textContent = high ? ntd(high) : (closed ? '無出價' : '尚無出價');
+      document.getElementById('highName').textContent = high
+        ? ((s.highName || '匿名') + (s.highDiscord ? ' · ' + s.highDiscord : ''))
+        : (closed ? '競標已結束' : '等待第一手');
+      if (s.endAtMs) {
+        const d = new Date(s.endAtMs);
+        document.getElementById('endLabel').textContent =
+          (closed ? '已截標：' : '截標：') +
+          d.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', weekday: 'short', hour: '2-digit', minute: '2-digit' }) +
+          '（台北）';
+      }
+      tick();
+    }
+    async function refresh(force) {
+      if (refreshInFlight && Date.now() - refreshStartedAt < 8000) return;
+      if (!force && refreshStartedAt && Date.now() - refreshStartedAt < pollMs()) return;
+      refreshInFlight = true;
+      refreshStartedAt = Date.now();
+      const ac = new AbortController();
+      const to = setTimeout(function () { ac.abort(); }, 8000);
+      try {
+        const res = await fetch(AUCTION_GET + '&t=' + Date.now(), { method: 'GET', cache: 'no-store', signal: ac.signal });
+        const t = await res.text();
+        const s = t && t.trim().startsWith('{') ? JSON.parse(t) : null;
+        if (s && s.ok) {
+          applyState(s);
+          lastSuccessAt = Date.now();
+        }
+      } catch (e) {
+        /* keep last good high + keep ticking */
+      } finally {
+        clearTimeout(to);
+        refreshInFlight = false;
+      }
+    }
+    async function requestWakeLock() {
+      try {
+        if (navigator.wakeLock && document.visibilityState === 'visible') {
+          wakeLock = await navigator.wakeLock.request('screen');
+        }
+      } catch (e) { /* iPad may require user gesture / settings */ }
+    }
+
+    tick();
+    refresh(true);
+    setInterval(tick, 250);
+    setInterval(function () { refresh(); }, 1000);
+    requestWakeLock();
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'visible') {
+        refresh(true);
+        requestWakeLock();
+      }
+    });
+    window.addEventListener('online', function () { refresh(true); });
+  </script>
+</body>
+</html>
