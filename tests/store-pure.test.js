@@ -204,6 +204,22 @@ describe("productUsesTwCart", () => {
   });
 });
 
+describe("BOOTH JP handoff", () => {
+  it("uses linkJP when set, else shop URL", () => {
+    expect(api.boothShopUrl({})).toBe("https://staryume.booth.pm");
+    expect(api.productBoothUrl({ linkJP: "https://staryume.booth.pm/items/1" })).toBe(
+      "https://staryume.booth.pm/items/1"
+    );
+    expect(api.productBoothUrl({ linkJP: null })).toBe("https://staryume.booth.pm");
+  });
+  it("JP language uses BOOTH except on TW region", () => {
+    expect(api.storeUsesBoothCheckout("jp", "HK")).toBe(true);
+    expect(api.storeUsesBoothCheckout("jp", "TW")).toBe(false);
+    expect(api.storeUsesBoothCheckout("zh", "HK")).toBe(false);
+    expect(api.storeUsesBoothCheckout("en", "HK")).toBe(false);
+  });
+});
+
 describe("myship import helpers", () => {
   it("normalizes 7-11 store ids", () => {
     expect(api.normalizeTwStoreId("148599")).toBe("148599");

@@ -77,7 +77,7 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 ## 3. Product domains (speak this language in specs)
 
 1. **Public site** — JP / EN / ZH via `siteLang` in `localStorage`; default often `jp`.
-2. **Store catalog** — `storeProducts` + categories; sold-out flags; external links (BOOTH etc.) vs in-site cart.
+2. **Store catalog** — `storeProducts` + categories; sold-out flags; JP language buys on BOOTH (`linkJP`); TW cart → 賣貨便; HK cart → PayMe/FPS.
 3. **HK checkout** — bag → `checkout.html` → payment (FPS/PayMe) + proof upload → `/api/hk-order` (prod) or Apps Script direct (localhost).
 4. **TW mail-order** — region `TW`, `twCheckout`, cart key separate from HK; 7-11 賣貨便 訂單匯入 (`myship_711`); customer manage via `preorder.html`; R18 is Discord-only. Seller export: Apps Script menu **賣貨便 → 重建匯入表**.
 5. **FF47 booth backorder** — `ff47-event-preorder.html` (cash at stall + serial, SF home delivery mid-Sep). Setup: `docs/ff47-event-preorder-apps-script.md`.

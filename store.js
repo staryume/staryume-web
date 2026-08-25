@@ -70,6 +70,9 @@ const storeConfig = {
      * Customer fills once on staryu.me; seller 訂單匯入 to 7-11 賣貨便.
      * Pay at 7-11 pickup (取貨付款). Reuses same order endpoint as HK (no proof).
      */
+    "booth": {
+        "shopUrl": "https://staryume.booth.pm"
+    },
     "twCheckout": {
         "enabled": true,
         "currency": "TWD",
@@ -1304,6 +1307,24 @@ function productUnitPrice(product, region) {
 function formatStoreMoney(amount, region) {
     const n = Number(amount) || 0;
     return normalizeStoreRegion(region) === "TW" ? ("NT$ " + n) : ("HKD$ " + n);
+}
+
+function boothShopUrl(config) {
+    const cfg = config || (typeof storeConfig !== "undefined" ? storeConfig : null);
+    const u = cfg && cfg.booth && cfg.booth.shopUrl;
+    return (u && String(u).trim()) || "https://staryume.booth.pm";
+}
+
+/** Per-item BOOTH URL, or the shop if that product has no linkJP yet. */
+function productBoothUrl(product, config) {
+    const u = product && product.linkJP;
+    if (u && String(u).trim()) return String(u).trim();
+    return boothShopUrl(config);
+}
+
+/** JP copy buys on BOOTH. TW region stays 賣貨便. HK + ZH/EN stays in-site cart. */
+function storeUsesBoothCheckout(lang, region) {
+    return String(lang || "") === "jp" && normalizeStoreRegion(region) !== "TW";
 }
 
 function productIsR18(product) {

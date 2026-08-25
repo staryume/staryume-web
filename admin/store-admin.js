@@ -174,6 +174,7 @@
     document.getElementById('pPriceHK').value = 0;
     document.getElementById('pLinkTW').value = '';
     document.getElementById('pLinkHK').value = '';
+    document.getElementById('pLinkJP').value = '';
     document.getElementById('pIsNew').checked = true;
     document.getElementById('pIsSoldOut').checked = false;
     setLangToggles({ jp: false, en: true, zh: true });
@@ -198,6 +199,7 @@
     document.getElementById('pPriceHK').value = p.priceHK ?? 0;
     document.getElementById('pLinkTW').value = p.linkTW || '';
     document.getElementById('pLinkHK').value = p.linkHK || '';
+    document.getElementById('pLinkJP').value = p.linkJP || '';
     document.getElementById('pIsNew').checked = !!p.isNew;
     document.getElementById('pIsSoldOut').checked = !!p.isSoldOut;
     setLangToggles(p.langs || { jp: false, en: true, zh: true });
@@ -251,6 +253,7 @@
       imgs: [...draftImgs],
       linkTW: document.getElementById('pLinkTW').value.trim() || null,
       linkHK: document.getElementById('pLinkHK').value.trim() || null,
+      linkJP: document.getElementById('pLinkJP').value.trim() || null,
     };
   }
 

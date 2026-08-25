@@ -117,6 +117,7 @@
       imgs: Array.isArray(p.imgs) ? [...p.imgs] : [],
       linkTW: p.linkTW || null,
       linkHK: p.linkHK || null,
+      linkJP: p.linkJP || null,
     };
   }
 

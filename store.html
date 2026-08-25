@@ -54,6 +54,7 @@
         </nav>
         <div class="mt-auto mb-4 relative group">
             <div id="langMenuDesktop" class="lang-menu absolute bottom-full left-0 mb-2 w-full bg-black text-white text-center py-2 rounded-sm shadow-xl flex flex-col gap-1">
+                <button onclick="switchLang('jp')" class="hover:text-tech-purple text-[10px] font-bold py-1">JP</button>
                 <button onclick="switchLang('en')" class="hover:text-tech-purple text-[10px] font-bold py-1">EN</button>
                 <button onclick="switchLang('zh')" class="hover:text-tech-purple text-[10px] font-bold py-1">ZH</button>
             </div>
@@ -77,6 +78,7 @@
             <a href="store.html" class="border-b border-gray-100 pb-2 text-tech-purple">STORE</a>
         </nav>
         <div class="mt-auto mb-12 flex space-x-4">
+            <button onclick="switchLang('jp')" class="w-12 h-12 border border-black flex items-center justify-center font-bold">JP</button>
             <button onclick="switchLang('en')" class="w-12 h-12 border border-black flex items-center justify-center font-bold">EN</button>
             <button onclick="switchLang('zh')" class="w-12 h-12 border border-black flex items-center justify-center font-bold">ZH</button>
         </div>
@@ -267,10 +269,9 @@
 
     <script>
         let currentRegion = regionFromTimezone() || 'HK';
-        // Store UI supports EN / ZH (map site-wide JP → ZH for the button label)
         let currentLang = (() => {
             const saved = localStorage.getItem('siteLang') || 'zh';
-            return (saved === 'en' || saved === 'zh') ? saved : 'zh';
+            return (saved === 'en' || saved === 'zh' || saved === 'jp') ? saved : 'zh';
         })();
         let cart = {};
         let currentImgIndex = 0;
@@ -358,12 +359,12 @@
             window.toggleDesktopLang = () => document.getElementById('langMenuDesktop').classList.toggle('open');
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
             window.switchLang = (l) => {
-                currentLang = (l === 'en' || l === 'zh') ? l : 'zh';
+                currentLang = (l === 'en' || l === 'zh' || l === 'jp') ? l : 'zh';
                 try { localStorage.setItem('siteLang', currentLang); } catch (e) { /* ignore */ }
                 updateLangDisplay();
                 renderCategories();
                 renderAllSections();
-                renderBagDrawer();
+                setRegion(currentRegion);
                 const menu = document.getElementById('langMenuDesktop');
                 if (menu) menu.classList.remove('open');
             };
@@ -712,6 +713,15 @@
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">SHOP CLOSED / 目前關閉中</button>`;
             } else if (product.isSoldOut) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
+            } else if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion)) {
+                const boothUrl = typeof productBoothUrl === 'function'
+                    ? productBoothUrl(product, storeConfig)
+                    : (product.linkJP || 'https://staryume.booth.pm');
+                const perItem = !!(product.linkJP);
+                actions.innerHTML = `<a href="${boothUrl}" target="_blank" rel="noopener noreferrer" class="block w-full bg-black text-white text-center font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">BOOTHで購入</a>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">${perItem
+                        ? 'pixiv BOOTH で決済・発送します（1点ずつカートへ）。'
+                        : 'この商品の個別URL未設定のためショップTOPを開きます。BOOTHで該当商品を選んでください。'}</p>`;
             } else if (currentRegion === 'TW') {
                 const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
                 const isR18 = typeof productIsR18 === 'function' ? productIsR18(product) : !!(product.hidden || product.contentRating === 'r18');
@@ -848,6 +858,7 @@
             const twFlow = document.getElementById('tw-flow-notice');
             const bagRegionLabel = document.getElementById('bag-region-label');
             const showTwManage = !!(storeConfig.twCheckout && storeConfig.twCheckout.showOrderManageBar);
+            const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, region);
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
@@ -861,19 +872,24 @@
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
-                if(notice) notice.innerText = (storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false)
+                if(notice) notice.innerText = boothMode
+                    ? 'JP: BOOTHで1点ずつ購入 · staryume.booth.pm'
+                    : ((storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false)
                     ? "香港預購暫停 · HK PRE-ORDER PAUSED"
-                    : "PAYMENT: PAYME · FPS";
-                if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
+                    : "PAYMENT: PAYME · FPS");
+                if(shipText) shipText.innerText = boothMode
+                    ? "Japan: pixiv BOOTH で決済・発送（本サイトのカートは使いません）。"
+                    : "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
                 if(twBar) twBar.classList.add('hidden');
                 if(twFlow) twFlow.classList.add('hidden');
-                if(bagRegionLabel) bagRegionLabel.textContent = 'Hong Kong Online Store';
+                if(bagRegionLabel) bagRegionLabel.textContent = boothMode ? 'BOOTH · staryume.booth.pm' : 'Hong Kong Online Store';
             }
 
             updateCartUI();
         }
 
         function openBagDrawer() {
+            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion)) return;
             const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
             if (currentRegion === 'TW' && !twOn) return;
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
@@ -992,7 +1008,8 @@
             if (fab) {
                 const hkOff = currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false;
                 const twOff = currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false;
-                if (hkOff || twOff || count <= 0) fab.classList.add('hidden-fab');
+                const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion);
+                if (hkOff || twOff || boothMode || count <= 0) fab.classList.add('hidden-fab');
                 else fab.classList.remove('hidden-fab');
             }
 
@@ -1003,6 +1020,7 @@
         }
 
         function checkoutHK() {
+            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion)) return;
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
             if (currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false) return;
             const count = typeof getRegionCartCount === 'function' ? getRegionCartCount(cart) : getHkCartCount(cart);
