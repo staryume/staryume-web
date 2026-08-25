@@ -1229,7 +1229,8 @@ function isUraUnlocked() {
 function isUraCatalogOpen(region) {
     const ura = getUraConfig();
     if (!ura || ura.enabled === false) return false;
-    if (normalizeStoreRegion(region) === "TW") return true;
+    const r = normalizeStoreRegion(region);
+    if (r === "TW" || r === "JP") return true;
     return isUraUnlocked();
 }
 
@@ -1283,30 +1284,38 @@ const HK_CART_STORAGE_KEY = "staryume_cart_hk";
 const TW_CART_STORAGE_KEY = "staryume_cart_tw";
 
 function normalizeStoreRegion(region) {
-    return region === "TW" ? "TW" : "HK";
+    if (region === "TW") return "TW";
+    if (region === "JP") return "JP";
+    return "HK";
 }
 
 function cartStorageKey(region) {
-    return normalizeStoreRegion(region) === "TW" ? TW_CART_STORAGE_KEY : HK_CART_STORAGE_KEY;
+    const r = normalizeStoreRegion(region);
+    if (r === "TW") return TW_CART_STORAGE_KEY;
+    if (r === "JP") return "staryume_cart_jp";
+    return HK_CART_STORAGE_KEY;
 }
 
 function getCheckoutConfig(region) {
     const r = normalizeStoreRegion(region);
     if (r === "TW") return (storeConfig && storeConfig.twCheckout) || null;
+    if (r === "JP") return (storeConfig && storeConfig.booth) || null;
     return (storeConfig && storeConfig.hkCheckout) || null;
 }
 
 function productUnitPrice(product, region) {
     if (!product) return 0;
-    if (normalizeStoreRegion(region) === "TW") {
-        return typeof product.priceTW === "number" ? product.priceTW : 0;
-    }
+    const r = normalizeStoreRegion(region);
+    if (r === "TW") return typeof product.priceTW === "number" ? product.priceTW : 0;
+    if (r === "JP") return 0;
     return typeof product.priceHK === "number" ? product.priceHK : 0;
 }
 
 function formatStoreMoney(amount, region) {
+    const r = normalizeStoreRegion(region);
+    if (r === "JP") return "BOOTH";
     const n = Number(amount) || 0;
-    return normalizeStoreRegion(region) === "TW" ? ("NT$ " + n) : ("HKD$ " + n);
+    return r === "TW" ? ("NT$ " + n) : ("HKD$ " + n);
 }
 
 function boothShopUrl(config) {
@@ -1322,9 +1331,9 @@ function productBoothUrl(product, config) {
     return boothShopUrl(config);
 }
 
-/** JP copy buys on BOOTH. TW region stays 賣貨便. HK + ZH/EN stays in-site cart. */
-function storeUsesBoothCheckout(lang, region) {
-    return String(lang || "") === "jp" && normalizeStoreRegion(region) !== "TW";
+/** Japan storefront buys on BOOTH. HK cart and TW 賣貨便 are separate. */
+function storeUsesBoothCheckout(region) {
+    return normalizeStoreRegion(region) === "JP";
 }
 
 function productIsR18(product) {

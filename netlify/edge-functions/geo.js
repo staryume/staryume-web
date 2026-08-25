@@ -20,8 +20,11 @@ export default async (request, context) => {
   }
 
   const country = visitorCountry(request, context);
-  // Taiwan → TW store; Hong Kong and everyone else → HK
-  const region = country === "TW" || country === "TWN" ? "TW" : "HK";
+  // Taiwan → TW, Japan → JP, everyone else → HK
+  const region =
+    country === "TW" || country === "TWN" ? "TW" :
+    country === "JP" || country === "JPN" ? "JP" :
+    "HK";
 
   return json(
     {

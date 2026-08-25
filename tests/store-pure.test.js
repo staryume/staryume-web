@@ -50,8 +50,9 @@ const sampleProducts = [
 ];
 
 describe("normalizeStoreRegion", () => {
-  it("maps TW to TW and everything else to HK", () => {
+  it("maps TW / JP and everything else to HK", () => {
     expect(api.normalizeStoreRegion("TW")).toBe("TW");
+    expect(api.normalizeStoreRegion("JP")).toBe("JP");
     expect(api.normalizeStoreRegion("tw")).toBe("HK"); // only exact "TW"
     expect(api.normalizeStoreRegion("HK")).toBe("HK");
     expect(api.normalizeStoreRegion("")).toBe("HK");
@@ -212,11 +213,10 @@ describe("BOOTH JP handoff", () => {
     );
     expect(api.productBoothUrl({ linkJP: null })).toBe("https://staryume.booth.pm");
   });
-  it("JP language uses BOOTH except on TW region", () => {
-    expect(api.storeUsesBoothCheckout("jp", "HK")).toBe(true);
-    expect(api.storeUsesBoothCheckout("jp", "TW")).toBe(false);
-    expect(api.storeUsesBoothCheckout("zh", "HK")).toBe(false);
-    expect(api.storeUsesBoothCheckout("en", "HK")).toBe(false);
+  it("Japan region uses BOOTH; HK and TW do not", () => {
+    expect(api.storeUsesBoothCheckout("JP")).toBe(true);
+    expect(api.storeUsesBoothCheckout("HK")).toBe(false);
+    expect(api.storeUsesBoothCheckout("TW")).toBe(false);
   });
 });
 

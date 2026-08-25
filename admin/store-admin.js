@@ -169,7 +169,7 @@
     editingId = null;
     document.getElementById('storeEditHeading').textContent = 'New product';
     setCheckedValues('pCat', ['featured']);
-    setCheckedValues('pRegion', ['TW', 'HK']);
+    setCheckedValues('pRegion', ['TW', 'HK', 'JP']);
     document.getElementById('pPriceTW').value = 0;
     document.getElementById('pPriceHK').value = 0;
     document.getElementById('pLinkTW').value = '';

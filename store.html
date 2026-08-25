@@ -120,6 +120,9 @@
                             <button onclick="setRegion('HK')" id="btn-hk" class="px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black">
                                 HONG KONG / 香港
                             </button>
+                            <button onclick="setRegion('JP')" id="btn-jp" class="px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black">
+                                JAPAN / 日本
+                            </button>
                         </div>
                     </div>
 
@@ -286,6 +289,7 @@
         function countryToStoreRegion(code) {
             const c = String(code || '').toUpperCase();
             if (c === 'TW' || c === 'TWN') return 'TW';
+            if (c === 'JP' || c === 'JPN') return 'JP';
             if (c === 'HK' || c === 'HKG') return 'HK';
             return null;
         }
@@ -294,6 +298,7 @@
             try {
                 const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
                 if (tz === 'Asia/Taipei') return 'TW';
+                if (tz === 'Asia/Tokyo') return 'JP';
                 if (tz === 'Asia/Hong_Kong') return 'HK';
             } catch (e) { /* ignore */ }
             return null;
@@ -301,7 +306,7 @@
 
         /**
          * Pick store region for first paint / visit:
-         * 1) ?region=HK|TW (deep link / CTA) always wins
+         * 1) ?region=HK|TW|JP (deep link / CTA) always wins
          * 2) Netlify /api/geo: TW → TW, HK → HK
          * 3) browser timezone (Asia/Taipei → TW) — covers localhost
          * 4) public IP country (localhost when /api/geo is missing)
@@ -309,7 +314,7 @@
          */
         async function resolveInitialRegion() {
             const regionParam = (new URLSearchParams(window.location.search).get('region') || '').toUpperCase();
-            if (regionParam === 'HK' || regionParam === 'TW') return regionParam;
+            if (regionParam === 'HK' || regionParam === 'TW' || regionParam === 'JP') return regionParam;
 
             try {
                 const ctrl = new AbortController();
@@ -359,12 +364,21 @@
             window.toggleDesktopLang = () => document.getElementById('langMenuDesktop').classList.toggle('open');
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
             window.switchLang = (l) => {
-                currentLang = (l === 'en' || l === 'zh' || l === 'jp') ? l : 'zh';
+                if (l === 'jp') {
+                    setRegion('JP');
+                    const menu = document.getElementById('langMenuDesktop');
+                    if (menu) menu.classList.remove('open');
+                    return;
+                }
+                currentLang = (l === 'en' || l === 'zh') ? l : 'zh';
                 try { localStorage.setItem('siteLang', currentLang); } catch (e) { /* ignore */ }
+                if (currentRegion === 'JP') {
+                    setRegion('HK');
+                    return;
+                }
                 updateLangDisplay();
                 renderCategories();
                 renderAllSections();
-                setRegion(currentRegion);
                 const menu = document.getElementById('langMenuDesktop');
                 if (menu) menu.classList.remove('open');
             };
@@ -440,7 +454,11 @@
             } else if ((p.hidden || p.contentRating === 'r18') && !unlocked) {
                 return false;
             }
-            if (p.regions && !p.regions.includes(currentRegion)) return false;
+            if (currentRegion === 'JP') {
+                if (p.langs && p.langs.jp === false) return false;
+            } else if (p.regions && !p.regions.includes(currentRegion)) {
+                return false;
+            }
             if (!showOutOfStock && p.isSoldOut) return false;
             if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
             return true;
@@ -466,7 +484,9 @@
                 const n = cat.nameByRegion[currentRegion];
                 return n[currentLang] || n.zh || n.en || n.jp || 'R18';
             }
-            return currentRegion === 'HK' ? '失物認領' : 'R18商品';
+            if (currentRegion === 'HK') return '失物認領';
+            if (currentRegion === 'JP') return 'R18';
+            return 'R18商品';
         }
 
         /** Section titles under the R18 block */
@@ -616,7 +636,9 @@
         }
 
         function renderCard(product, hiddenClass = '') {
-            const price = (currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`;
+            const price = currentRegion === 'JP'
+                ? 'BOOTH'
+                : ((currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`);
             const title = product.title[currentLang] || product.title.en || product.title.zh || product.title.jp || '';
             const thumb = (product.imgs && product.imgs.length > 0) ? product.imgs[0] : product.img;
             // object-cover crops to fill the square; position keeps preferred edge/corner
@@ -687,7 +709,9 @@
                 return;
             }
             const modal = document.getElementById('product-modal');
-            const price = (currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`;
+            const price = currentRegion === 'JP'
+                ? 'BOOTH'
+                : ((currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`);
             
             currentImgIndex = 0;
             currentProductImgs = product.imgs || [product.img];
@@ -713,7 +737,7 @@
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">SHOP CLOSED / 目前關閉中</button>`;
             } else if (product.isSoldOut) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
-            } else if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion)) {
+            } else if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion)) {
                 const boothUrl = typeof productBoothUrl === 'function'
                     ? productBoothUrl(product, storeConfig)
                     : (product.linkJP || 'https://staryume.booth.pm');
@@ -836,7 +860,20 @@
         }
 
         function setRegion(region) {
-            currentRegion = region;
+            currentRegion = (region === 'TW' || region === 'JP') ? region : 'HK';
+            if (currentRegion === 'JP') {
+                currentLang = 'jp';
+                try { localStorage.setItem('siteLang', 'jp'); } catch (e) { /* ignore */ }
+            } else if (currentLang === 'jp') {
+                currentLang = 'zh';
+                try { localStorage.setItem('siteLang', 'zh'); } catch (e) { /* ignore */ }
+            }
+            updateLangDisplay();
+            try {
+                const u = new URL(location.href);
+                u.searchParams.set('region', currentRegion);
+                history.replaceState({}, '', u.pathname + u.search + u.hash);
+            } catch (e) { /* ignore */ }
 
             // Toolbar labels (e.g. 失物認領 vs R18商品) depend on region
             renderCategories();
@@ -848,6 +885,9 @@
             // --- THEN UPDATE UI/BUTTONS ---
             const btnTw = document.getElementById('btn-tw');
             const btnHk = document.getElementById('btn-hk');
+            const btnJp = document.getElementById('btn-jp');
+            const onCls = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
+            const offCls = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
             const notice = document.getElementById('region-notice');
             const shipText = document.getElementById('shipping-text');
 
@@ -858,10 +898,11 @@
             const twFlow = document.getElementById('tw-flow-notice');
             const bagRegionLabel = document.getElementById('bag-region-label');
             const showTwManage = !!(storeConfig.twCheckout && storeConfig.twCheckout.showOrderManageBar);
-            const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, region);
-            if(region === 'TW') {
-                if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
-                if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
+            const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion);
+            if (btnTw) btnTw.className = currentRegion === 'TW' ? onCls : offCls;
+            if (btnHk) btnHk.className = currentRegion === 'HK' ? onCls : offCls;
+            if (btnJp) btnJp.className = currentRegion === 'JP' ? onCls : offCls;
+            if (currentRegion === 'TW') {
                 if(notice) notice.innerHTML = showTwManage
                     ? '請在本站結帳 · 7-11 取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>'
                     : '請在本站結帳完成 · 不必再到賣貨便自行下單';
@@ -869,27 +910,27 @@
                 if(twBar) twBar.classList.toggle('hidden', !showTwManage);
                 if(twFlow) twFlow.classList.remove('hidden');
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · 7-11 MyShip';
-            } else {
-                if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
-                if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
-                if(notice) notice.innerText = boothMode
-                    ? 'JP: BOOTHで1点ずつ購入 · staryume.booth.pm'
-                    : ((storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false)
-                    ? "香港預購暫停 · HK PRE-ORDER PAUSED"
-                    : "PAYMENT: PAYME · FPS");
-                if(shipText) shipText.innerText = boothMode
-                    ? "Japan: pixiv BOOTH で決済・発送（本サイトのカートは使いません）。"
-                    : "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
+            } else if (currentRegion === 'JP') {
+                if(notice) notice.innerText = '日本：BOOTHで1点ずつ購入 · 決済は pixiv BOOTH';
+                if(shipText) shipText.innerText = "Japan: pixiv BOOTH で決済・発送。";
                 if(twBar) twBar.classList.add('hidden');
                 if(twFlow) twFlow.classList.add('hidden');
-                if(bagRegionLabel) bagRegionLabel.textContent = boothMode ? 'BOOTH · staryume.booth.pm' : 'Hong Kong Online Store';
+                if(bagRegionLabel) bagRegionLabel.textContent = 'Japan · BOOTH';
+            } else {
+                if(notice) notice.innerText = (storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false)
+                    ? "香港預購暫停 · HK PRE-ORDER PAUSED"
+                    : "PAYMENT: PAYME · FPS";
+                if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
+                if(twBar) twBar.classList.add('hidden');
+                if(twFlow) twFlow.classList.add('hidden');
+                if(bagRegionLabel) bagRegionLabel.textContent = 'Hong Kong Online Store';
             }
 
             updateCartUI();
         }
 
         function openBagDrawer() {
-            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion)) return;
+            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion)) return;
             const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
             if (currentRegion === 'TW' && !twOn) return;
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
@@ -1008,7 +1049,7 @@
             if (fab) {
                 const hkOff = currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false;
                 const twOff = currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false;
-                const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion);
+                const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion);
                 if (hkOff || twOff || boothMode || count <= 0) fab.classList.add('hidden-fab');
                 else fab.classList.remove('hidden-fab');
             }
@@ -1020,7 +1061,7 @@
         }
 
         function checkoutHK() {
-            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentLang, currentRegion)) return;
+            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion)) return;
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
             if (currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false) return;
             const count = typeof getRegionCartCount === 'function' ? getRegionCartCount(cart) : getHkCartCount(cart);
