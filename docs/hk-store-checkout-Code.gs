@@ -836,11 +836,13 @@ function sendOrderEmail_(info) {
   lines.push(info.name ? (info.name + ' 你好，') : '你好，');
   lines.push('');
   if (isMyship && region === 'TW') {
-    lines.push('感謝你在 staryu.me 完成台灣通販訂單。');
-    lines.push('我們會把訂單匯入 7-11 賣貨便；請到你填的門市取貨並付款。本站不必另外轉帳。');
+    lines.push('感謝你在 staryu.me 完成台灣通販訂單。本站送出 = 下單完成。');
     lines.push('');
-    lines.push('匯入前可改門市／聯絡資料（訂單編號 + 下單電郵）：');
-    lines.push('https://staryu.me/preorder.html?orderId=' + encodeURIComponent(info.orderId || ''));
+    lines.push('【請不要再開 7-11 賣貨便自己加購物車】');
+    lines.push('以前是自己到賣貨便結帳；現在請只在 staryu.me 填一次。');
+    lines.push('我們會把這筆訂單匯入賣貨便（代客下單）。');
+    lines.push('之後你會收到賣貨便／OPEN POINT 通知，不是要你再選一次商品。');
+    lines.push('我們寄出後，請到你填的 7-11 取貨並付款。本站不必轉帳。');
   } else if (isPreorder && region === 'TW') {
     lines.push('感謝你在 staryu.me 完成' + regionLabel + '登記。');
     lines.push('我們已收到你的預購；請依所選時段到場取貨並付款。');

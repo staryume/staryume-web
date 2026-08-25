@@ -79,13 +79,14 @@
       </div>
       <p class="text-xs text-gray-500 mb-4">確認電郵（如有填寫）可能稍後送達，請檢查垃圾郵件匣。</p>
       <div id="successPreorderManage" class="hidden mb-4 p-4 rounded-xl border border-tech-purple/40 bg-tech-purple/10 text-left text-xs text-gray-700 leading-relaxed">
-        <p class="font-bold text-black text-sm mb-1">匯入賣貨便前可改門市</p>
-        <p class="mb-2">用訂單編號 + 下單電郵，可修改 7-11 門市／聯絡資料或取消。匯入後請以賣貨便通知為準。</p>
-        <p class="mb-3 text-gray-500">請妥善保存訂單編號；也可從商店台灣頁「管理訂單」進入。</p>
-        <a id="successManageLink" href="./preorder.html"
-          class="inline-flex items-center justify-center w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-tech-purple hover:text-black transition text-sm">
-          管理訂單
-        </a>
+        <p class="font-bold text-black text-sm mb-2">接下來（你不用再填購物車）</p>
+        <ol class="list-decimal pl-5 space-y-1.5 mb-3">
+          <li>我們把這筆訂單匯入 7-11 賣貨便（代客下單）。</li>
+          <li>你會再收到賣貨便／OPEN POINT 通知。</li>
+          <li>我們寄出後，到你填的 7-11 <strong>取貨並付款</strong>。</li>
+        </ol>
+        <p class="text-gray-600">請保存訂單編號。若還要改門市，請先聯絡 Discord，不要自行到賣貨便重下一次。</p>
+        <a id="successManageLink" href="./preorder.html" class="hidden"></a>
       </div>
       <a id="successDiscord" href="https://discord.gg/staryume" target="_blank" rel="noopener noreferrer"
         class="inline-flex items-center justify-center w-full py-3 bg-[#5865F2] text-white font-bold rounded-xl hover:opacity-90 transition text-sm mb-3">
@@ -269,7 +270,7 @@
       const blurb = document.getElementById('successBlurb');
       if (blurb) {
         blurb.innerHTML = checkoutRegion === 'TW'
-          ? '已收到你的台灣通販訂單。<br>我們會匯入 7-11 賣貨便；請到指定門市取貨並付款。<br>匯入前可至「管理訂單」修改門市／聯絡資料。'
+          ? '本站訂單已完成。<strong class="text-black">請不要再開賣貨便自己加購物車。</strong>'
           : '已收到你的香港訂單與付款證明。<br>我們會核對後再安排出貨／取貨。';
       }
       document.title = checkoutRegion === 'TW'
@@ -378,7 +379,9 @@
         const lines = cartLines();
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">檢視購物車</h2>
-          <p class="text-sm text-gray-500 mb-6">確認商品與數量後繼續。</p>
+          <p class="text-sm text-gray-500 mb-6">${isTwMyshipCheckout()
+            ? '確認商品後繼續在<strong class="text-black">本站</strong>填資料。送出即完成下單，<strong class="text-black">不必再到賣貨便自己選商品</strong>。'
+            : '確認商品與數量後繼續。'}</p>
           <div class="space-y-4">
             ${lines.map((line) => `
               <div class="flex gap-4 items-start border-b border-gray-50 pb-4">
@@ -548,33 +551,29 @@
         if (isTwMyshipCheckout()) {
           state.paymentMethod = 'myship_cod';
           const discord = (checkoutCfg().discordInvite || 'https://discord.gg/staryume');
-          const storefront = (checkoutCfg().myship && checkoutCfg().myship.storefrontUrl) || 'https://myship.7-11.com.tw/general/detail/GM2608255230612';
           panel.innerHTML = `
-            <h2 class="text-xl font-bold mb-1">7-11 取貨付款</h2>
-            <p class="text-sm text-gray-500 mb-4 leading-relaxed">本站<strong class="text-black">不必轉帳</strong>。送出後我們把訂單匯入
-              <a href="${escapeAttr(storefront)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">賣貨便</a>，
-              你到指定 7-11 <strong class="text-black">取貨時付款</strong>。</p>
+            <h2 class="text-xl font-bold mb-1">接下來怎麼取貨、怎麼付款</h2>
+            <p class="text-sm text-gray-500 mb-4 leading-relaxed">以前是自己去賣貨便結帳。現在<strong class="text-black">在本站送出就完成下單</strong>，請不要再開賣貨便重複買一次。</p>
             <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
               <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">應付金額（7-11 取貨時支付）</p>
               <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
-              <p class="text-xs text-gray-500 mt-2">賣貨便單筆上限 NT$ 20,000（含運）</p>
+              <p class="text-xs text-gray-500 mt-2">本站不必轉帳 · 賣貨便單筆上限 NT$ 20,000（含運）</p>
             </div>
             <div class="rounded-xl border border-tech-purple/40 bg-tech-purple/10 p-4 mb-6 text-sm text-gray-700 leading-relaxed space-y-2">
-              <p class="font-bold text-black">接下來會發生什麼</p>
-              <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
-                <li>你在本站填的門市／姓名／電話，會用來代客下單，不必再到賣貨便重選商品。</li>
-                <li>匯入後賣貨便會寄通知；請依簡訊／信件到門市取貨付款。</li>
-                <li>匯入前可用
-                  <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
-                  （訂單編號 + 電郵）改門市或聯絡資料。無法改商品內容。</li>
-                <li>其他問題請
-                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>。</li>
-              </ul>
+              <p class="font-bold text-black">送出之後</p>
+              <ol class="list-decimal pl-5 space-y-1.5 text-xs sm:text-sm">
+                <li>我們用你填的姓名／電話／門市，把訂單匯入 7-11 賣貨便。</li>
+                <li>你會收到賣貨便或 OPEN POINT 通知（不是要你再選一次商品）。</li>
+                <li>我們寄出包裹後，你到指定 7-11 <strong>取貨並付款</strong>。</li>
+              </ol>
+              <p class="text-xs text-gray-500 pt-1">問題請
+                <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>。
+              </p>
             </div>
             <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
               <input type="checkbox" id="c-pledge-attend" class="mt-1 accent-black" ${state.pledgeAttend ? 'checked' : ''}>
-              <span class="text-sm leading-relaxed"><span class="font-bold text-black">我了解取貨時付款</span><br>
-              <span class="text-xs text-gray-500">我確認將於指定 7-11 取貨，並支付 ${money(total)}（賣貨便到付）。未取貨可能被列入黑名單。</span></span>
+              <span class="text-sm leading-relaxed"><span class="font-bold text-black">我了解：本站送出即完成下單，之後到 7-11 取貨付款</span><br>
+              <span class="text-xs text-gray-500">我不會再到賣貨便自行加購同一批商品。取貨時支付 ${money(total)}。未取貨可能被列入黑名單。</span></span>
             </label>
           `;
           const el = document.getElementById('c-pledge-attend');
@@ -650,16 +649,13 @@
           : '';
         const twManageNote = isTwMyshipCheckout() ? `
             <div class="rounded-xl border border-gray-200 p-4 text-xs text-gray-600 leading-relaxed space-y-2">
-              <p class="font-bold text-black text-sm">提交後如何修改／取消？</p>
-              <p>匯入賣貨便前，請至
-                <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
-                （訂單編號 + 下單電郵）修改門市／聯絡資料或取消。</p>
-              <p>線上無法更改商品內容。其他問題請聯絡 Discord 客服。</p>
+              <p class="font-bold text-black text-sm">送出 = 下單完成</p>
+              <p>請<strong>不要</strong>再開賣貨便自己選同一批商品。我們會代為匯入；你之後只到 7-11 取貨付款。</p>
             </div>
           ` : '';
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">確認並提交</h2>
-          <p class="text-sm text-gray-500 mb-6">${isTwMyshipCheckout() ? '請確認通販內容後提交。匯入賣貨便前仍可用「管理訂單」修改門市。' : '請確認訂單內容後提交。'}</p>
+          <p class="text-sm text-gray-500 mb-6">${isTwMyshipCheckout() ? '送出後訂單即成立。請不要再到賣貨便自行下單。' : '請確認訂單內容後提交。'}</p>
           <div class="space-y-4">
             <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
               <p class="font-bold text-black text-sm mb-2">${isTwMyshipCheckout() ? '通販摘要' : '訂單摘要'}</p>

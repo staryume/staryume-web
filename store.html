@@ -161,14 +161,17 @@
             </div>
         </div>
 
-        <!--
-        <div class="max-w-6xl mx-auto px-6 mt-6 w-full">
-            <div class="p-4 bg-gray-100 border-l-4 border-tech-purple text-sm text-gray-600">
-                <h4 class="font-bold text-black mb-1 font-tech">SHIPPING NOTICE //</h4>
-                <p id="shipping-text">Taiwan orders: Shipped via 7-11 Myship.</p>
+        <div id="tw-flow-notice" class="hidden w-full bg-black text-white border-b-4 border-tech-purple">
+            <div class="max-w-6xl mx-auto px-6 py-4 text-sm leading-relaxed">
+                <p class="font-bold text-tech-purple tracking-wide mb-1">台灣通販請在本站結帳完成 · 不必再到賣貨便自己下單</p>
+                <ol class="list-decimal pl-5 space-y-1 text-xs sm:text-sm text-gray-200">
+                    <li>在本站加入購物車並填寫姓名、電話、7-11 門市後送出。</li>
+                    <li>請<strong class="text-white">不要</strong>再開 7-11 賣貨便賣場自己加購物車（容易重複下單）。</li>
+                    <li>我們會把訂單匯入賣貨便；你之後會收到賣貨便／OPEN POINT 通知。</li>
+                    <li>我們寄出後，請到你填的 7-11 <strong class="text-white">取貨並付款</strong>。</li>
+                </ol>
             </div>
         </div>
-        -->
 
         <div id="store-container" class="max-w-6xl mx-auto w-full px-6 py-8 space-y-8 min-h-[50vh]"></div>
 
@@ -713,15 +716,12 @@
                 const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
                 const isR18 = typeof productIsR18 === 'function' ? productIsR18(product) : !!(product.hidden || product.contentRating === 'r18');
                 const discord = (storeConfig.twCheckout && storeConfig.twCheckout.discordInvite) || 'https://discord.gg/staryume';
-                const useCart = typeof productUsesTwCart === 'function' ? productUsesTwCart(product) : !!product.useTwCart;
                 if (isR18) {
                     actions.innerHTML = `<a href="${discord}" target="_blank" rel="noopener noreferrer" class="block w-full bg-black text-white text-center font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">R18 請 Discord 私訊</a>
                     <p class="text-[11px] text-gray-400 text-center mt-2">7-11 賣貨便禁止上架色情／情趣商品，台灣 R18 不走通販結帳。</p>`;
-                } else if (useCart && twOn) {
-                    actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車 · 7-11 賣貨便</button>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">本站填一次資料，取貨時在 7-11 付款（賣貨便到付）</p>`;
-                } else if (product.linkTW) {
-                    actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
+                } else if (twOn) {
+                    actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車（本站結帳）</button>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">請在本站完成訂單。不必再開賣貨便自己選商品；取貨時在 7-11 付款。</p>`;
                 } else {
                     actions.innerHTML = `<button type="button" disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">台灣通路未開放 · 請切換香港</button>`;
                 }
@@ -845,16 +845,18 @@
             cart = typeof loadRegionCart === 'function' ? loadRegionCart(region) : {};
 
             const twBar = document.getElementById('tw-preorder-bar');
+            const twFlow = document.getElementById('tw-flow-notice');
             const bagRegionLabel = document.getElementById('bag-region-label');
             const showTwManage = !!(storeConfig.twCheckout && storeConfig.twCheckout.showOrderManageBar);
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(notice) notice.innerHTML = showTwManage
-                    ? '7-11 賣貨便取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>'
-                    : '7-11 賣貨便取貨付款';
-                if(shipText) shipText.innerText = "Taiwan: 7-11 賣貨便店到店，取貨付款。";
+                    ? '請在本站結帳 · 7-11 取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>'
+                    : '請在本站結帳完成 · 不必再到賣貨便自行下單';
+                if(shipText) shipText.innerText = "Taiwan: 在本站結帳；我們匯入賣貨便後，7-11 取貨付款。";
                 if(twBar) twBar.classList.toggle('hidden', !showTwManage);
+                if(twFlow) twFlow.classList.remove('hidden');
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · 7-11 MyShip';
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
@@ -864,6 +866,7 @@
                     : "PAYMENT: PAYME · FPS";
                 if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
                 if(twBar) twBar.classList.add('hidden');
+                if(twFlow) twFlow.classList.add('hidden');
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Hong Kong Online Store';
             }
 
@@ -907,7 +910,7 @@
             }
 
             const hint = currentRegion === 'TW'
-                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">台灣通販：結帳填 7-11 門市，取貨時付款。R18 請 Discord 私訊。</p>'
+                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">請在本站結帳並填 7-11 門市。<strong>不必再開賣貨便自己選商品。</strong>我們匯入後，你到門市取貨付款。R18 請 Discord 私訊。</p>'
                 : '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">香港：順豐到付 或 9 月 Palette Ring 11 現場取貨。</p>';
 
             container.innerHTML = hint + lines.map((line) => `
