@@ -66,8 +66,9 @@ const storeConfig = {
         ]
     },
     /**
-     * Taiwan pre-order checkout (bag → checkout.html?region=TW).
-     * FF47 booth pickup only (Day 1 / Day 2). Reuses same order endpoint as HK.
+     * Taiwan mail-order checkout (bag → checkout.html?region=TW).
+     * Customer fills once on staryu.me; seller 訂單匯入 to 7-11 賣貨便.
+     * Pay at 7-11 pickup (取貨付款). Reuses same order endpoint as HK (no proof).
      */
     "twCheckout": {
         "enabled": true,
@@ -75,60 +76,29 @@ const storeConfig = {
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
-        // Same limit as hkCheckout / edge (preorder rarely uploads proof)
         "maxProofBytes": 3500000,
+        "myship": {
+            "storefrontUrl": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
+            "storeLookupUrl": "https://www.ibon.com.tw/retail_inquiry.aspx",
+            "maxOrderTwd": 20000
+        },
         "payment": {
-            "fps": {
-                "enabled": true,
-                "accountName": "",
-                "accountId": "5979018",
-                "qrImage": "./assets/store/fps-qr.jpg"
-            },
-            "payme": {
-                "enabled": true,
-                "linkOrPhone": "https://payme.hsbc/staryume",
-                "qrImage": "./assets/store/payme-qr.jpg"
-            }
+            "fps": { "enabled": false },
+            "payme": { "enabled": false }
         },
         "fulfillment": [
             {
-                "id": "ff47_day1",
+                "id": "myship_711",
                 "enabled": true,
                 "label": {
-                    "zh": "FF47 首日取貨 ·（8/21 五） 花博爭豔館會場 U-35 / U-36 星夢亭攤位上取貨",
-                    "en": "FF47 Day 1 pickup · (Fri 8/21) Expo Hall booth U-35 / U-36 STARYUME"
+                    "zh": "7-11 賣貨便店到店（取貨付款）",
+                    "en": "7-11 MyShip store pickup (pay on collection)"
                 },
                 "desc": {
-                    "zh": "Fancy Frontier 47 第一天攤位上領取預約商品並付款。",
-                    "en": "Pick up pre-ordered items and pay at the booth on FF47 day 1."
+                    "zh": "填寫取件門市後送出。我們會把訂單匯入賣貨便；你到指定 7-11 取貨時再付款。R18 商品無法走此通路。",
+                    "en": "Choose a 7-11 store. We import the order into MyShip; pay when you pick up. R18 cannot ship this way."
                 },
-                "fields": []
-            },
-            {
-                "id": "ff47_day2",
-                "enabled": true,
-                "label": {
-                    "zh": "FF47 次日取貨 ·（8/22 六） EZspace圓山館 J區 星夢亭攤位上取貨",
-                    "en": "FF47 Day 2 pickup · (Sat 8/22) EZspace Yuanshan Hall Zone J · STARYUME booth"
-                },
-                "desc": {
-                    "zh": "Fancy Frontier 47 第二天改在場外 EZspace圓山館 J區 領取預約商品並付款。",
-                    "en": "Day 2 pickup is at off-venue EZspace Yuanshan Hall Zone J; pay when you collect."
-                },
-                "fields": []
-            },
-            {
-                "id": "ff47_day3",
-                "enabled": true,
-                "label": {
-                    "zh": "FF47 第3日取貨 ·（8/23 日） S27 / S28 ありぃずこーひー",
-                    "en": "FF47 Day 3 pickup · (Sun 8/23) S27 / S28 ありぃずこーひー"
-                },
-                "desc": {
-                    "zh": "第三天於 ありぃずこーひー 攤位 S27 / S28 領取預約商品並付款。",
-                    "en": "Pick up pre-ordered items and pay at ありぃずこーひー booth S27 / S28 on day 3."
-                },
-                "fields": []
+                "fields": ["storeId", "storeName"]
             }
         ]
     },
@@ -559,7 +529,7 @@ const storeProducts = [
             "en": "Includes New Artbook, Acrylic Stand, Badge, and Paper Bag.",
             "zh": "商品敘述:<br>1 - 新刊 - 敗北女角聖地巡禮插圖本（B5 20P全彩，日文）<br>2 - 透明扁平收納袋 （A4）<br>3 - 閃刀姫零衣本準備号<br>4 - 明信片2枚"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -595,7 +565,7 @@ const storeProducts = [
             "en": "Mini Size.",
             "zh": "遊戲王尺寸卡套 - 殺手旋律 綺悠 <br/>日本製尺寸：遊戲王 mini 尺寸 (63×90mm )</br>一包含有 60 個卡套"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -631,7 +601,7 @@ const storeProducts = [
             "en": "Mini Size.",
             "zh": "遊戲王尺寸卡套 - 殺手旋律 綺悠 <br/>日本製尺寸：遊戲王 mini 尺寸 (63×90mm )</br>一包含有 60 個卡套"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -667,7 +637,7 @@ const storeProducts = [
             "en": "Standard",
             "zh": "標準尺寸 卡套 - 露娜瑪莉亞<br>日本製尺寸：MTG / PTCG 標準尺寸 (66×92mm )<br> 一包含有 60 個卡套"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -703,7 +673,7 @@ const storeProducts = [
             "en": "Standard",
             "zh": "標準尺寸 卡套 - 黛芮采<br>日本製尺寸：MTG / PTCG 標準尺寸 (66×92mm )<br> 一包含有 60 個卡套"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -738,7 +708,7 @@ const storeProducts = [
             "en": "Card sleeves — K9－17 Izuna.",
             "zh": "卡套 · K9－17號 飯綱"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": true,
             "en": true,
@@ -823,7 +793,7 @@ const storeProducts = [
             "en": "Playmat - Dark Magician Girl",
             "zh": "牌墊"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -857,7 +827,7 @@ const storeProducts = [
             "en": "Playmat - Dark Magician Girl",
             "zh": "牌墊"
         },
-        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2403022207590",
+        "linkTW": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
         "langs": {
             "jp": false,
             "en": true,
@@ -1334,12 +1304,59 @@ function formatStoreMoney(amount, region) {
     return normalizeStoreRegion(region) === "TW" ? ("NT$ " + n) : ("HKD$ " + n);
 }
 
-/** TW pre-order cart products (FF47); others may still use Myship via linkTW. */
+function productIsR18(product) {
+    return !!(product && (product.hidden || product.contentRating === "r18"));
+}
+
+/** All-ages TW catalog SKUs go through the staryu.me bag → 賣貨便 訂單匯入. R18 cannot. */
 function productUsesTwCart(product) {
-    if (!product) return false;
+    if (!product || productIsR18(product)) return false;
     if (product.useTwCart === true) return true;
     if (product.eventSource === "acghk2026" || product.eventSource === "ff47") return true;
     return false;
+}
+
+function twMyshipMaxOrderTwd(config) {
+    const tw = (config && config.twCheckout) || (typeof storeConfig !== "undefined" && storeConfig.twCheckout) || {};
+    const n = Number(tw.myship && tw.myship.maxOrderTwd);
+    return Number.isFinite(n) && n > 0 ? n : 20000;
+}
+
+function normalizeTwStoreId(raw) {
+    return String(raw || "").replace(/\D/g, "");
+}
+
+function isValidTwStoreId(raw) {
+    const id = normalizeTwStoreId(raw);
+    return id.length >= 5 && id.length <= 7;
+}
+
+/**
+ * One row per line item for 賣貨便 訂單匯入.
+ * Paste into their official 範本 if header names differ.
+ */
+function buildMyshipImportRows(order) {
+    const items = (order && order.items) || [];
+    const storeId = normalizeTwStoreId(order && order.storeId);
+    const storeName = String((order && order.storeName) || "").trim();
+    const name = String((order && order.name) || "").trim();
+    const phone = String((order && order.phone) || "").trim();
+    const email = String((order && order.email) || "").trim();
+    const orderId = String((order && order.orderId) || "").trim();
+    const note = String((order && order.notes) || "").trim();
+    return items.map((it) => ({
+        收件人姓名: name,
+        收件人手機: phone,
+        Email: email,
+        門市店號: storeId,
+        門市名稱: storeName,
+        商品名稱: String((it && (it.title || it.name)) || "").trim(),
+        規格: String((it && it.spec) || "").trim(),
+        單價: Number((it && (it.unit != null ? it.unit : it.price)) || 0),
+        數量: Number((it && it.qty) || 0) || 0,
+        訂單編號: orderId,
+        備註: note,
+    }));
 }
 
 function loadRegionCart(region) {

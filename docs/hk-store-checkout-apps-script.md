@@ -39,13 +39,15 @@ Timestamp	Order ID	Items	Total	Name	Email	Phone	SNS Type	SNS Contact	Fulfillment
 
 Google Sheet **File → Version history** is also available for accidental undos.
 
-### TW pre-order manage
+### TW 賣貨便 mail-order
 
 - Customer page: **`https://staryu.me/preorder.html`** (also linked from Taiwan store bar + checkout success)  
-- Lookup: Order ID + email (URL may include `?orderId=TW-…`)  
-- **Edit / cancel until:** 24 hours **before** FF47 Day 1 → **`2026-08-20 00:00 +08`** (`TW_PREORDER_DEADLINE_ISO` in Code.gs)  
-- Same email cannot create another TW pre-order within **24 hours** of a previous one  
-- New TW pre-orders also freeze at the same deadline
+- Lookup: Order ID + email (`?orderId=TW-…`)  
+- Checkout collects 7-11 **店號 + 店名**; pay at pickup (no FPS proof)  
+- **Edit / cancel** until Status is `imported` / `picked` / `cancelled` (`TW_MAIL_DEADLINE_ISO` empty = no calendar freeze)  
+- Same email cannot create another TW order within **24 hours**  
+- After 訂單匯入, set Status **`imported`**. See **`docs/myship-order-import.md`**.  
+- Staff Sheet menu: **賣貨便 → 重建匯入表**
 
 ### Inventory POS linkage (optional)
 

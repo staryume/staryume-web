@@ -22,15 +22,16 @@ var INVENTORY_SERVICE_KEY = '';
 /** HK paid limited: reject order if inventory pool insufficient. TW usually unlimited. */
 var HARD_REJECT_HK_LIMITED = true;
 
-/** Same email cannot place another TW pre-order within this many hours. */
+/** Same email cannot place another TW order within this many hours. */
 var NEW_ORDER_COOLDOWN_HOURS = 24;
 /**
- * Deadline for BOTH:
- *  - creating NEW Taiwan FF47 pre-orders
- *  - customer edit / cancel of existing TW pre-orders
- * = 24 hours before FF47 Day 1 (2026-08-21) → 2026-08-20 00:00 Taipei (+08)
+ * Legacy FF47 pre-order edit/create cutoff (already passed).
+ * New 賣貨便 mail-order uses TW_MAIL_DEADLINE_ISO instead.
  */
 var TW_PREORDER_DEADLINE_ISO = '2026-08-20T00:00:00+08:00';
+/** Empty = no close date for 賣貨便 通販. Set ISO like 2026-09-30T23:59:00+08:00 to freeze. */
+var TW_MAIL_DEADLINE_ISO = '';
+var MYSHIP_EXPORT_SHEET = '賣貨便匯入';
 
 var HEADERS = [
   'Timestamp', 'Order ID', 'Items', 'Total', 'Name', 'Email', 'Phone',
@@ -81,15 +82,23 @@ function handleCreate_(data) {
   var currency = String(data.currency || (region === 'TW' ? 'TWD' : 'HKD'));
   // Only Taiwan may create preorders (pay at pickup). Never trust client
   // orderType alone for HK — paid HK always requires payment proof.
-  var orderType = String(data.orderType || (data.paymentMethod === 'preorder_on_site' ? 'preorder' : 'paid'));
+  var orderType = String(data.orderType || '');
   if (region !== 'TW') {
     orderType = 'paid';
+  } else if (
+    data.paymentMethod === 'myship_cod' ||
+    orderType === 'myship' ||
+    data.fulfillmentId === 'myship_711'
+  ) {
+    orderType = 'myship';
   } else if (data.paymentMethod === 'preorder_on_site' || orderType === 'preorder') {
     orderType = 'preorder';
   } else {
     orderType = 'paid';
   }
+  var isTwMyship = (region === 'TW' && orderType === 'myship');
   var isTwPreorder = (region === 'TW' && orderType === 'preorder');
+  var isTwNoProof = isTwMyship || isTwPreorder;
   var name = data.name || '';
   var email = normalizeEmail_(data.email);
   var phone = data.phone || '';
@@ -98,10 +107,17 @@ function handleCreate_(data) {
   var fulfillmentId = data.fulfillmentId || '';
   var fulfillment = data.fulfillmentLabel || fulfillmentId || '';
   fulfillment = region + ' · ' + currency + (fulfillment ? (' · ' + fulfillment) : '');
-  var sfCode = data.sfCode || '';
+  var storeId = String(data.storeId || data.sfCode || '').replace(/\D/g, '');
+  var storeName = String(data.storeName || '').trim();
+  var sfCode = isTwMyship ? storeId : (data.sfCode || '');
   var payment = data.paymentLabel || paymentLabel_(data.paymentMethod || '');
+  if (isTwMyship && !payment) payment = '賣貨便·7-11取貨付款';
   if (isTwPreorder && !payment) payment = '預購·現場付款';
   var notes = data.notes || '';
+  if (isTwMyship) {
+    var storeTag = '[STORE] ' + storeId + (storeName ? (' ' + storeName) : '');
+    notes = storeTag + (notes ? ('\n' + notes) : '');
+  }
   if (isTwPreorder) {
     notes = (notes ? (notes + '\n') : '') + '[PREORDER] pay at pickup; pledge OK';
   }
@@ -121,14 +137,37 @@ function handleCreate_(data) {
     return jsonOut_({ ok: false, error: 'missing_items', message: '訂單沒有商品。' });
   }
 
-  // TW pre-order gates
-  if (isTwPreorder) {
-    var closed = twDeadlinePassed_();
-    if (closed) {
+  if (isTwMyship) {
+    if (twMailDeadlinePassed_()) {
       return jsonOut_({
         ok: false,
         error: 'preorder_closed',
-        message: '台灣 FF47 預購已截止（活動前 24 小時起），無法再建立新預購。如已有訂單且仍在期限內，請至管理頁修改／取消。'
+        message: '台灣通販目前暫停新訂單。'
+      });
+    }
+    if (Number(totalNum) > 20000) {
+      return jsonOut_({
+        ok: false,
+        error: 'invalid_total',
+        message: '賣貨便單筆上限 NT$ 20000。'
+      });
+    }
+    if (!storeId || storeId.length < 5) {
+      return jsonOut_({
+        ok: false,
+        error: 'missing_fields',
+        message: '請填寫 7-11 門市店號。'
+      });
+    }
+  }
+
+  // TW gates (cooldown applies to myship + leftover FF47 preorders)
+  if (isTwNoProof) {
+    if (isTwPreorder && twDeadlinePassed_()) {
+      return jsonOut_({
+        ok: false,
+        error: 'preorder_closed',
+        message: '台灣 FF47 預購已截止。'
       });
     }
     var cool = findRecentTwPreorderByEmail_(email);
@@ -137,7 +176,7 @@ function handleCreate_(data) {
         ok: false,
         error: 'preorder_cooldown',
         orderId: cool.orderId,
-        message: '同一電郵 24 小時內只能建立一筆預購。請管理既有訂單：' + cool.orderId,
+        message: '同一電郵 24 小時內只能建立一筆台灣訂單。請管理既有訂單：' + cool.orderId,
         manageHint: true
       });
     }
@@ -161,7 +200,7 @@ function handleCreate_(data) {
 
   // Paid orders (including any non-TW create): require valid proof before writing the row
   var proofUrl = '';
-  if (!isTwPreorder) {
+  if (!isTwNoProof) {
     if (!data.proof || !data.proof.dataUrl) {
       return jsonOut_({
         ok: false,
@@ -242,6 +281,8 @@ function handleCreate_(data) {
     notes: notes,
     proofUrl: proofUrl,
     orderType: orderType,
+    storeId: storeId,
+    storeName: storeName,
     event: 'create'
   };
 
@@ -268,9 +309,9 @@ function handleCreate_(data) {
     orderId: orderId,
     proofUrl: proofUrl || null,
     proofError: null,
-    editableUntil: isTwPreorder
-      ? twDeadlineDate_().toISOString()
-      : null,
+    editableUntil: isTwMyship
+      ? (twMailDeadlineDate_() ? twMailDeadlineDate_().toISOString() : null)
+      : (isTwPreorder ? twDeadlineDate_().toISOString() : null),
     inventory: inventoryResult
   });
 }
@@ -340,11 +381,14 @@ function handleUpdate_(data) {
     return jsonOut_({
       ok: false,
       error: 'edit_window_closed',
-      message: '已超過可修改期限（Fancy Frontier 47 開始前 24 小時截止）。請聯絡 Discord 客服。'
+      message: '此訂單已無法線上修改（可能已匯入賣貨便）。請聯絡 Discord 客服。'
     });
   }
   if (found.values[col_('Status') - 1] === 'cancelled') {
-    return jsonOut_({ ok: false, error: 'cancelled', message: '此預購已取消。' });
+    return jsonOut_({ ok: false, error: 'cancelled', message: '此訂單已取消。' });
+  }
+  if (isPickedStatus_(found.values[col_('Status') - 1])) {
+    return jsonOut_({ ok: false, error: 'picked', message: '此訂單已出貨／領取，無法再修改。' });
   }
 
   var sheet = orderSheet_();
@@ -357,8 +401,14 @@ function handleUpdate_(data) {
   if (!name || !phone || !snsType || !snsContact || !fulfillmentId) {
     return jsonOut_({ ok: false, error: 'missing_fields', message: '請填寫完整聯絡資料與取貨方式。' });
   }
-  if (fulfillmentId !== 'ff47_day1' && fulfillmentId !== 'ff47_day2') {
+  var allowedFulfill = fulfillmentId === 'myship_711' || fulfillmentId === 'ff47_day1' || fulfillmentId === 'ff47_day2' || fulfillmentId === 'ff47_day3';
+  if (!allowedFulfill) {
     return jsonOut_({ ok: false, error: 'invalid_fulfillment', message: '取貨方式無效。' });
+  }
+  var storeId = String(data.storeId || data.sfCode || '').replace(/\D/g, '');
+  var storeName = String(data.storeName || '').trim();
+  if (fulfillmentId === 'myship_711' && storeId.length < 5) {
+    return jsonOut_({ ok: false, error: 'missing_fields', message: '請填寫 7-11 門市店號。' });
   }
 
   var fulfillmentLabel = data.fulfillmentLabel || fulfillmentId;
@@ -372,6 +422,13 @@ function handleUpdate_(data) {
   sheet.getRange(row, col_('SNS Contact')).setValue(snsContact);
   sheet.getRange(row, col_('Fulfillment')).setValue(fulfillment);
   sheet.getRange(row, col_('FulfillmentId')).setValue(fulfillmentId);
+  if (fulfillmentId === 'myship_711') {
+    sheet.getRange(row, col_('SF Code')).setValue(storeId);
+    var oldNotes = String(found.values[col_('Notes') - 1] || '');
+    var stripped = oldNotes.replace(/^\[STORE\][^\n]*\n?/, '');
+    var storeTag = '[STORE] ' + storeId + (storeName ? (' ' + storeName) : '');
+    sheet.getRange(row, col_('Notes')).setValue(storeTag + (stripped ? ('\n' + stripped) : ''));
+  }
   sheet.getRange(row, col_('UpdatedAt')).setValue(new Date());
 
   var values = sheet.getRange(row, 1, 1, HEADERS.length).getValues()[0];
@@ -391,11 +448,14 @@ function handleCancel_(data) {
     return jsonOut_({
       ok: false,
       error: 'edit_window_closed',
-      message: '已超過可取消期限（Fancy Frontier 47 開始前 24 小時截止）。請聯絡 Discord 客服。'
+      message: '此訂單已無法取消（可能已匯入賣貨便）。請聯絡 Discord 客服。'
     });
   }
   if (found.values[col_('Status') - 1] === 'cancelled') {
-    return jsonOut_({ ok: false, error: 'cancelled', message: '此預購已取消。' });
+    return jsonOut_({ ok: false, error: 'cancelled', message: '此訂單已取消。' });
+  }
+  if (isPickedStatus_(found.values[col_('Status') - 1])) {
+    return jsonOut_({ ok: false, error: 'picked', message: '此訂單已出貨／領取，無法取消。' });
   }
 
   var sheet = orderSheet_();
@@ -418,12 +478,12 @@ function handleCancel_(data) {
 function handleCheck_(data) {
   var email = normalizeEmail_(data.email);
   if (!email) return jsonOut_({ ok: false, error: 'missing_fields' });
-  if (twDeadlinePassed_()) {
+  if (twMailDeadlinePassed_()) {
     return jsonOut_({
       ok: true,
       canCreate: false,
       reason: 'preorder_closed',
-      message: '台灣 FF47 預購已截止（活動前 24 小時起）。'
+      message: '台灣通販目前暫停新訂單。'
     });
   }
   var cool = findRecentTwPreorderByEmail_(email);
@@ -433,7 +493,7 @@ function handleCheck_(data) {
       canCreate: false,
       reason: 'preorder_cooldown',
       orderId: cool.orderId,
-      message: '24 小時內已有預購，請先管理既有訂單。'
+      message: '24 小時內已有台灣訂單，請先管理既有訂單。'
     });
   }
   return jsonOut_({ ok: true, canCreate: true });
@@ -511,6 +571,11 @@ function ensureHeaders_() {
   }
 }
 
+function isPickedStatus_(raw) {
+  var s = String(raw || '').toLowerCase();
+  return s.indexOf('picked') >= 0 || s.indexOf('collected') >= 0 || s.indexOf('領取') >= 0 || s === 'done';
+}
+
 function col_(headerName) {
   for (var i = 0; i < HEADERS.length; i++) {
     if (HEADERS[i] === headerName) return i + 1;
@@ -532,9 +597,37 @@ function twDeadlineDate_() {
   }
 }
 
-/** After this instant: no new TW pre-orders; no customer edit/cancel. */
+/** After this instant: no new TW FF47 pre-orders; no customer edit/cancel of those rows. */
 function twDeadlinePassed_() {
   return new Date() >= twDeadlineDate_();
+}
+
+function twMailDeadlineDate_() {
+  var raw = String(TW_MAIL_DEADLINE_ISO || '').trim();
+  if (!raw) return null;
+  var d = new Date(raw);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function twMailDeadlinePassed_() {
+  var d = twMailDeadlineDate_();
+  return !!(d && new Date() >= d);
+}
+
+function isImportedStatus_(raw) {
+  var s = String(raw || '').toLowerCase();
+  return s.indexOf('import') >= 0 || s.indexOf('匯入') >= 0 || s.indexOf('shipped') >= 0;
+}
+
+function parseStoreFromNotes_(notes, sfCode) {
+  var storeId = String(sfCode || '').replace(/\D/g, '');
+  var storeName = '';
+  var m = String(notes || '').match(/\[STORE\]\s*(\d+)?\s*(.*)/);
+  if (m) {
+    if (m[1] && !storeId) storeId = m[1];
+    storeName = String(m[2] || '').trim();
+  }
+  return { storeId: storeId, storeName: storeName };
 }
 
 function findRecentTwPreorderByEmail_(email) {
@@ -559,7 +652,6 @@ function findRecentTwPreorderByEmail_(email) {
     if (!region && String(orderId).indexOf('TW-') === 0) region = 'TW';
     if (!orderType && String(row[col_('Payment') - 1] || '').indexOf('預購') >= 0) orderType = 'preorder';
     if (region !== 'TW') continue;
-    if (orderType && orderType !== 'preorder') continue;
     if (status.indexOf('cancel') >= 0) continue;
     var ts = row[col_('Timestamp') - 1];
     var t = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
@@ -592,20 +684,28 @@ function findTwPreorder_(orderId, email) {
     var orderType = String(rowVals[col_('OrderType') - 1] || '').toLowerCase();
     if (!region && orderId.indexOf('TW-') === 0) region = 'TW';
     if (!orderType && String(rowVals[col_('Payment') - 1] || '').indexOf('預購') >= 0) orderType = 'preorder';
-    if (region !== 'TW' || (orderType && orderType !== 'preorder' && orderId.indexOf('TW-') !== 0)) {
-      return { ok: false, error: 'not_tw_preorder', message: '此功能僅適用於台灣 FF47 預購。' };
+    if (region !== 'TW') {
+      return { ok: false, error: 'not_tw_preorder', message: '此功能僅適用於台灣訂單。' };
     }
     var status = String(rowVals[col_('Status') - 1] || '');
     var ts = rowVals[col_('Timestamp') - 1];
     var t = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
     var cancelled = status.toLowerCase().indexOf('cancel') >= 0;
-    var editable = !cancelled && !twDeadlinePassed_();
+    var picked = isPickedStatus_(status);
+    var imported = isImportedStatus_(status);
+    var fulfillmentId = String(rowVals[col_('FulfillmentId') - 1] || '');
+    var isMyship = orderType === 'myship' || fulfillmentId === 'myship_711';
+    var deadlineHit = isMyship ? twMailDeadlinePassed_() : twDeadlinePassed_();
+    var editable = !cancelled && !picked && !imported && !deadlineHit;
+    var until = isMyship
+      ? (twMailDeadlineDate_() ? twMailDeadlineDate_().toISOString() : null)
+      : twDeadlineDate_().toISOString();
     return {
       ok: true,
       row: i + 2,
       values: rowVals,
       editable: editable,
-      editableUntil: twDeadlineDate_().toISOString()
+      editableUntil: until
     };
   }
   return { ok: false, error: 'not_found', message: '找不到訂單。' };
@@ -616,7 +716,18 @@ function publicOrder_(row, values) {
   var t = ts instanceof Date ? ts.getTime() : new Date(ts).getTime();
   var status = String(values[col_('Status') - 1] || 'new');
   var cancelled = status.toLowerCase().indexOf('cancel') >= 0;
-  var editable = !cancelled && !twDeadlinePassed_();
+  var picked = isPickedStatus_(status);
+  var imported = isImportedStatus_(status);
+  var fulfillmentId = String(values[col_('FulfillmentId') - 1] || '');
+  var orderType = String(values[col_('OrderType') - 1] || '').toLowerCase();
+  var isMyship = orderType === 'myship' || fulfillmentId === 'myship_711';
+  var deadlineHit = isMyship ? twMailDeadlinePassed_() : twDeadlinePassed_();
+  var editable = !cancelled && !picked && !imported && !deadlineHit;
+  var publicStatus = cancelled ? 'cancelled' : (picked ? 'picked' : (imported ? 'imported' : 'new'));
+  var store = parseStoreFromNotes_(values[col_('Notes') - 1], values[col_('SF Code') - 1]);
+  var until = isMyship
+    ? (twMailDeadlineDate_() ? twMailDeadlineDate_().toISOString() : null)
+    : twDeadlineDate_().toISOString();
   return {
     orderId: String(values[col_('Order ID') - 1] || ''),
     itemsText: String(values[col_('Items') - 1] || ''),
@@ -627,13 +738,16 @@ function publicOrder_(row, values) {
     snsType: String(values[col_('SNS Type') - 1] || ''),
     snsContact: String(values[col_('SNS Contact') - 1] || ''),
     fulfillment: String(values[col_('Fulfillment') - 1] || ''),
-    fulfillmentId: String(values[col_('FulfillmentId') - 1] || ''),
-    status: cancelled ? 'cancelled' : 'new',
+    fulfillmentId: fulfillmentId,
+    sfCode: store.storeId,
+    storeId: store.storeId,
+    storeName: store.storeName,
+    status: publicStatus,
     region: 'TW',
-    orderType: 'preorder',
+    orderType: isMyship ? 'myship' : 'preorder',
     createdAt: t ? new Date(t).toISOString() : null,
     editable: editable,
-    editableUntil: twDeadlineDate_().toISOString()
+    editableUntil: until
   };
 }
 
@@ -655,7 +769,7 @@ function mailInfoFromRow_(values, event) {
     snsContact: String(values[col_('SNS Contact') - 1] || ''),
     notes: String(values[col_('Notes') - 1] || ''),
     proofUrl: String(values[col_('Proof URL') - 1] || ''),
-    orderType: 'preorder',
+    orderType: String(values[col_('OrderType') - 1] || ''),
     event: event || 'update'
   };
 }
@@ -680,6 +794,7 @@ function paymentLabel_(method) {
   var m = String(method || '').toLowerCase();
   if (m === 'fps') return 'FPS 轉數快';
   if (m === 'payme') return 'PayMe';
+  if (m === 'myship_cod' || m === 'myship') return '賣貨便·7-11取貨付款';
   if (m === 'preorder_on_site' || m === 'preorder') return '預購·現場付款';
   return method || '';
 }
@@ -713,20 +828,23 @@ function sendOrderEmail_(info) {
   var region = String(info.region || 'HK').toUpperCase();
   var currency = String(info.currency || (region === 'TW' ? 'TWD' : 'HKD'));
   var moneyMark = currency === 'TWD' ? 'NT$' : 'HKD$';
-  var isPreorder = String(info.orderType || '') === 'preorder' || region === 'TW';
-  var regionLabel = region === 'TW' ? '台灣預購（FF47）' : '香港商店';
+  var orderType = String(info.orderType || '');
+  var isMyship = orderType === 'myship' || String(info.fulfillmentId || '') === 'myship_711';
+  var isPreorder = orderType === 'preorder';
+  var regionLabel = region === 'TW' ? (isMyship ? '台灣通販（賣貨便）' : '台灣預購') : '香港商店';
   var lines = [];
   lines.push(info.name ? (info.name + ' 你好，') : '你好，');
   lines.push('');
-  if (isPreorder && region === 'TW') {
+  if (isMyship && region === 'TW') {
+    lines.push('感謝你在 staryu.me 完成台灣通販訂單。');
+    lines.push('我們會把訂單匯入 7-11 賣貨便；請到你填的門市取貨並付款。本站不必另外轉帳。');
+    lines.push('');
+    lines.push('匯入前可改門市／聯絡資料（訂單編號 + 下單電郵）：');
+    lines.push('https://staryu.me/preorder.html?orderId=' + encodeURIComponent(info.orderId || ''));
+  } else if (isPreorder && region === 'TW') {
     lines.push('感謝你在 staryu.me 完成' + regionLabel + '登記。');
     lines.push('我們已收到你的預購；請依所選時段到場取貨並付款。');
-    lines.push('');
-    lines.push('【重要】可修改取貨日／聯絡資料或取消預購，截止時間：');
-    lines.push('Fancy Frontier 47 開始前 24 小時（2026/8/20 00:00 台北時間）為止。');
-    lines.push('管理頁（訂單編號 + 下單電郵）：');
-    lines.push('https://staryu.me/preorder.html?orderId=' + encodeURIComponent(info.orderId || ''));
-    lines.push('或從商店台灣頁「管理訂單」進入。');
+    lines.push('管理頁：https://staryu.me/preorder.html?orderId=' + encodeURIComponent(info.orderId || ''));
   } else {
     lines.push('感謝你在 staryu.me 完成' + regionLabel + '訂單。');
     lines.push('我們已收到你的訂單與付款證明，核對後會安排出貨／取貨。');
@@ -737,7 +855,7 @@ function sendOrderEmail_(info) {
   lines.push('【合計】 ' + moneyMark + ' ' + info.total);
   lines.push('【付款方式】 ' + info.payment);
   lines.push('【取貨方式】 ' + info.fulfillment);
-  if (info.sfCode) lines.push('【順豐取貨資料】 ' + info.sfCode);
+  if (info.sfCode) lines.push('【門市／順豐】 ' + info.sfCode);
   if (info.phone) lines.push('【電話】 ' + info.phone);
   lines.push('');
   lines.push('【商品】');
@@ -762,13 +880,14 @@ function sendOrderEmail_(info) {
 
 function sendCustomerManageEmail_(info, event) {
   if (!info.email) return;
-  var title = event === 'cancel' ? '預購已取消' : '預購已更新';
+  var title = event === 'cancel' ? '訂單已取消' : '訂單已更新';
   var lines = [];
   lines.push(info.name ? (info.name + ' 你好，') : '你好，');
   lines.push('');
-  lines.push('你的 FF47 預購（' + info.orderId + '）' + (event === 'cancel' ? '已取消。' : '已更新。'));
+  lines.push('你的台灣訂單（' + info.orderId + '）' + (event === 'cancel' ? '已取消。' : '已更新。'));
   if (event !== 'cancel') {
     lines.push('【取貨】 ' + (info.fulfillment || ''));
+    lines.push('【門市】 ' + (info.sfCode || ''));
     lines.push('【電話】 ' + (info.phone || ''));
   }
   lines.push('');
@@ -788,11 +907,13 @@ function sendSellerNotifyEmail_(info) {
   var region = String(info.region || 'HK').toUpperCase();
   var currency = String(info.currency || (region === 'TW' ? 'TWD' : 'HKD'));
   var moneyMark = currency === 'TWD' ? 'NT$' : 'HKD$';
+  var isMyship = String(info.orderType || '') === 'myship' ||
+    String(info.payment || '').indexOf('賣貨便') >= 0;
   var isPreorder = String(info.orderType || '') === 'preorder' ||
     String(info.payment || '').indexOf('預購') >= 0;
   var event = info.event || 'create';
-  var kind = isPreorder ? '預購' : '訂單';
-  var regionLabel = region === 'TW' ? '台灣 FF47' : '香港';
+  var kind = isMyship ? '賣貨便訂單' : (isPreorder ? '預購' : '訂單');
+  var regionLabel = region === 'TW' ? (isMyship ? '台灣賣貨便' : '台灣') : '香港';
   var verb = event === 'cancel' ? '取消' : (event === 'update' ? '更新' : '新');
 
   var lines = [];
@@ -805,7 +926,7 @@ function sendSellerNotifyEmail_(info) {
   lines.push('【合計】 ' + moneyMark + ' ' + info.total);
   lines.push('【付款】 ' + (info.payment || '—'));
   lines.push('【取貨】 ' + (info.fulfillment || '—'));
-  if (info.sfCode) lines.push('【順豐】 ' + info.sfCode);
+  if (info.sfCode) lines.push('【門市／順豐】 ' + info.sfCode);
   lines.push('');
   lines.push('【顧客】 ' + (info.name || '—'));
   lines.push('【電郵】 ' + (info.email || '—'));
@@ -837,4 +958,81 @@ function jsonOut_(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function onOpen() {
+  SpreadsheetApp.getUi().createMenu('賣貨便')
+    .addItem('重建匯入表（賣貨便匯入分頁）', 'rebuildMyshipExportSheet_')
+    .addToUi();
+}
+
+/**
+ * Rebuilds sheet 「賣貨便匯入」: one row per line item for 訂單匯入.
+ * File → Download → xlsx, then upload in 賣貨便後台. Rename headers if 範本 differs.
+ * After a successful upload, set Status of those orders to imported so customers cannot edit.
+ */
+function rebuildMyshipExportSheet_() {
+  ensureHeaders_();
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var src = orderSheet_();
+  var last = src.getLastRow();
+  var headers = [
+    '收件人姓名', '收件人手機', 'Email', '門市店號', '門市名稱',
+    '商品名稱', '規格', '單價', '數量', '訂單編號', '備註', 'SheetStatus'
+  ];
+  var out = ss.getSheetByName(MYSHIP_EXPORT_SHEET);
+  if (!out) out = ss.insertSheet(MYSHIP_EXPORT_SHEET);
+  out.clearContents();
+  out.getRange(1, 1, 1, headers.length).setValues([headers]);
+  if (last < 2) {
+    SpreadsheetApp.getUi().alert('沒有訂單列。');
+    return;
+  }
+  var width = Math.max(src.getLastColumn(), HEADERS.length);
+  var data = src.getRange(2, 1, last, width).getValues();
+  var rows = [];
+  for (var i = 0; i < data.length; i++) {
+    var v = data[i];
+    var region = String(v[col_('Region') - 1] || '').toUpperCase();
+    var orderId = String(v[col_('Order ID') - 1] || '');
+    if (!region && orderId.indexOf('TW-') === 0) region = 'TW';
+    if (region !== 'TW') continue;
+    var status = String(v[col_('Status') - 1] || '');
+    if (status.toLowerCase().indexOf('cancel') >= 0) continue;
+    var fulfillmentId = String(v[col_('FulfillmentId') - 1] || '');
+    var orderType = String(v[col_('OrderType') - 1] || '').toLowerCase();
+    if (orderType !== 'myship' && fulfillmentId !== 'myship_711') continue;
+    var store = parseStoreFromNotes_(v[col_('Notes') - 1], v[col_('SF Code') - 1]);
+    var items = [];
+    try {
+      items = JSON.parse(String(v[col_('ItemsJson') - 1] || '[]'));
+    } catch (e) {
+      items = [];
+    }
+    if (!items || !items.length) {
+      items = [{ title: String(v[col_('Items') - 1] || ''), qty: 1, unit: v[col_('Total') - 1] }];
+    }
+    var note = String(v[col_('Notes') - 1] || '').replace(/^\[STORE\][^\n]*\n?/, '');
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j] || {};
+      rows.push([
+        String(v[col_('Name') - 1] || ''),
+        String(v[col_('Phone') - 1] || ''),
+        String(v[col_('Email') - 1] || ''),
+        store.storeId,
+        store.storeName,
+        String(it.title || it.name || ''),
+        String(it.spec || ''),
+        Number(it.unit != null ? it.unit : it.price) || 0,
+        Number(it.qty) || 0,
+        orderId,
+        note,
+        status
+      ]);
+    }
+  }
+  if (rows.length) {
+    out.getRange(2, 1, rows.length, headers.length).setValues(rows);
+  }
+  SpreadsheetApp.getUi().alert('已寫入 ' + rows.length + ' 列到「' + MYSHIP_EXPORT_SHEET + '」。請 File → Download，再於賣貨便「訂單匯入」上傳。');
 }

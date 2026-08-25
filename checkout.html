@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Checkout · 結帳 | STARYUME</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="STARYUME 商店站內結帳 — FPS / PayMe · 預購取貨">
+  <meta name="description" content="STARYUME 商店站內結帳 — 香港 FPS / PayMe · 台灣 7-11 賣貨便">
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
   <script>
@@ -79,8 +79,8 @@
       </div>
       <p class="text-xs text-gray-500 mb-4">確認電郵（如有填寫）可能稍後送達，請檢查垃圾郵件匣。</p>
       <div id="successPreorderManage" class="hidden mb-4 p-4 rounded-xl border border-tech-purple/40 bg-tech-purple/10 text-left text-xs text-gray-700 leading-relaxed">
-        <p class="font-bold text-black text-sm mb-1">可管理預購至 FF47 前 24 小時</p>
-        <p class="mb-2">在 <strong>2026/8/20 00:00（台北）</strong> 前，可修改取貨日／聯絡資料或取消預購（需訂單編號 + 下單電郵）。</p>
+        <p class="font-bold text-black text-sm mb-1">匯入賣貨便前可改門市</p>
+        <p class="mb-2">用訂單編號 + 下單電郵，可修改 7-11 門市／聯絡資料或取消。匯入後請以賣貨便通知為準。</p>
         <p class="mb-3 text-gray-500">請妥善保存訂單編號；也可從商店台灣頁「管理訂單」進入。</p>
         <a id="successManageLink" href="./preorder.html"
           class="inline-flex items-center justify-center w-full py-3 bg-black text-white font-bold rounded-xl hover:bg-tech-purple hover:text-black transition text-sm">
@@ -152,16 +152,19 @@
       { id: 'bag', label: 'Cart', labelZh: '購物車' },
       { id: 'contact', label: 'Contact', labelZh: '聯絡' },
       { id: 'fulfill', label: 'Pickup', labelZh: '取貨' },
-      { id: 'pay', label: 'Pay', labelZh: '付款' }, // TW: shown as 預約承諾 in step nav
+      { id: 'pay', label: 'Pay', labelZh: '付款' }, // TW: 賣貨便到付說明
       { id: 'proof', label: 'Confirm', labelZh: '確認並提交' },
     ];
 
     /**
-     * TW (FF47) only: pledge / pay at pickup, no online payment proof.
-     * HK: original FPS / PayMe + screenshot flow.
+     * TW mail-order: 7-11 賣貨便 取貨付款, no online payment proof.
+     * HK: FPS / PayMe + screenshot.
      */
-    function isPreorderCheckout() {
+    function isTwMyshipCheckout() {
       return checkoutRegion === 'TW';
+    }
+    function isPreorderCheckout() {
+      return isTwMyshipCheckout();
     }
 
     let stepIndex = 0;
@@ -175,6 +178,8 @@
       snsContact: '',
       fulfillmentId: '',
       sfCode: '',
+      storeId: '',
+      storeName: '',
       paymentMethod: '',
       paidConfirmed: false,
       /** Pre-order pledge checkboxes (TW only) */
@@ -258,22 +263,22 @@
       const eyebrow = document.getElementById('checkoutEyebrow');
       if (eyebrow) {
         eyebrow.textContent = checkoutRegion === 'TW'
-          ? 'TAIWAN PRE-ORDER · FF47'
+          ? 'TAIWAN · 7-11 MYSHIP'
           : 'HONG KONG ONLINE STORE';
       }
       const blurb = document.getElementById('successBlurb');
       if (blurb) {
         blurb.innerHTML = checkoutRegion === 'TW'
-          ? '已收到你的台灣 FF47 預購登記。<br>請依所選時段到場取貨並付款。<br>如需修改取貨日／聯絡資料或取消，請至「管理訂單」頁（訂單編號 + 電郵），截止 2026/8/20 00:00 台北時間。'
+          ? '已收到你的台灣通販訂單。<br>我們會匯入 7-11 賣貨便；請到指定門市取貨並付款。<br>匯入前可至「管理訂單」修改門市／聯絡資料。'
           : '已收到你的香港訂單與付款證明。<br>我們會核對後再安排出貨／取貨。';
       }
       document.title = checkoutRegion === 'TW'
-        ? 'Checkout · 台灣預購 | STARYUME'
+        ? 'Checkout · 台灣賣貨便 | STARYUME'
         : 'Checkout · 香港結帳 | STARYUME';
       const currencyNote = document.getElementById('summaryCurrencyNote');
       if (currencyNote) {
         currencyNote.textContent = checkoutRegion === 'TW'
-          ? '價格以新台幣 TWD 計算。預購於 FF47 現場取貨付款；送出前請確認商品與數量。'
+          ? '價格以新台幣 TWD 計算。7-11 取貨時付款；單筆含運上限 NT$ 20,000。R18 無法走賣貨便。'
           : '價格以港幣 HKD 計算。送出訂單前請確認商品與數量。';
       }
     }
@@ -324,7 +329,7 @@
         if (i === stepIndex) cls += ' active';
         else if (i < stepIndex) cls += ' done';
         let labelZh = s.labelZh;
-        if (s.id === 'pay' && isPreorderCheckout()) labelZh = '預約承諾';
+        if (s.id === 'pay' && isTwMyshipCheckout()) labelZh = '到付說明';
         return `
           <div class="flex items-center gap-2 ${i < STEPS.length - 1 ? 'mr-1' : ''}">
             <div class="${cls}">${i < stepIndex ? '✓' : (i + 1)}</div>
@@ -467,6 +472,9 @@
           }
           const selected = selectable.find((m) => m.id === state.fulfillmentId);
           const needsSf = selected && selected.fields && selected.fields.includes('sfCode');
+          const needs711 = selected && selected.fields && selected.fields.includes('storeId');
+          const myshipCfg = (checkoutCfg().myship) || {};
+          const storeLookup = myshipCfg.storeLookupUrl || 'https://www.ibon.com.tw/retail_inquiry.aspx';
           const selectableIds = new Set(selectable.map((m) => m.id));
           const displayList = allMethods.length ? allMethods : selectable;
           panel.innerHTML = `
@@ -507,6 +515,25 @@
                 </p>
               </div>
             </div>
+            <div id="store711-fields" class="${needs711 ? '' : 'hidden'} mt-6 space-y-4 border-t border-gray-100 pt-6">
+              <p class="text-xs font-bold text-gray-400 tracking-wider">7-11 取件門市</p>
+              <p class="text-xs text-gray-500 leading-relaxed">先在新分頁查門市，再把<strong>店號</strong>與<strong>店名</strong>填回來（賣貨便匯入需要店號）。</p>
+              <p class="text-xs">
+                <a href="${escapeAttr(storeLookup)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">開啟 ibon 門市查詢</a>
+              </p>
+              <div>
+                <label class="block text-sm font-bold mb-2" for="c-storeId">門市店號 <span class="text-red-500">*</span></label>
+                <input id="c-storeId" type="text" inputmode="numeric" maxlength="7" value="${escapeAttr(state.storeId)}"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white font-mono"
+                  placeholder="例如 148599">
+              </div>
+              <div>
+                <label class="block text-sm font-bold mb-2" for="c-storeName">門市名稱 <span class="text-red-500">*</span></label>
+                <input id="c-storeName" type="text" value="${escapeAttr(state.storeName)}"
+                  class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white"
+                  placeholder="例如 台北市XX門市">
+              </div>
+            </div>
           `;
           panel.querySelectorAll('input[name="fulfillment"]').forEach((radio) => {
             radio.addEventListener('change', () => {
@@ -518,60 +545,47 @@
       }
 
       if (id === 'pay') {
-        if (isPreorderCheckout()) {
-          state.paymentMethod = 'preorder_on_site';
+        if (isTwMyshipCheckout()) {
+          state.paymentMethod = 'myship_cod';
           const discord = (checkoutCfg().discordInvite || 'https://discord.gg/staryume');
+          const storefront = (checkoutCfg().myship && checkoutCfg().myship.storefrontUrl) || 'https://myship.7-11.com.tw/general/detail/GM2608255230612';
           panel.innerHTML = `
-            <h2 class="text-xl font-bold mb-1">預約承諾（台灣 FF47 預購）</h2>
-            <p class="text-sm text-gray-500 mb-4 leading-relaxed">台灣站目前為<strong class="text-black">FF47 預購登記</strong>：現階段<strong class="text-black">無需即時付款</strong>。請於你所選的取貨方式到場，再完成付款並領取商品。<br><span class="text-xs text-gray-400">（香港站仍為線上 FPS／PayMe 付款。）</span></p>
+            <h2 class="text-xl font-bold mb-1">7-11 取貨付款</h2>
+            <p class="text-sm text-gray-500 mb-4 leading-relaxed">本站<strong class="text-black">不必轉帳</strong>。送出後我們把訂單匯入
+              <a href="${escapeAttr(storefront)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">賣貨便</a>，
+              你到指定 7-11 <strong class="text-black">取貨時付款</strong>。</p>
             <div class="rounded-xl bg-tech-gray p-5 mb-6 text-center">
-              <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">應付金額（取貨時支付）</p>
+              <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">應付金額（7-11 取貨時支付）</p>
               <p class="text-3xl font-bold font-mono" id="pay-amount">${money(total)}</p>
-              <p class="text-xs text-gray-500 mt-2">金額僅供預覽，請於現場以約定方式結清</p>
+              <p class="text-xs text-gray-500 mt-2">賣貨便單筆上限 NT$ 20,000（含運）</p>
             </div>
             <div class="rounded-xl border border-tech-purple/40 bg-tech-purple/10 p-4 mb-6 text-sm text-gray-700 leading-relaxed space-y-2">
-              <p class="font-bold text-black">重要說明</p>
+              <p class="font-bold text-black">接下來會發生什麼</p>
               <ul class="list-disc pl-5 space-y-1.5 text-xs sm:text-sm">
-                <li>提交預購即代表你已預留庫存；請務必依所選時段到場取貨並付款。</li>
-                <li>若需<strong>修改取貨日／聯絡資料或取消預購</strong>，請在 <strong>2026/8/20 00:00（台北）</strong> 前使用
+                <li>你在本站填的門市／姓名／電話，會用來代客下單，不必再到賣貨便重選商品。</li>
+                <li>匯入後賣貨便會寄通知；請依簡訊／信件到門市取貨付款。</li>
+                <li>匯入前可用
                   <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
-                  頁（訂單編號 + 下單電郵）。亦可從商店台灣頁「管理訂單」進入。</li>
-                <li>線上<strong>無法更改商品內容／數量</strong>；截止後或其他問題請透過
+                  （訂單編號 + 電郵）改門市或聯絡資料。無法改商品內容。</li>
+                <li>其他問題請
                   <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>。</li>
-                <li>無故缺席、不取貨或不付款者，將被<strong>永久列入黑名單</strong>，日後無法再使用本網站商店服務。</li>
               </ul>
             </div>
-            <div class="space-y-3">
-              <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
-                <input type="checkbox" id="c-pledge-attend" class="mt-1 accent-black" ${state.pledgeAttend ? 'checked' : ''}>
-                <span class="text-sm leading-relaxed"><span class="font-bold text-black">我承諾會到場取貨並付款</span><br>
-                <span class="text-xs text-gray-500">我確認將於所選取貨日期／方式，親身到場領取商品，並於現場完成全額付款（應付金額 ${money(total)}）。</span></span>
-              </label>
-              <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
-                <input type="checkbox" id="c-pledge-blacklist" class="mt-1 accent-black" ${state.pledgeBlacklist ? 'checked' : ''}>
-                <span class="text-sm leading-relaxed"><span class="font-bold text-black">我明白缺席的後果</span><br>
-                <span class="text-xs text-gray-500">我明白若無故缺席、拒絕取貨或不付款，店方有權將我<strong>永久列入黑名單</strong>，之後無法再使用 staryu.me 商店預購／購物服務。</span></span>
-              </label>
-              <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
-                <input type="checkbox" id="c-pledge-discord" class="mt-1 accent-black" ${state.pledgeDiscord ? 'checked' : ''}>
-                <span class="text-sm leading-relaxed"><span class="font-bold text-black">我知悉如何修改／取消預購</span><br>
-                <span class="text-xs text-gray-500">我知悉可在期限內使用
-                  <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
-                  修改取貨日／聯絡資料或取消預購；截止後或需改商品內容請聯絡
-                  <a href="${escapeAttr(discord)}" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">Discord 客服</a>，而非直接缺席。</span></span>
-              </label>
-            </div>
+            <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer option-card">
+              <input type="checkbox" id="c-pledge-attend" class="mt-1 accent-black" ${state.pledgeAttend ? 'checked' : ''}>
+              <span class="text-sm leading-relaxed"><span class="font-bold text-black">我了解取貨時付款</span><br>
+              <span class="text-xs text-gray-500">我確認將於指定 7-11 取貨，並支付 ${money(total)}（賣貨便到付）。未取貨可能被列入黑名單。</span></span>
+            </label>
           `;
-          ['c-pledge-attend', 'c-pledge-blacklist', 'c-pledge-discord'].forEach((cid) => {
-            const el = document.getElementById(cid);
-            if (!el) return;
+          const el = document.getElementById('c-pledge-attend');
+          if (el) {
             el.addEventListener('change', () => {
-              state.pledgeAttend = !!document.getElementById('c-pledge-attend')?.checked;
-              state.pledgeBlacklist = !!document.getElementById('c-pledge-blacklist')?.checked;
-              state.pledgeDiscord = !!document.getElementById('c-pledge-discord')?.checked;
-              state.paidConfirmed = state.pledgeAttend && state.pledgeBlacklist && state.pledgeDiscord;
+              state.pledgeAttend = !!el.checked;
+              state.pledgeBlacklist = true;
+              state.pledgeDiscord = true;
+              state.paidConfirmed = state.pledgeAttend;
             });
-          });
+          }
         } else {
           const opts = paymentOptions();
           if (!state.paymentMethod && opts.length) state.paymentMethod = opts[0].id;
@@ -628,30 +642,34 @@
 
       if (id === 'proof') {
         const hasR18 = cartHasR18();
-        const payLabel = isPreorderCheckout()
-          ? '現場取貨時付款（FF47 預購）'
+        const payLabel = isTwMyshipCheckout()
+          ? '7-11 賣貨便取貨付款'
           : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS');
-        const twManageNote = isPreorderCheckout() ? `
+        const storeLine = isTwMyshipCheckout()
+          ? `<p>門市：${escapeHtml(state.storeId)} ${escapeHtml(state.storeName)}</p>`
+          : '';
+        const twManageNote = isTwMyshipCheckout() ? `
             <div class="rounded-xl border border-gray-200 p-4 text-xs text-gray-600 leading-relaxed space-y-2">
               <p class="font-bold text-black text-sm">提交後如何修改／取消？</p>
-              <p>在 <strong>2026/8/20 00:00（台北）</strong> 前，請至
+              <p>匯入賣貨便前，請至
                 <a href="./preorder.html" class="font-bold underline decoration-tech-purple underline-offset-2">管理訂單</a>
-                （訂單編號 + 下單電郵），可修改取貨日／聯絡資料或取消預購。</p>
-              <p>亦可從商店台灣頁的「<strong>管理訂單</strong>」按鈕進入。線上無法更改商品內容；截止後請聯絡 Discord 客服。</p>
+                （訂單編號 + 下單電郵）修改門市／聯絡資料或取消。</p>
+              <p>線上無法更改商品內容。其他問題請聯絡 Discord 客服。</p>
             </div>
           ` : '';
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">確認並提交</h2>
-          <p class="text-sm text-gray-500 mb-6">${isPreorderCheckout() ? '請確認預購內容後提交。提交成功後可使用「管理訂單」頁修改或取消（期限內）。' : '請確認訂單內容後提交。'}</p>
+          <p class="text-sm text-gray-500 mb-6">${isTwMyshipCheckout() ? '請確認通販內容後提交。匯入賣貨便前仍可用「管理訂單」修改門市。' : '請確認訂單內容後提交。'}</p>
           <div class="space-y-4">
             <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
-              <p class="font-bold text-black text-sm mb-2">${isPreorderCheckout() ? '預購摘要' : '訂單摘要'}</p>
+              <p class="font-bold text-black text-sm mb-2">${isTwMyshipCheckout() ? '通販摘要' : '訂單摘要'}</p>
               <p>姓名：${escapeHtml(state.name)}</p>
               <p>電郵：${escapeHtml(state.email)}</p>
               <p>付款：${escapeHtml(payLabel)}</p>
               <p>取貨：${escapeHtml(fulfillmentLabel(state.fulfillmentId))}</p>
-              ${isPreorderCheckout() ? '<p>付款截圖：不適用（預購）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
-              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}${isPreorderCheckout() ? '（取貨時支付）' : ''}</p>
+              ${storeLine}
+              ${isTwMyshipCheckout() ? '<p>付款截圖：不適用（取貨付款）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
+              <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}${isTwMyshipCheckout() ? '（7-11 取貨時支付）' : ''}</p>
             </div>
             ${twManageNote}
             <div>
@@ -744,14 +762,18 @@
       if (STEPS[stepIndex].id === 'fulfill') {
         const sf = document.getElementById('c-sfCode');
         if (sf) state.sfCode = sf.value.trim();
+        const sid = document.getElementById('c-storeId');
+        if (sid) state.storeId = sid.value.trim();
+        const sname = document.getElementById('c-storeName');
+        if (sname) state.storeName = sname.value.trim();
       }
       if (STEPS[stepIndex].id === 'pay') {
-        if (isPreorderCheckout()) {
+        if (isTwMyshipCheckout()) {
           state.pledgeAttend = !!document.getElementById('c-pledge-attend')?.checked;
-          state.pledgeBlacklist = !!document.getElementById('c-pledge-blacklist')?.checked;
-          state.pledgeDiscord = !!document.getElementById('c-pledge-discord')?.checked;
-          state.paidConfirmed = state.pledgeAttend && state.pledgeBlacklist && state.pledgeDiscord;
-          state.paymentMethod = 'preorder_on_site';
+          state.pledgeBlacklist = true;
+          state.pledgeDiscord = true;
+          state.paidConfirmed = state.pledgeAttend;
+          state.paymentMethod = 'myship_cod';
         } else {
           const paid = document.getElementById('c-paid');
           state.paidConfirmed = !!(paid && paid.checked);
@@ -773,6 +795,13 @@
         if (!lines.length) return '購物車是空的。';
         if (lines.some((l) => l.soldOut)) return '購物車含完售商品，請先移除。';
         if (cartTotal() <= 0) return '訂單金額無效，請返回商店重新加入商品。';
+        if (isTwMyshipCheckout() && lines.some((l) => l.product && (typeof productIsR18 === 'function' ? productIsR18(l.product) : (l.product.hidden || l.product.contentRating === 'r18')))) {
+          return '購物車含 R18 商品，台灣賣貨便無法寄送。請移除後改 Discord 私訊。';
+        }
+        const cap = typeof twMyshipMaxOrderTwd === 'function' ? twMyshipMaxOrderTwd(storeConfig) : 20000;
+        if (isTwMyshipCheckout() && cartTotal() > cap) {
+          return '賣貨便單筆上限 NT$ ' + cap + '（含運）。請減少數量後再結帳。';
+        }
         return '';
       }
       if (id === 'contact') {
@@ -789,13 +818,16 @@
         if (!state.fulfillmentId) return '請選擇取貨方式。';
         const m = methods.find((x) => x.id === state.fulfillmentId);
         if (m && m.fields && m.fields.includes('sfCode') && !state.sfCode) return '請填寫順豐發貨資料。';
+        if (m && m.fields && m.fields.includes('storeId')) {
+          const okId = typeof isValidTwStoreId === 'function' ? isValidTwStoreId(state.storeId) : /^\d{5,7}$/.test(String(state.storeId || '').replace(/\D/g, ''));
+          if (!okId) return '請填寫 5–7 碼的 7-11 門市店號。';
+          if (!String(state.storeName || '').trim()) return '請填寫 7-11 門市名稱。';
+        }
         return '';
       }
       if (id === 'pay') {
-        if (isPreorderCheckout()) {
-          if (!state.pledgeAttend) return '請勾選：承諾會到場取貨並付款。';
-          if (!state.pledgeBlacklist) return '請勾選：明白缺席／不付款的後果。';
-          if (!state.pledgeDiscord) return '請勾選：知悉如何使用「管理訂單」修改／取消預購。';
+        if (isTwMyshipCheckout()) {
+          if (!state.pledgeAttend) return '請勾選：了解取貨時付款。';
           return '';
         }
         if (!paymentOptions().length) return '尚未設定付款方式。';
@@ -805,8 +837,8 @@
         return '';
       }
       if (id === 'proof') {
-        if (!isPreorderCheckout() && !state.proofDataUrl) return '請返回上一步上載付款截圖。';
-        if (isPreorderCheckout() && !state.paidConfirmed) return '請返回上一步完成預約承諾勾選。';
+        if (!isTwMyshipCheckout() && !state.proofDataUrl) return '請返回上一步上載付款截圖。';
+        if (isTwMyshipCheckout() && !state.paidConfirmed) return '請返回上一步勾選取貨付款說明。';
         if (cartHasR18() && !state.r18AgeConfirmed) {
           return '請確認已滿 18 歲且可合法購買此訂單內容。';
         }
@@ -884,7 +916,7 @@
       back.style.visibility = stepIndex === 0 ? 'hidden' : 'visible';
       const last = stepIndex === STEPS.length - 1;
       next.textContent = last
-        ? (isPreorderCheckout() ? '提交預購 · Place pre-order' : '提交訂單 · Place order')
+        ? (isTwMyshipCheckout() ? '提交通販訂單 · Place order' : '提交訂單 · Place order')
         : '繼續';
     }
 
@@ -960,13 +992,13 @@
       }));
 
       const hasUra = lines.some((l) => l.product && (l.product.hidden || l.product.contentRating === 'r18'));
-      // Only Taiwan FF47 uses pledge / pay-on-pickup; never treat HK as preorder
-      const isPreorder = isPreorderCheckout();
+      const isMyship = isTwMyshipCheckout();
+      const storeId = typeof normalizeTwStoreId === 'function' ? normalizeTwStoreId(state.storeId) : String(state.storeId || '').replace(/\D/g, '');
       const payload = {
         orderId,
         region: checkoutRegion,
         currency,
-        orderType: isPreorder ? 'preorder' : 'paid',
+        orderType: isMyship ? 'myship' : 'paid',
         items: itemsJson,
         itemsText,
         totalHkd: total, // legacy field name; value is in `currency`
@@ -978,19 +1010,21 @@
         snsContact: state.snsContact,
         fulfillmentId: state.fulfillmentId,
         fulfillmentLabel: fulfillmentLabel(state.fulfillmentId),
-        sfCode: state.sfCode || '',
-        paymentMethod: isPreorder ? 'preorder_on_site' : state.paymentMethod,
-        paymentLabel: isPreorder
-          ? '預購·FF47現場付款'
+        sfCode: isMyship ? storeId : (state.sfCode || ''),
+        storeId: isMyship ? storeId : '',
+        storeName: isMyship ? String(state.storeName || '').trim() : '',
+        paymentMethod: isMyship ? 'myship_cod' : state.paymentMethod,
+        paymentLabel: isMyship
+          ? '賣貨便·7-11取貨付款'
           : (state.paymentMethod === 'payme' ? 'PayMe' : 'FPS'),
         notes: state.notes || '',
         catalog: hasUra ? 'ura' : 'public',
-        preorderPledge: isPreorder ? {
+        preorderPledge: isMyship ? {
           attend: !!state.pledgeAttend,
-          blacklistAck: !!state.pledgeBlacklist,
-          discordAck: !!state.pledgeDiscord,
+          blacklistAck: true,
+          discordAck: true,
         } : null,
-        proof: isPreorder
+        proof: isMyship
           ? null
           : {
               name: state.proofName || 'proof.jpg',
@@ -1058,12 +1092,12 @@
           }
           showError(msg);
           next.disabled = false;
-          next.textContent = isPreorderCheckout() ? '提交預購 · Place pre-order' : '提交訂單 · Place order';
+          next.textContent = isTwMyshipCheckout() ? '提交通販訂單 · Place order' : '提交訂單 · Place order';
           return;
         }
 
         // Paid HK: never treat proof upload failure as success (keep cart)
-        if (result && result.proofError && !isPreorder) {
+        if (result && result.proofError && !isMyship) {
           console.error('[checkout] proof error', result.proofError);
           showError(humanizeOrderError('proof_upload_failed', result));
           next.disabled = false;
@@ -1132,12 +1166,12 @@
         invalid_json: '訂單格式錯誤，請重新整理後再試。',
         proxy_failed: '伺服器暫時無法連線，請稍後再試。',
         upstream_error: '訂單系統暫時忙碌，請稍後再試。',
-        preorder_closed: '台灣 FF47 預購已截止（活動前 24 小時起），無法再建立新預購。',
-        preorder_cooldown: '同一電郵 24 小時內只能建立一筆預購。請先管理既有訂單。',
+        preorder_closed: '台灣通販目前暫停新訂單。',
+        preorder_cooldown: '同一電郵 24 小時內只能建立一筆台灣訂單。請先管理既有訂單。',
       };
       if (result && result.message) return result.message;
       if (code === 'preorder_cooldown' && result && result.orderId) {
-        return '同一電郵 24 小時內只能建立一筆預購。請管理訂單：preorder.html?orderId=' + result.orderId;
+        return '同一電郵 24 小時內只能建立一筆台灣訂單。請管理訂單：preorder.html?orderId=' + result.orderId;
       }
       return map[code] || code || '請稍後再試，或聯絡賣家。';
     }
@@ -1148,14 +1182,14 @@
       document.getElementById('successOrderId').textContent = orderId;
       if (total != null) {
         document.getElementById('successTotal').textContent = '合計 ' + money(total) +
-          (isPreorderCheckout() ? '（取貨時支付）' : '');
+          (isTwMyshipCheckout() ? '（7-11 取貨時支付）' : '');
       }
       const discord = hk().discordInvite;
       if (discord) document.getElementById('successDiscord').href = discord;
       const manageWrap = document.getElementById('successPreorderManage');
       const manageLink = document.getElementById('successManageLink');
       if (manageWrap && manageLink) {
-        if (isPreorderCheckout()) {
+        if (isTwMyshipCheckout()) {
           manageWrap.classList.remove('hidden');
           manageLink.href = './preorder.html?orderId=' + encodeURIComponent(orderId || '');
         } else {

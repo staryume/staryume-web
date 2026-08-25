@@ -198,6 +198,41 @@ describe("productUsesTwCart", () => {
     expect(api.productUsesTwCart(sampleProducts[0])).toBe(false);
     expect(api.productUsesTwCart(null)).toBe(false);
   });
+  it("false for R18 even if useTwCart", () => {
+    expect(api.productIsR18(sampleProducts[2])).toBe(true);
+    expect(api.productUsesTwCart({ id: 8, useTwCart: true, contentRating: "r18" })).toBe(false);
+  });
+});
+
+describe("myship import helpers", () => {
+  it("normalizes 7-11 store ids", () => {
+    expect(api.normalizeTwStoreId("148599")).toBe("148599");
+    expect(api.normalizeTwStoreId("店號 148599")).toBe("148599");
+    expect(api.isValidTwStoreId("148599")).toBe(true);
+    expect(api.isValidTwStoreId("12")).toBe(false);
+  });
+  it("builds one 匯入 row per line item", () => {
+    const rows = api.buildMyshipImportRows({
+      name: "王小明",
+      phone: "0912345678",
+      email: "a@b.c",
+      storeId: "148599",
+      storeName: "測試門市",
+      orderId: "TW-20260825-AAAAAAAA",
+      notes: "小心輕放",
+      items: [
+        { title: "色紙", qty: 1, unit: 1000 },
+        { title: "卡套", qty: 2, unit: 200 },
+      ],
+    });
+    expect(rows).toHaveLength(2);
+    expect(rows[0].門市店號).toBe("148599");
+    expect(rows[1].數量).toBe(2);
+    expect(rows[0].訂單編號).toBe("TW-20260825-AAAAAAAA");
+  });
+  it("uses 20000 default cap", () => {
+    expect(api.twMyshipMaxOrderTwd({})).toBe(20000);
+  });
 });
 
 describe("fulfillment intersection", () => {
@@ -249,6 +284,7 @@ describe("getCheckoutConfig", () => {
     expect(tw).toBeTruthy();
     expect(hk.currency).toBe("HKD");
     expect(tw.currency).toBe("TWD");
+    expect((tw.fulfillment || []).some((f) => f.id === "myship_711")).toBe(true);
   });
 });
 

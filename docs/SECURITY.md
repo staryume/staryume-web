@@ -8,7 +8,7 @@
 | Setup docs not public | `_redirects`: `/docs*` → 404 |
 | Checkout demo mode | `?demo=1` only when host is localhost |
 | Order spam / flood | Edge `/api/hk-order`: rate limit 8 / 10 min / IP, max body, require proof |
-| Proof skip only for TW preorder | Edge + Apps Script: payment proof required unless `region === TW` **and** preorder; client `orderType` alone cannot skip HK proof |
+| Proof skip only for TW mail-order | Edge + Apps Script: payment proof required unless `region === TW` **and** (`myship` / `preorder`); client `orderType` alone cannot skip HK proof |
 | Proof upload fail-closed | Apps Script rejects paid creates if proof missing/upload fails (`ok: false`); checkout keeps cart |
 | Payment proofs | Apps Script does **not** set “anyone with link” |
 | HTTP headers | CSP (+ base-uri, object-src, form-action, upgrade-insecure-requests), XFO, nosniff, HSTS (Netlify) |

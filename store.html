@@ -131,7 +131,7 @@
                 </div>
 
                 <p id="region-notice" class="text-[11px] font-mono font-bold text-gray-500 text-center md:text-right w-full md:w-auto">
-                    PAYMENT: 7-11 MYSHIP / 賣貨便到付
+                    PAYMENT: 7-11 賣貨便取貨付款
                 </p>
             </div>
 
@@ -144,8 +144,8 @@
         <div id="tw-preorder-bar" class="hidden w-full bg-tech-purple/20 border-b border-tech-purple/40">
             <div class="max-w-6xl mx-auto px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div class="text-sm text-gray-800 leading-snug">
-                    <p class="font-bold text-black">已有台灣 FF47 預購？</p>
-                    <p class="text-xs text-gray-600 mt-0.5">可修改取貨日／聯絡資料或取消，直到活動開始前 24 小時（2026/8/20 00:00 台北）。需訂單編號 + 下單電郵。</p>
+                    <p class="font-bold text-black">已有台灣通販訂單？</p>
+                    <p class="text-xs text-gray-600 mt-0.5">可修改 7-11 門市／聯絡資料或取消（匯入賣貨便前）。需訂單編號 + 下單電郵。</p>
                 </div>
                 <a href="preorder.html"
                     class="inline-flex items-center justify-center px-5 py-2.5 bg-black text-white text-xs font-bold rounded-full hover:bg-white hover:text-black border border-black transition-colors whitespace-nowrap shadow-sm">
@@ -711,10 +711,15 @@
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
             } else if (currentRegion === 'TW') {
                 const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
+                const isR18 = typeof productIsR18 === 'function' ? productIsR18(product) : !!(product.hidden || product.contentRating === 'r18');
+                const discord = (storeConfig.twCheckout && storeConfig.twCheckout.discordInvite) || 'https://discord.gg/staryume';
                 const useCart = typeof productUsesTwCart === 'function' ? productUsesTwCart(product) : !!product.useTwCart;
-                if (useCart && twOn) {
-                    actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車 · FF47 預購</button>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">Fancy Frontier 47 現場取貨 · 到場付款（預購無需線上轉帳）</p>`;
+                if (isR18) {
+                    actions.innerHTML = `<a href="${discord}" target="_blank" rel="noopener noreferrer" class="block w-full bg-black text-white text-center font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">R18 請 Discord 私訊</a>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">7-11 賣貨便禁止上架色情／情趣商品，台灣 R18 不走通販結帳。</p>`;
+                } else if (useCart && twOn) {
+                    actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車 · 7-11 賣貨便</button>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">本站填一次資料，取貨時在 7-11 付款（賣貨便到付）</p>`;
                 } else if (product.linkTW) {
                     actions.innerHTML = `<a href="${product.linkTW}" target="_blank" rel="noopener noreferrer" class="block w-full bg-tech-purple text-black text-center font-bold py-4 rounded-lg hover:bg-black hover:text-white transition-colors shadow-lg">BUY NOW (7-11 MYSHIP)</a>`;
                 } else {
@@ -844,10 +849,10 @@
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
-                if(notice) notice.innerHTML = 'PRE-ORDER: FF47 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>';
-                if(shipText) shipText.innerText = "Taiwan: FF47 預購（現場付款）；可管理至 2026/8/20 00:00（活動前 24 小時）。";
+                if(notice) notice.innerHTML = '7-11 賣貨便取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>';
+                if(shipText) shipText.innerText = "Taiwan: 7-11 賣貨便店到店，取貨付款。";
                 if(twBar) twBar.classList.remove('hidden');
-                if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan Pre-order · FF47';
+                if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · 7-11 MyShip';
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
@@ -899,7 +904,7 @@
             }
 
             const hint = currentRegion === 'TW'
-                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">台灣預購：僅限 Fancy Frontier 47 現場取貨（8/21 或 8/22）。</p>'
+                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">台灣通販：結帳填 7-11 門市，取貨時付款。R18 請 Discord 私訊。</p>'
                 : '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">香港：順豐到付 或 9 月 Palette Ring 11 現場取貨。</p>';
 
             container.innerHTML = hint + lines.map((line) => `
@@ -928,6 +933,11 @@
         function addToCart(id) {
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
             if (currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false) return;
+            const product = storeProducts.find((p) => p.id === id);
+            if (currentRegion === 'TW' && product && (typeof productIsR18 === 'function' ? productIsR18(product) : (product.hidden || product.contentRating === 'r18'))) {
+                alert('台灣賣貨便無法販售 R18。請改用 Discord 私訊。');
+                return;
+            }
             const key = String(id);
             if (!cart[key]) cart[key] = 0;
             cart[key]++;

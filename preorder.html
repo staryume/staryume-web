@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>管理 FF47 預購 | STARYUME</title>
+  <title>管理台灣通販訂單 | STARYUME</title>
   <meta name="robots" content="noindex, nofollow">
-  <meta name="description" content="查詢、修改或取消台灣 FF47 預購（活動開始前 24 小時內可管理）">
+  <meta name="description" content="查詢、修改或取消台灣 7-11 賣貨便通販訂單">
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
   <script>
@@ -55,12 +55,11 @@
   </header>
 
   <main class="max-w-xl mx-auto px-4 py-10 md:py-14">
-    <p class="text-[10px] font-tech tracking-widest text-gray-400 mb-2">TAIWAN FF47 PRE-ORDER</p>
-    <h1 class="text-3xl font-bold font-tech tracking-tight mb-2">管理預購</h1>
+    <p class="text-[10px] font-tech tracking-widest text-gray-400 mb-2">TAIWAN · 7-11 MYSHIP</p>
+    <h1 class="text-3xl font-bold font-tech tracking-tight mb-2">管理通販訂單</h1>
     <p class="text-sm text-gray-500 mb-8 leading-relaxed">
       使用確認電郵中的<strong>訂單編號</strong>與下單<strong>電郵</strong>查詢。
-      可修改取貨日／聯絡資料或取消預購，直到 <strong>Fancy Frontier 47 開始前 24 小時</strong>
-      （<strong>2026/8/20 00:00</strong> 台北時間）為止。無法更改商品內容。
+      匯入賣貨便前可修改 7-11 門市／聯絡資料或取消。無法更改商品內容。
     </p>
 
     <div id="alert" class="hidden mb-6 text-sm rounded-xl px-4 py-3 border"></div>
@@ -104,6 +103,19 @@
       <div id="editBlock" class="space-y-5 border-t border-gray-100 pt-6">
         <h3 class="text-sm font-bold">取貨方式</h3>
         <div id="fulfillOptions" class="space-y-3"></div>
+        <div id="store711Edit" class="space-y-3 hidden">
+          <p class="text-xs text-gray-500">
+            <a href="https://www.ibon.com.tw/retail_inquiry.aspx" target="_blank" rel="noopener noreferrer" class="font-bold underline decoration-tech-purple underline-offset-2">ibon 門市查詢</a>
+          </p>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1" for="m-storeId">門市店號</label>
+            <input id="m-storeId" type="text" inputmode="numeric" maxlength="7" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 font-mono focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-gray-500 mb-1" for="m-storeName">門市名稱</label>
+            <input id="m-storeName" type="text" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white">
+          </div>
+        </div>
 
         <h3 class="text-sm font-bold pt-2">聯絡資料</h3>
         <div class="space-y-3">
@@ -141,7 +153,7 @@
           </button>
           <button type="button" id="btnCancel"
             class="flex-1 py-3.5 border-2 border-red-500 text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors">
-            取消預購
+            取消訂單
           </button>
         </div>
       </div>
@@ -224,12 +236,13 @@
       document.getElementById('m-orderId').textContent = order.orderId || '—';
       document.getElementById('m-items').textContent = order.itemsText || '—';
       const total = order.total != null ? order.total : '—';
-      document.getElementById('m-total').textContent = '合計 NT$ ' + total + '（取貨時支付）';
+      document.getElementById('m-total').textContent = '合計 NT$ ' + total + '（7-11 取貨時支付）';
 
       const cancelled = order.status === 'cancelled';
-      const editable = !!order.editable && !cancelled;
-      document.getElementById('m-status').textContent = cancelled ? '已取消' : (editable ? '可修改' : '已鎖定');
-      document.getElementById('m-status').className = 'text-sm font-bold ' + (cancelled ? 'text-red-600' : (editable ? 'text-emerald-700' : 'text-gray-500'));
+      const picked = order.status === 'picked';
+      const editable = !!order.editable && !cancelled && !picked;
+      document.getElementById('m-status').textContent = cancelled ? '已取消' : (picked ? '已領取' : (editable ? '可修改' : '已鎖定'));
+      document.getElementById('m-status').className = 'text-sm font-bold ' + (cancelled ? 'text-red-600' : (picked ? 'text-gray-700' : (editable ? 'text-emerald-700' : 'text-gray-500')));
 
       if (order.editableUntil) {
         const d = new Date(order.editableUntil);
@@ -244,10 +257,19 @@
       document.getElementById('m-phone').value = order.phone || '';
       document.getElementById('m-snsType').value = order.snsType || 'discord';
       document.getElementById('m-snsContact').value = order.snsContact || '';
+      const storeWrap = document.getElementById('store711Edit');
+      if (storeWrap) {
+        const show711 = selected === 'myship_711' || !!(order.storeId || order.sfCode);
+        storeWrap.classList.toggle('hidden', !show711);
+      }
+      const sid = document.getElementById('m-storeId');
+      const sname = document.getElementById('m-storeName');
+      if (sid) sid.value = order.storeId || order.sfCode || '';
+      if (sname) sname.value = order.storeName || '';
 
       const box = document.getElementById('fulfillOptions');
       const opts = fulfillOptionsFromConfig();
-      const selected = order.fulfillmentId || (opts[0] && opts[0].id) || 'ff47_day1';
+      const selected = order.fulfillmentId || (opts[0] && opts[0].id) || 'myship_711';
       box.innerHTML = opts.map((m) => `
         <label class="option-card flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer ${editable ? '' : 'opacity-60 pointer-events-none'}">
           <input type="radio" name="fulfillment" value="${m.id}" class="mt-1 accent-black" ${m.id === selected ? 'checked' : ''} ${editable ? '' : 'disabled'}>
@@ -264,11 +286,13 @@
       if (!editable) {
         document.getElementById('readonlyMsg').textContent = cancelled
           ? '此預購已取消。如有疑問請聯絡 Discord 客服。'
-          : '已超過可修改期限（FF47 開始前 24 小時截止），無法再線上更改。請聯絡 Discord 客服。';
+          : (order.status === 'imported'
+            ? '訂單已匯入賣貨便，無法再於此頁修改。請依賣貨便通知取貨。'
+            : '此訂單已無法線上更改。請聯絡 Discord 客服。');
       }
 
       // disable inputs when locked
-      ['m-name', 'm-phone', 'm-snsType', 'm-snsContact'].forEach((id) => {
+      ['m-name', 'm-phone', 'm-snsType', 'm-snsContact', 'm-storeId', 'm-storeName'].forEach((id) => {
         const el = document.getElementById(id);
         if (el) el.disabled = !editable;
       });
@@ -320,6 +344,9 @@
         snsContact: document.getElementById('m-snsContact').value.trim(),
         fulfillmentId,
         fulfillmentLabel: tLabel(m && m.label, fulfillmentId),
+        storeId: (document.getElementById('m-storeId') && document.getElementById('m-storeId').value.trim()) || '',
+        storeName: (document.getElementById('m-storeName') && document.getElementById('m-storeName').value.trim()) || '',
+        sfCode: (document.getElementById('m-storeId') && document.getElementById('m-storeId').value.trim()) || '',
       };
       const btn = document.getElementById('btnSave');
       btn.disabled = true;
@@ -342,7 +369,7 @@
 
     async function doCancel() {
       if (!currentOrder) return;
-      if (!confirm('確定要取消這筆預購嗎？取消後無法復原。若仍在活動前 24 小時截止前，可用同一電郵重新下單（仍受 24 小時一筆預購限制）。')) return;
+      if (!confirm('確定要取消這筆通販訂單嗎？取消後無法復原。同一電郵 24 小時內仍只能下一筆。')) return;
       showAlert('');
       const btn = document.getElementById('btnCancel');
       btn.disabled = true;
@@ -356,7 +383,7 @@
           showAlert(data.message || data.error || '取消失敗');
           return;
         }
-        showAlert('預購已取消。', 'ok');
+        showAlert('訂單已取消。', 'ok');
         // reload
         const again = await api({ action: 'get', orderId: currentOrder.orderId, email: lookupEmail });
         if (again.ok) fillForm(again.order);

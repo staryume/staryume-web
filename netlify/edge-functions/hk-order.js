@@ -79,19 +79,24 @@ export default async (request) => {
       return json({ ok: false, error: "missing_items" }, 400);
     }
 
-    // Only Taiwan pre-order may skip payment proof. Never trust client
-    // orderType/paymentMethod alone — HK paid orders always need a screenshot.
+    // Only Taiwan mail-order (賣貨便 / legacy FF47 preorder) may skip payment proof.
+    // Never trust client orderType/paymentMethod alone — HK paid always needs a screenshot.
     const region = String(data.region || "HK").toUpperCase();
-    const claimsPreorder =
-      data.orderType === "preorder" || data.paymentMethod === "preorder_on_site";
-    const isPreorder = region === "TW" && claimsPreorder;
+    const claimsTwNoProof =
+      data.orderType === "preorder" ||
+      data.orderType === "myship" ||
+      data.paymentMethod === "preorder_on_site" ||
+      data.paymentMethod === "myship_cod";
+    const isTwNoProof = region === "TW" && claimsTwNoProof;
 
-    if (region !== "TW" && claimsPreorder) {
+    if (region !== "TW" && claimsTwNoProof) {
       data.orderType = "paid";
-      if (data.paymentMethod === "preorder_on_site") data.paymentMethod = "";
+      if (data.paymentMethod === "preorder_on_site" || data.paymentMethod === "myship_cod") {
+        data.paymentMethod = "";
+      }
     }
 
-    if (!isPreorder) {
+    if (!isTwNoProof) {
       if (!data.proof || !data.proof.dataUrl || typeof data.proof.dataUrl !== "string") {
         return json({ ok: false, error: "missing_proof" }, 400);
       }
