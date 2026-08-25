@@ -846,12 +846,15 @@
 
             const twBar = document.getElementById('tw-preorder-bar');
             const bagRegionLabel = document.getElementById('bag-region-label');
+            const showTwManage = !!(storeConfig.twCheckout && storeConfig.twCheckout.showOrderManageBar);
             if(region === 'TW') {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
                 if(btnHk) btnHk.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
-                if(notice) notice.innerHTML = '7-11 賣貨便取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>';
+                if(notice) notice.innerHTML = showTwManage
+                    ? '7-11 賣貨便取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>'
+                    : '7-11 賣貨便取貨付款';
                 if(shipText) shipText.innerText = "Taiwan: 7-11 賣貨便店到店，取貨付款。";
-                if(twBar) twBar.classList.remove('hidden');
+                if(twBar) twBar.classList.toggle('hidden', !showTwManage);
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · 7-11 MyShip';
             } else {
                 if(btnTw) btnTw.className = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";

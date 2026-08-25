@@ -77,6 +77,8 @@ const storeConfig = {
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
         "maxProofBytes": 3500000,
+        // Storefront banner + 管理訂單 shortcut. Off between events; set true next Fancy Frontier.
+        "showOrderManageBar": false,
         "myship": {
             "storefrontUrl": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
             "storeLookupUrl": "https://www.ibon.com.tw/retail_inquiry.aspx",

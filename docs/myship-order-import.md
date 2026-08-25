@@ -14,7 +14,8 @@ Storefront: https://myship.7-11.com.tw/general/detail/GM2608255230612
 5. Order lands in **STARYUME HK Store Orders** (`region=TW`, `orderType=myship`, `FulfillmentId=myship_711`)
 6. After you 匯入, they get 賣貨便 mail / OPEN POINT notice and pay at the store
 
-Manage: https://staryu.me/preorder.html (edit store/contact until Status is `imported`)
+Manage: https://staryu.me/preorder.html (edit store/contact until Status is `imported`).  
+The storefront purple bar is gated by `storeConfig.twCheckout.showOrderManageBar` (currently `false`; set `true` next Fancy Frontier).
 
 ## Seller: import
 
