@@ -903,13 +903,22 @@
             if (btnHk) btnHk.className = currentRegion === 'HK' ? onCls : offCls;
             if (btnJp) btnJp.className = currentRegion === 'JP' ? onCls : offCls;
             if (currentRegion === 'TW') {
-                if(notice) notice.innerHTML = showTwManage
-                    ? '請在本站結帳 · 7-11 取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>'
-                    : '請在本站結帳完成 · 不必再到賣貨便自行下單';
-                if(shipText) shipText.innerText = "Taiwan: 在本站結帳；我們匯入賣貨便後，7-11 取貨付款。";
-                if(twBar) twBar.classList.toggle('hidden', !showTwManage);
-                if(twFlow) twFlow.classList.remove('hidden');
-                if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · 7-11 MyShip';
+                const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
+                if (!twOn) {
+                    if(notice) notice.innerText = '台灣通路暫停 · TW STORE PAUSED';
+                    if(shipText) shipText.innerText = "Taiwan: 賣貨便串接尚未完成，暫時關閉。請切換香港或日本。";
+                    if(twBar) twBar.classList.add('hidden');
+                    if(twFlow) twFlow.classList.add('hidden');
+                    if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · paused';
+                } else {
+                    if(notice) notice.innerHTML = showTwManage
+                        ? '請在本站結帳 · 7-11 取貨付款 · <a href="preorder.html" class="underline decoration-tech-purple underline-offset-2 font-bold hover:text-black">管理訂單</a>'
+                        : '請在本站結帳完成 · 不必再到賣貨便自行下單';
+                    if(shipText) shipText.innerText = "Taiwan: 在本站結帳；我們匯入賣貨便後，7-11 取貨付款。";
+                    if(twBar) twBar.classList.toggle('hidden', !showTwManage);
+                    if(twFlow) twFlow.classList.remove('hidden');
+                    if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · 7-11 MyShip';
+                }
             } else if (currentRegion === 'JP') {
                 if(notice) notice.innerText = '日本：BOOTHで1点ずつ購入 · 決済は pixiv BOOTH';
                 if(shipText) shipText.innerText = "Japan: pixiv BOOTH で決済・発送。";
@@ -997,6 +1006,7 @@
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
             if (currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false) return;
             const product = storeProducts.find((p) => p.id === id);
+            if (product && product.regions && currentRegion !== 'JP' && !product.regions.includes(currentRegion)) return;
             if (currentRegion === 'TW' && product && (typeof productIsR18 === 'function' ? productIsR18(product) : (product.hidden || product.contentRating === 'r18'))) {
                 alert('台灣賣貨便無法販售 R18。請改用 Discord 私訊。');
                 return;

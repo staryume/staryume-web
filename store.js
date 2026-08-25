@@ -16,7 +16,7 @@ const storeConfig = {
      * Localhost falls back to scriptUrlDirect (Apps Script) — see docs/hk-store-checkout-apps-script.md
      */
     "hkCheckout": {
-        "enabled": false,
+        "enabled": true,
         "currency": "HKD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
@@ -74,7 +74,7 @@ const storeConfig = {
         "shopUrl": "https://staryume.booth.pm"
     },
     "twCheckout": {
-        "enabled": true,
+        "enabled": false,
         "currency": "TWD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
@@ -249,7 +249,7 @@ const storeProducts = [
             "featured",
             "sleeves"
         ],
-        "regions": ["TW", "HK"],
+        "regions": ["TW"],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": true,
@@ -278,7 +278,7 @@ const storeProducts = [
             "featured",
             "sleeves"
         ],
-        "regions": ["TW", "HK"],
+        "regions": ["TW"],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": true,
