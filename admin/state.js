@@ -74,6 +74,7 @@
 
   function normalizeGalleryItem(item) {
     return {
+      ...item,
       id: item.id,
       tag: item.tag || 'FANART',
       src: item.src || '',
@@ -122,17 +123,19 @@
   }
 
   function normalizeSiteData(raw) {
-    const data = {
-      posts: (raw.posts || []).map(normalizePost),
-      gallery: (raw.gallery || []).map(normalizeGalleryItem),
-      translations: raw.translations || {},
+    const src = raw || {};
+    return {
+      ...src,
+      posts: (src.posts || []).map(normalizePost),
+      gallery: (src.gallery || []).map(normalizeGalleryItem),
+      translations: src.translations || {},
     };
-    return data;
   }
 
   function normalizeStoreConfig(raw) {
     const cfg = raw || {};
     const categories = (cfg.categories || []).map((c) => ({
+      ...c,
       id: c.id,
       name: {
         jp: c.name?.jp ?? c.name?.en ?? c.id,

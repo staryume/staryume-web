@@ -62,8 +62,10 @@ export function loadStore() {
   };
   vm.createContext(context);
 
-  const code = fs.readFileSync(path.join(root, "store.js"), "utf8");
-  vm.runInContext(code, context);
+  const storeData = fs.readFileSync(path.join(root, "store.js"), "utf8");
+  const storeRuntime = fs.readFileSync(path.join(root, "store-runtime.js"), "utf8");
+  vm.runInContext(storeData, context);
+  vm.runInContext(storeRuntime, context);
 
   const api = vm.runInContext(
     `({

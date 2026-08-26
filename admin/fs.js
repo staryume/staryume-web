@@ -119,22 +119,7 @@
     return fn();
   }
 
-  let storeJsRuntimeTail = '\n';
-
-  function extractStoreJsTail(text) {
-    const src = String(text || '');
-    const marked = src.search(/\n\/\/ ── 裏 store unlock/);
-    if (marked >= 0) return src.slice(marked);
-    const fnAt = src.search(/\nfunction getUraConfig\s*\(/);
-    if (fnAt >= 0) return src.slice(fnAt);
-    return '';
-  }
-
   function parseStoreJs(text) {
-    const tail = extractStoreJsTail(text);
-    if (tail && tail.trim()) {
-      storeJsRuntimeTail = tail.startsWith('\n') ? tail : '\n' + tail;
-    }
     const fn = new Function(text + '\nreturn { storeConfig, storeProducts };');
     return fn();
   }
@@ -144,37 +129,10 @@
     return fn();
   }
 
-  function serializeDataJs(siteData) {
-    return '// GLOBAL SITE DATA\nconst siteData = ' + JSON.stringify(siteData, null, 4) + ';\n';
-  }
-
-  function serializeStoreJs(storeConfig, storeProducts) {
-    const tail = storeJsRuntimeTail && storeJsRuntimeTail.trim()
-      ? (storeJsRuntimeTail.startsWith('\n') ? storeJsRuntimeTail : '\n' + storeJsRuntimeTail)
-      : '\n';
-    return (
-      '// STORE CONFIGURATION & DATABASE\n\n' +
-      'const storeConfig = ' +
-      JSON.stringify(storeConfig, null, 4) +
-      ';\n\n' +
-      'const storeProducts = ' +
-      JSON.stringify(storeProducts, null, 4) +
-      ';' +
-      (tail.endsWith('\n') ? tail : tail + '\n')
-    );
-  }
-
-  function serializeEventsJs(eventCatalog, eventUiStrings) {
-    return (
-      '// EVENT お品書き CATALOG\n' +
-      '// Add new events as keys under eventCatalog. Link from a blog post via eventId.\n\n' +
-      'const eventUiStrings = ' +
-      JSON.stringify(eventUiStrings || {}, null, 4) +
-      ';\n\n' +
-      'const eventCatalog = ' +
-      JSON.stringify(eventCatalog || {}, null, 4) +
-      ';\n'
-    );
+  function serializer() {
+    const S = global.AdminStoreSerialize;
+    if (!S) throw new Error('admin/store-serialize.js failed to load');
+    return S;
   }
 
   async function fetchText(relativePath) {
@@ -232,17 +190,39 @@
     return parseProjectTexts(dataText, storeText, eventsText);
   }
 
+  async function readOptionalText(dirHandle, relativePath) {
+    try {
+      return await readTextFile(dirHandle, relativePath);
+    } catch (_) {
+      return '';
+    }
+  }
+
   async function saveProject(
     dirHandle,
     { siteData, storeConfig, storeProducts, eventCatalog, eventUiStrings }
   ) {
-    await writeTextFile(dirHandle, 'data.js', serializeDataJs(siteData));
-    await writeTextFile(dirHandle, 'store.js', serializeStoreJs(storeConfig, storeProducts));
+    const S = serializer();
+    const prevStoreText = await readOptionalText(dirHandle, 'store.js');
+    let prevStoreConfig = null;
+    try {
+      if (prevStoreText) prevStoreConfig = parseStoreJs(prevStoreText).storeConfig;
+    } catch (_) {
+      prevStoreConfig = null;
+    }
+    const mergedConfig = S.mergeProtectedStoreConfig(storeConfig, prevStoreConfig);
+    if (storeConfig && typeof storeConfig === 'object') Object.assign(storeConfig, mergedConfig);
+
+    const prevDataText = await readOptionalText(dirHandle, 'data.js');
+    const prevEventsText = await readOptionalText(dirHandle, 'event-catalog.js');
+
+    await writeTextFile(dirHandle, 'data.js', S.serializeDataJs(prevDataText, siteData));
+    await writeTextFile(dirHandle, 'store.js', S.serializeStoreJs(prevStoreText, mergedConfig, storeProducts));
     if (eventCatalog && typeof eventCatalog === 'object') {
       await writeTextFile(
         dirHandle,
         'event-catalog.js',
-        serializeEventsJs(eventCatalog, eventUiStrings)
+        S.serializeEventsJs(prevEventsText, eventCatalog, eventUiStrings)
       );
     }
   }
