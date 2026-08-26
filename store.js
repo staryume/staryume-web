@@ -210,7 +210,7 @@ const storeProducts = [
             "en": "Hoshiyumetei 15th Anniversary SET",
             "zh": "星夢亭15週年紀念SET"
         },
-        "priceTW": 900,
+        "priceTW": 1000,
         "priceHK": 240,
         "imgs": [
             "./blog/20260719/products/anni-15-set/00.jpg",
