@@ -7,7 +7,7 @@
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.4/build/qrcode.min.js"></script>
+  <script src="./assets/vendor/qrcode.min.js"></script>
   <script>
     tailwind.config = {
       theme: {
@@ -78,7 +78,7 @@
       </div>
 
       <div class="flex justify-center bg-gray-50 rounded-xl p-4 border border-gray-100">
-        <canvas id="qrCanvas" class="bg-white max-w-full"></canvas>
+        <div id="qrBox" class="bg-white inline-block p-2"></div>
       </div>
     </section>
 
@@ -110,36 +110,49 @@
   <div id="printSheet" class="hidden print:grid grid-cols-3 gap-6 p-6"></div>
 
   <script>
-    const canvas = document.getElementById('qrCanvas');
+    const box = document.getElementById('qrBox');
 
     function currentText() {
       return document.getElementById('payload').value.trim();
     }
 
-    function opts() {
-      return {
-        width: Number(document.getElementById('size').value) || 512,
-        margin: Number(document.getElementById('margin').value) || 2,
-        errorCorrectionLevel: 'M',
-        color: { dark: '#0a0a0a', light: '#ffffff' }
-      };
+    function drawQr(el, text, size) {
+      el.innerHTML = '';
+      new QRCode(el, {
+        text: text,
+        width: size,
+        height: size,
+        colorDark: '#0a0a0a',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
     }
 
-    async function render() {
+    function pngFrom(el) {
+      const c = el.querySelector('canvas');
+      if (c) return c.toDataURL('image/png');
+      const img = el.querySelector('img');
+      return img ? img.src : '';
+    }
+
+    function render() {
       const text = currentText();
       if (!text) return;
-      if (typeof QRCode === 'undefined' || !QRCode.toCanvas) {
-        alert('QR library failed to load. Check the network and refresh.');
+      if (typeof QRCode === 'undefined') {
+        alert('QR library failed to load. Refresh the page.');
         return;
       }
-      await QRCode.toCanvas(canvas, text, opts());
+      const size = Number(document.getElementById('size').value) || 512;
+      drawQr(box, text, size);
     }
 
-    async function downloadPng() {
-      await render();
+    function downloadPng() {
+      render();
+      const href = pngFrom(box);
+      if (!href) return;
       const name = (document.getElementById('filename').value || 'qr.png').replace(/[^\w.\-]+/g, '-');
       const a = document.createElement('a');
-      a.href = canvas.toDataURL('image/png');
+      a.href = href;
       a.download = name.endsWith('.png') ? name : (name + '.png');
       a.click();
     }
@@ -158,9 +171,8 @@
     document.getElementById('btnDownload').addEventListener('click', downloadPng);
     document.getElementById('payload').addEventListener('change', render);
     document.getElementById('size').addEventListener('change', render);
-    document.getElementById('margin').addEventListener('change', render);
 
-    document.getElementById('btnBatch').addEventListener('click', async () => {
+    document.getElementById('btnBatch').addEventListener('click', () => {
       const tpl = document.getElementById('batchTpl').value;
       const from = Number(document.getElementById('fromN').value) || 1;
       const to = Number(document.getElementById('toN').value) || from;
@@ -177,15 +189,16 @@
         const url = tpl.split('{n}').join(serial);
         const cell = document.createElement('div');
         cell.className = 'border border-gray-200 rounded-lg p-3 text-center break-inside-avoid';
-        const c = document.createElement('canvas');
-        await QRCode.toCanvas(c, url, { width: 220, margin: 1, errorCorrectionLevel: 'M' });
+        const holder = document.createElement('div');
+        holder.className = 'inline-block';
+        drawQr(holder, url, 180);
         const label = document.createElement('p');
         label.className = 'mt-2 text-sm font-mono font-bold';
         label.textContent = serial;
         const small = document.createElement('p');
         small.className = 'text-[9px] text-gray-400 break-all';
         small.textContent = url;
-        cell.appendChild(c);
+        cell.appendChild(holder);
         cell.appendChild(label);
         cell.appendChild(small);
         sheet.appendChild(cell);
