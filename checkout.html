@@ -653,15 +653,9 @@
         const storeLine = isTwMyshipCheckout()
           ? `<p>門市：${escapeHtml(state.storeId)} ${escapeHtml(state.storeName)}</p>`
           : '';
-        const twManageNote = isTwMyshipCheckout() ? `
-            <div class="rounded-xl border border-gray-200 p-4 text-xs text-gray-600 leading-relaxed space-y-2">
-              <p class="font-bold text-black text-sm">送出 = 下單完成</p>
-              <p>請<strong>不要</strong>再開賣貨便自己選同一批商品。我們會代為匯入；你之後只到 7-11 取貨付款。</p>
-            </div>
-          ` : '';
         panel.innerHTML = `
           <h2 class="text-xl font-bold mb-1">確認並提交</h2>
-          <p class="text-sm text-gray-500 mb-6">${isTwMyshipCheckout() ? '送出後訂單即成立。請不要再到賣貨便自行下單。' : '請確認訂單內容後提交。'}</p>
+          <p class="text-sm text-gray-500 mb-6">${isTwMyshipCheckout() ? '送出後訂單即成立、閣下無需再到賣貨便自行下單，這邊的系統將會定期安排自動匯入訂單資料進入賣貨便的系統，訂單就會自動成立。' : '請確認訂單內容後提交。'}</p>
           <div class="space-y-4">
             <div class="rounded-xl bg-tech-gray p-4 text-xs text-gray-600 space-y-1 leading-relaxed">
               <p class="font-bold text-black text-sm mb-2">${isTwMyshipCheckout() ? '通販摘要' : '訂單摘要'}</p>
@@ -673,7 +667,6 @@
               ${isTwMyshipCheckout() ? '<p>付款截圖：不適用（取貨付款）</p>' : `<p>付款截圖：${state.proofName ? escapeHtml(state.proofName) : (state.proofDataUrl ? '已上載' : '—')}</p>`}
               <p class="font-mono font-bold text-black pt-1">合計 ${money(total)}${isTwMyshipCheckout() ? '（7-11 取貨時支付）' : ''}</p>
             </div>
-            ${twManageNote}
             <div>
               <label class="block text-sm font-bold mb-2" for="c-notes">想對我說的話 <span class="text-gray-400 font-normal">(非必填)</span></label>
               <textarea id="c-notes" rows="3" class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white resize-y"
