@@ -411,7 +411,7 @@ const storeProducts = [
             "HK"
         ],
         "isNew": true,
-        "isSoldOut": false,
+        "isSoldOut": true,
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
@@ -450,7 +450,7 @@ const storeProducts = [
             "HK"
         ],
         "isNew": true,
-        "isSoldOut": false,
+        "isSoldOut": true,
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
