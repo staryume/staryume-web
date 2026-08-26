@@ -28,11 +28,13 @@ In row 1, set headers (left to right):
 
 > **Address column:** stores the customer’s **順豐站代碼** (not a street address). Mail is SF Express → SF station only.
 
-If you already have an older sheet without **Serial**:
+If you already have an older sheet without **Serial** (Timestamp | Method | Name | …):
 
-1. Insert a new column **B** named `Serial`.
-2. Shift the old columns right (Method becomes C, etc.).
-3. Paste the updated Apps Script below and **Deploy → Manage deployments → Edit → New version**.
+1. Insert a new column **B** named `Serial` (Method shifts to C). Do not type over Method.
+2. Paste the updated Apps Script below and **Deploy → Manage deployments → Edit → New version** so **new** rows keep 流水號.
+3. **Recover old rows** (try Gmail first): paste `docs/hk-form-recover-serial.gs` into the same Apps Script project (below `doPost` is fine). Run **RecoverSerialsFromGmail**. Allow Gmail + Sheets. It fills empty Serial cells from Sent mail `【staryume】香港領取登記確認 · …`. Results go to a **RecoverLog** tab.
+
+If RecoverLog says **Gmail hits: 0**, the old script never put 流水號 in the confirmation email either. The website does not keep a backup. Ask fans on Discord for name + 流水號, or match from the list you used when handing out numbers.
 
 ---
 
@@ -243,3 +245,14 @@ https://staryu.me/hk-form.html
 ```
 
 Remember to **git push** after updating `hk-form.html`.
+
+---
+
+## 6. Recover missing 流水號 on old rows
+
+The July 2026 sheet was written by an Apps Script that **ignored** `serial`. Those numbers are not in the xlsx and not on the website.
+
+1. Insert column **B** = `Serial` (or run `EnsureSerialColumn_` / `RecoverSerialsFromGmail`, which inserts it).
+2. Paste [hk-form-recover-serial.gs](./hk-form-recover-serial.gs) into Apps Script.
+3. Run **RecoverSerialsFromGmail**.
+4. Read **RecoverLog**. If Gmail hits are 0, confirmation mail never included 流水號 — collect numbers from Discord or your original assignment list.
