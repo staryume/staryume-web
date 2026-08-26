@@ -376,7 +376,7 @@ const storeProducts = [
             "en": "Leather Card Deck Box",
             "zh": "皮質卡片收納盒"
         },
-        "priceTW": 800,
+        "priceTW": 900,
         "priceHK": 220,
         "imgs": [
             "./blog/20260719/products/goods-deckbox/01.jpg",
