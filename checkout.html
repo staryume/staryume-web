@@ -285,6 +285,11 @@
     }
 
     function redirectIfEmpty() {
+      const q = (new URLSearchParams(location.search).get('region') || '').toUpperCase();
+      if (q === 'JP' || q === 'GL') {
+        window.location.replace('store.html?region=' + q);
+        return true;
+      }
       checkoutRegion = detectRegion();
       applyRegionChrome();
       // Shop closed to public — block checkout even if cart exists

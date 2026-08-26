@@ -78,6 +78,8 @@ export function loadStore() {
       checkUraPasscode,
       isProductVisibleInStore,
       normalizeStoreRegion,
+      isBoothStorefront,
+      storefrontLangForRegion,
       cartStorageKey,
       getCheckoutConfig,
       productUnitPrice,

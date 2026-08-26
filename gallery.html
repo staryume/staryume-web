@@ -228,31 +228,18 @@
             const displayEl = document.getElementById('currentLangDisplay');
             if(displayEl) displayEl.innerText = lang.toUpperCase();
 
-            // 2. SMART LINK LOGIC (Updated)
-            const internalShop = "store.html";
-            const boothShop = "https://staryume.booth.pm/"; 
-            
-            // CHECK: Is it Chinese?
-            const isChinese = (lang === 'zh');
+            const targetLink = lang === 'jp' ? 'store.html?region=JP' : lang === 'en' ? 'store.html?region=GL' : 'store.html';
 
-            // IF Chinese -> Internal Shop. ELSE (JP/EN) -> BOOTH
-            const targetLink = isChinese ? internalShop : boothShop;
-            
-            // IF Chinese -> Same Tab. ELSE -> New Tab
-            const targetTarget = isChinese ? "_self" : "_blank"; 
-
-            // Update Desktop Link
             const desktopLink = document.getElementById('desktop-store-link');
             if(desktopLink) {
                 desktopLink.href = targetLink;
-                desktopLink.target = targetTarget;
+                desktopLink.target = '_self';
             }
 
-            // Update Mobile Link
             const mobileLink = document.getElementById('mobile-store-link');
             if(mobileLink) {
                 mobileLink.href = targetLink;
-                mobileLink.target = targetTarget;
+                mobileLink.target = '_self';
             }
 
             // 3. Update Page Content (Existing Logic)

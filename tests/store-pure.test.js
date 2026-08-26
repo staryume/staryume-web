@@ -50,9 +50,10 @@ const sampleProducts = [
 ];
 
 describe("normalizeStoreRegion", () => {
-  it("maps TW / JP and everything else to HK", () => {
+  it("maps TW / JP / GL and everything else to HK", () => {
     expect(api.normalizeStoreRegion("TW")).toBe("TW");
     expect(api.normalizeStoreRegion("JP")).toBe("JP");
+    expect(api.normalizeStoreRegion("GL")).toBe("GL");
     expect(api.normalizeStoreRegion("tw")).toBe("HK"); // only exact "TW"
     expect(api.normalizeStoreRegion("HK")).toBe("HK");
     expect(api.normalizeStoreRegion("")).toBe("HK");
@@ -71,6 +72,8 @@ describe("productUnitPrice / formatStoreMoney", () => {
   it("formats currency labels by region", () => {
     expect(api.formatStoreMoney(120, "HK")).toBe("HKD$ 120");
     expect(api.formatStoreMoney(350, "TW")).toBe("NT$ 350");
+    expect(api.formatStoreMoney(0, "JP")).toBe("BOOTH");
+    expect(api.formatStoreMoney(0, "GL")).toBe("BOOTH");
     expect(api.formatStoreMoney("x", "HK")).toBe("HKD$ 0");
   });
 });
@@ -185,6 +188,8 @@ describe("ura passcode and visibility", () => {
     if (!ura || ura.enabled === false) return;
     api.lockUra();
     expect(api.isUraCatalogOpen("TW")).toBe(true);
+    expect(api.isUraCatalogOpen("JP")).toBe(true);
+    expect(api.isUraCatalogOpen("GL")).toBe(true);
     expect(api.isUraCatalogOpen("HK")).toBe(false);
     expect(api.unlockUra()).toBe(true);
     expect(api.isUraCatalogOpen("HK")).toBe(true);
@@ -213,10 +218,17 @@ describe("BOOTH JP handoff", () => {
     );
     expect(api.productBoothUrl({ linkJP: null })).toBe("https://staryume.booth.pm");
   });
-  it("Japan region uses BOOTH; HK and TW do not", () => {
+  it("Japan and Global use BOOTH; HK and TW do not", () => {
     expect(api.storeUsesBoothCheckout("JP")).toBe(true);
+    expect(api.storeUsesBoothCheckout("GL")).toBe(true);
+    expect(api.isBoothStorefront("JP")).toBe(true);
+    expect(api.isBoothStorefront("GL")).toBe(true);
     expect(api.storeUsesBoothCheckout("HK")).toBe(false);
     expect(api.storeUsesBoothCheckout("TW")).toBe(false);
+    expect(api.storefrontLangForRegion("JP")).toBe("jp");
+    expect(api.storefrontLangForRegion("GL")).toBe("en");
+    expect(api.storefrontLangForRegion("HK")).toBe("zh");
+    expect(api.storefrontLangForRegion("TW")).toBe("zh");
   });
 });
 
@@ -301,6 +313,13 @@ describe("getCheckoutConfig", () => {
     expect(hk.currency).toBe("HKD");
     expect(tw.currency).toBe("TWD");
     expect((tw.fulfillment || []).some((f) => f.id === "myship_711")).toBe(true);
+  });
+  it("returns booth config for JP and GL", () => {
+    const jp = api.getCheckoutConfig("JP");
+    const gl = api.getCheckoutConfig("GL");
+    expect(jp).toBeTruthy();
+    expect(gl).toBe(jp);
+    expect(jp.shopUrl).toContain("booth.pm");
   });
 });
 

@@ -225,17 +225,13 @@
             const displayEl = document.getElementById('currentLangDisplay');
             if(displayEl) displayEl.innerText = lang.toUpperCase();
 
-            const internalShop = "store.html";
-            const boothShop = "https://staryume.booth.pm/"; 
-            const isChinese = (lang === 'zh');
-            const targetLink = isChinese ? internalShop : boothShop;
-            const targetTarget = isChinese ? "_self" : "_blank"; 
+            const targetLink = lang === 'jp' ? 'store.html?region=JP' : lang === 'en' ? 'store.html?region=GL' : 'store.html';
 
             const desktopLink = document.getElementById('desktop-store-link');
-            if(desktopLink) { desktopLink.href = targetLink; desktopLink.target = targetTarget; }
+            if(desktopLink) { desktopLink.href = targetLink; desktopLink.target = '_self'; }
 
             const mobileLink = document.getElementById('mobile-store-link');
-            if(mobileLink) { mobileLink.href = targetLink; mobileLink.target = targetTarget; }
+            if(mobileLink) { mobileLink.href = targetLink; mobileLink.target = '_self'; }
 
             if(typeof siteData !== 'undefined' && siteData.translations) {
                  const textData = siteData.translations[lang];

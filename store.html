@@ -120,8 +120,11 @@
                             <button onclick="setRegion('HK')" id="btn-hk" class="px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black">
                                 HONG KONG / 香港
                             </button>
-                            <button onclick="setRegion('JP')" id="btn-jp" class="px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black">
+                            <button onclick="setRegion('JP')" id="btn-jp" class="hidden px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black">
                                 JAPAN / 日本
+                            </button>
+                            <button onclick="setRegion('GL')" id="btn-gl" class="hidden px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black">
+                                GLOBAL / 全球
                             </button>
                         </div>
                     </div>
@@ -304,17 +307,26 @@
             return null;
         }
 
+        function zhOnlyRegion(code) {
+            return (code === 'TW' || code === 'HK') ? code : null;
+        }
+
         /**
          * Pick store region for first paint / visit:
-         * 1) ?region=HK|TW|JP (deep link / CTA) always wins
-         * 2) Netlify /api/geo: TW → TW, HK → HK
-         * 3) browser timezone (Asia/Taipei → TW) — covers localhost
-         * 4) public IP country (localhost when /api/geo is missing)
-         * 5) otherwise HK
+         * 1) ?region=HK|TW|JP|GL always wins
+         * 2) siteLang jp → JP, en → GL
+         * 3) ZH family: geo/timezone TW or HK only (never auto-JP)
+         * 4) otherwise HK
          */
         async function resolveInitialRegion() {
             const regionParam = (new URLSearchParams(window.location.search).get('region') || '').toUpperCase();
-            if (regionParam === 'HK' || regionParam === 'TW' || regionParam === 'JP') return regionParam;
+            if (regionParam === 'HK' || regionParam === 'TW' || regionParam === 'JP' || regionParam === 'GL') return regionParam;
+
+            const savedLang = (() => {
+                try { return localStorage.getItem('siteLang'); } catch (e) { return null; }
+            })();
+            if (savedLang === 'jp') return 'JP';
+            if (savedLang === 'en') return 'GL';
 
             try {
                 const ctrl = new AbortController();
@@ -329,14 +341,15 @@
                 if (res.ok) {
                     const data = await res.json();
                     const mapped = countryToStoreRegion(data && data.region) || countryToStoreRegion(data && data.country);
-                    if (mapped) return mapped;
+                    const zh = zhOnlyRegion(mapped);
+                    if (zh) return zh;
                 }
             } catch (e) {
                 /* offline / localhost / edge not available */
             }
 
-            const tzRegion = regionFromTimezone();
-            if (tzRegion) return tzRegion;
+            const tzZh = zhOnlyRegion(regionFromTimezone());
+            if (tzZh) return tzZh;
 
             try {
                 const ctrl = new AbortController();
@@ -349,8 +362,8 @@
                 clearTimeout(timer);
                 if (res.ok) {
                     const data = await res.json();
-                    const mapped = countryToStoreRegion(data && data.country);
-                    if (mapped) return mapped;
+                    const zh = zhOnlyRegion(countryToStoreRegion(data && data.country));
+                    if (zh) return zh;
                 }
             } catch (e) {
                 /* blocked by CSP / offline */
@@ -364,22 +377,30 @@
             window.toggleDesktopLang = () => document.getElementById('langMenuDesktop').classList.toggle('open');
             window.toggleMobileMenu = () => document.getElementById('mobileMenu').classList.toggle('translate-x-full');
             window.switchLang = (l) => {
+                const menu = document.getElementById('langMenuDesktop');
                 if (l === 'jp') {
                     setRegion('JP');
-                    const menu = document.getElementById('langMenuDesktop');
                     if (menu) menu.classList.remove('open');
                     return;
                 }
-                currentLang = (l === 'en' || l === 'zh') ? l : 'zh';
-                try { localStorage.setItem('siteLang', currentLang); } catch (e) { /* ignore */ }
-                if (currentRegion === 'JP') {
+                if (l === 'en') {
+                    setRegion('GL');
+                    if (menu) menu.classList.remove('open');
+                    return;
+                }
+                currentLang = 'zh';
+                try { localStorage.setItem('siteLang', 'zh'); } catch (e) { /* ignore */ }
+                const booth = typeof isBoothStorefront === 'function'
+                    ? isBoothStorefront(currentRegion)
+                    : (currentRegion === 'JP' || currentRegion === 'GL');
+                if (booth) {
                     setRegion('HK');
+                    if (menu) menu.classList.remove('open');
                     return;
                 }
                 updateLangDisplay();
                 renderCategories();
                 renderAllSections();
-                const menu = document.getElementById('langMenuDesktop');
                 if (menu) menu.classList.remove('open');
             };
 
@@ -454,13 +475,16 @@
             } else if ((p.hidden || p.contentRating === 'r18') && !unlocked) {
                 return false;
             }
-            if (currentRegion === 'JP') {
+            const booth = typeof isBoothStorefront === 'function'
+                ? isBoothStorefront(currentRegion)
+                : (currentRegion === 'JP' || currentRegion === 'GL');
+            if (booth) {
                 if (p.langs && p.langs.jp === false) return false;
             } else if (p.regions && !p.regions.includes(currentRegion)) {
                 return false;
             }
             if (!showOutOfStock && p.isSoldOut) return false;
-            if (p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
+            if (!booth && p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
             return true;
         }
 
@@ -485,7 +509,7 @@
                 return n[currentLang] || n.zh || n.en || n.jp || 'R18';
             }
             if (currentRegion === 'HK') return '失物認領';
-            if (currentRegion === 'JP') return 'R18';
+            if (currentRegion === 'JP' || currentRegion === 'GL') return 'R18';
             return 'R18商品';
         }
 
@@ -636,7 +660,7 @@
         }
 
         function renderCard(product, hiddenClass = '') {
-            const price = currentRegion === 'JP'
+            const price = (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion))
                 ? 'BOOTH'
                 : ((currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`);
             const title = product.title[currentLang] || product.title.en || product.title.zh || product.title.jp || '';
@@ -709,7 +733,7 @@
                 return;
             }
             const modal = document.getElementById('product-modal');
-            const price = currentRegion === 'JP'
+            const price = (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion))
                 ? 'BOOTH'
                 : ((currentRegion === 'TW') ? `NT$ ${product.priceTW}` : `HKD$ ${product.priceHK}`);
             
@@ -742,10 +766,13 @@
                     ? productBoothUrl(product, storeConfig)
                     : (product.linkJP || 'https://staryume.booth.pm');
                 const perItem = !!(product.linkJP);
-                actions.innerHTML = `<a href="${boothUrl}" target="_blank" rel="noopener noreferrer" class="block w-full bg-black text-white text-center font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">BOOTHで購入</a>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">${perItem
-                        ? 'pixiv BOOTH で決済・発送します（1点ずつカートへ）。'
-                        : 'この商品の個別URL未設定のためショップTOPを開きます。BOOTHで該当商品を選んでください。'}</p>`;
+                const gl = currentRegion === 'GL';
+                const cta = gl ? 'Buy on BOOTH' : 'BOOTHで購入';
+                const hint = perItem
+                    ? (gl ? 'Pay and ship on pixiv BOOTH (add one item at a time).' : 'pixiv BOOTH で決済・発送します（1点ずつカートへ）。')
+                    : (gl ? 'This item has no individual URL yet — the BOOTH shop will open. Please pick the product there.' : 'この商品の個別URL未設定のためショップTOPを開きます。BOOTHで該当商品を選んでください。');
+                actions.innerHTML = `<a href="${boothUrl}" target="_blank" rel="noopener noreferrer" class="block w-full bg-black text-white text-center font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">${cta}</a>
+                    <p class="text-[11px] text-gray-400 text-center mt-2">${hint}</p>`;
             } else if (currentRegion === 'TW') {
                 const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
                 const isR18 = typeof productIsR18 === 'function' ? productIsR18(product) : !!(product.hidden || product.contentRating === 'r18');
@@ -860,14 +887,13 @@
         }
 
         function setRegion(region) {
-            currentRegion = (region === 'TW' || region === 'JP') ? region : 'HK';
-            if (currentRegion === 'JP') {
-                currentLang = 'jp';
-                try { localStorage.setItem('siteLang', 'jp'); } catch (e) { /* ignore */ }
-            } else if (currentLang === 'jp') {
-                currentLang = 'zh';
-                try { localStorage.setItem('siteLang', 'zh'); } catch (e) { /* ignore */ }
-            }
+            currentRegion = typeof normalizeStoreRegion === 'function'
+                ? normalizeStoreRegion(region)
+                : ((region === 'TW' || region === 'JP' || region === 'GL') ? region : 'HK');
+            currentLang = typeof storefrontLangForRegion === 'function'
+                ? storefrontLangForRegion(currentRegion)
+                : (currentRegion === 'JP' ? 'jp' : currentRegion === 'GL' ? 'en' : 'zh');
+            try { localStorage.setItem('siteLang', currentLang); } catch (e) { /* ignore */ }
             updateLangDisplay();
             try {
                 const u = new URL(location.href);
@@ -886,27 +912,33 @@
             const btnTw = document.getElementById('btn-tw');
             const btnHk = document.getElementById('btn-hk');
             const btnJp = document.getElementById('btn-jp');
+            const btnGl = document.getElementById('btn-gl');
             const onCls = "px-4 py-1 text-xs font-bold rounded transition-colors bg-tech-purple text-black shadow-sm";
             const offCls = "px-4 py-1 text-xs font-bold rounded transition-colors text-gray-500 hover:text-black";
             const notice = document.getElementById('region-notice');
             const shipText = document.getElementById('shipping-text');
 
             // Swap cart when region changes (HK / TW bags are separate)
-            cart = typeof loadRegionCart === 'function' ? loadRegionCart(region) : {};
+            cart = typeof loadRegionCart === 'function' ? loadRegionCart(currentRegion) : {};
 
             const twBar = document.getElementById('tw-preorder-bar');
             const twFlow = document.getElementById('tw-flow-notice');
             const bagRegionLabel = document.getElementById('bag-region-label');
             const showTwManage = !!(storeConfig.twCheckout && storeConfig.twCheckout.showOrderManageBar);
             const boothMode = typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion);
-            if (btnTw) btnTw.className = currentRegion === 'TW' ? onCls : offCls;
-            if (btnHk) btnHk.className = currentRegion === 'HK' ? onCls : offCls;
-            if (btnJp) btnJp.className = currentRegion === 'JP' ? onCls : offCls;
+            const paintBtn = (el, on, hide) => {
+                if (!el) return;
+                el.className = (on ? onCls : offCls) + (hide ? ' hidden' : '');
+            };
+            paintBtn(btnTw, currentRegion === 'TW', boothMode);
+            paintBtn(btnHk, currentRegion === 'HK', boothMode);
+            paintBtn(btnJp, currentRegion === 'JP', !boothMode);
+            paintBtn(btnGl, currentRegion === 'GL', !boothMode);
             if (currentRegion === 'TW') {
                 const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
                 if (!twOn) {
                     if(notice) notice.innerText = '台灣通路暫停 · TW STORE PAUSED';
-                    if(shipText) shipText.innerText = "Taiwan: 賣貨便串接尚未完成，暫時關閉。請切換香港或日本。";
+                    if(shipText) shipText.innerText = "Taiwan: 賣貨便串接尚未完成，暫時關閉。請切換香港。";
                     if(twBar) twBar.classList.add('hidden');
                     if(twFlow) twFlow.classList.add('hidden');
                     if(bagRegionLabel) bagRegionLabel.textContent = 'Taiwan · paused';
@@ -925,6 +957,12 @@
                 if(twBar) twBar.classList.add('hidden');
                 if(twFlow) twFlow.classList.add('hidden');
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Japan · BOOTH';
+            } else if (currentRegion === 'GL') {
+                if(notice) notice.innerText = 'GLOBAL: Buy on pixiv BOOTH · Pay & ship there';
+                if(shipText) shipText.innerText = "Worldwide: pixiv BOOTH checkout and shipping.";
+                if(twBar) twBar.classList.add('hidden');
+                if(twFlow) twFlow.classList.add('hidden');
+                if(bagRegionLabel) bagRegionLabel.textContent = 'Global · BOOTH';
             } else {
                 if(notice) notice.innerText = (storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false)
                     ? "香港預購暫停 · HK PRE-ORDER PAUSED"
@@ -1003,10 +1041,11 @@
         }
         
         function addToCart(id) {
+            if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion)) return;
             if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return;
             if (currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false) return;
             const product = storeProducts.find((p) => p.id === id);
-            if (product && product.regions && currentRegion !== 'JP' && !product.regions.includes(currentRegion)) return;
+            if (product && product.regions && !product.regions.includes(currentRegion)) return;
             if (currentRegion === 'TW' && product && (typeof productIsR18 === 'function' ? productIsR18(product) : (product.hidden || product.contentRating === 'r18'))) {
                 alert('台灣賣貨便無法販售 R18。請改用 Discord 私訊。');
                 return;
