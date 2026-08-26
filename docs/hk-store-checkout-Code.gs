@@ -32,6 +32,11 @@ var TW_PREORDER_DEADLINE_ISO = '2026-08-20T00:00:00+08:00';
 /** Empty = no close date for 賣貨便 通販. Set ISO like 2026-09-30T23:59:00+08:00 to freeze. */
 var TW_MAIL_DEADLINE_ISO = '';
 var MYSHIP_EXPORT_SHEET = '賣貨便匯入';
+/** Official 訂單匯入 Google Sheet (賣貨便 範本 columns). Same Google account must have access. */
+var MYSHIP_IMPORT_SPREADSHEET_ID = '1c2Vf9_lX2CzLwkXx3tW5xwZzC_9GbF8l4yDUEA2NWfI';
+var MYSHIP_IMPORT_TAB = '訂單匯入';
+/** 本島服務優惠價. Change if your 賣貨便 運費 is not 60. */
+var MYSHIP_SHIPPING_TWD = 60;
 
 var HEADERS = [
   'Timestamp', 'Order ID', 'Items', 'Total', 'Name', 'Email', 'Phone',
@@ -964,7 +969,8 @@ function jsonOut_(obj) {
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('賣貨便')
-    .addItem('重建匯入表（賣貨便匯入分頁）', 'rebuildMyshipExportSheet_')
+    .addItem('同步到官方匯入表', 'syncMyshipOrdersToImportSheet_')
+    .addItem('重建匯入表（本檔「賣貨便匯入」分頁）', 'rebuildMyshipExportSheet_')
     .addToUi();
 }
 
@@ -1037,4 +1043,198 @@ function rebuildMyshipExportSheet_() {
     out.getRange(2, 1, rows.length, headers.length).setValues(rows);
   }
   SpreadsheetApp.getUi().alert('已寫入 ' + rows.length + ' 列到「' + MYSHIP_EXPORT_SHEET + '」。請 File → Download，再於賣貨便「訂單匯入」上傳。');
+}
+
+/**
+ * Copy TW 賣貨便 orders into the official import Google Sheet (one row per order).
+ * Appends only; skips Order IDs already in dest 商品備註. HK / FF47 preorder ignored.
+ */
+function syncMyshipOrdersToImportSheet_() {
+  try {
+  ensureHeaders_();
+  var destSs = SpreadsheetApp.openById(MYSHIP_IMPORT_SPREADSHEET_ID);
+  var dest = destSs.getSheetByName(MYSHIP_IMPORT_TAB) || destSs.getSheets()[0];
+  var layout = myshipImportLayout_(dest);
+  var existing = myshipImportExistingIds_(dest, layout);
+
+  var src = orderSheet_();
+  var last = src.getLastRow();
+  if (last < 2) {
+    SpreadsheetApp.getUi().alert('沒有訂單列。');
+    return;
+  }
+  var width = Math.max(src.getLastColumn(), HEADERS.length);
+  var data = src.getRange(2, 1, last, width).getValues();
+  var out = [];
+  var skipped = 0;
+  var skippedDup = 0;
+  for (var i = 0; i < data.length; i++) {
+    var v = data[i];
+    if (!isTwMyshipSourceRow_(v)) {
+      skipped++;
+      continue;
+    }
+    var orderId = String(v[col_('Order ID') - 1] || '').trim();
+    if (!orderId) continue;
+    if (existing[orderId.toLowerCase()]) {
+      skippedDup++;
+      continue;
+    }
+    var store = parseStoreFromNotes_(v[col_('Notes') - 1], v[col_('SF Code') - 1]);
+    var items = [];
+    try {
+      items = JSON.parse(String(v[col_('ItemsJson') - 1] || '[]'));
+    } catch (e) {
+      items = [];
+    }
+    if (!items || !items.length) {
+      items = [{ title: String(v[col_('Items') - 1] || ''), qty: 1 }];
+    }
+    var sns = [String(v[col_('SNS Type') - 1] || ''), String(v[col_('SNS Contact') - 1] || '')]
+      .filter(function (s) { return s; })
+      .join(' ');
+    var row = [];
+    row[layout.colName] = sanitizeMyshipName_(v[col_('Name') - 1]);
+    row[layout.colPhone] = normalizeMyshipPhone_(v[col_('Phone') - 1]);
+    row[layout.colStore] = String(store.storeId || '').replace(/\D/g, '');
+    row[layout.colTemp] = '常溫';
+    row[layout.colGoods] = formatMyshipGoods_(items).slice(0, 200);
+    row[layout.colAmount] = String(Number(v[col_('Total') - 1]) || 0);
+    row[layout.colShip] = String(MYSHIP_SHIPPING_TWD);
+    row[layout.colDate] = formatMyshipDate_(v[col_('Timestamp') - 1]);
+    row[layout.colRemark] = orderId;
+    row[layout.colExtra] = sns.slice(0, 200);
+    out.push(padMyshipRow_(row, layout.width));
+    existing[orderId.toLowerCase()] = true;
+  }
+
+  if (out.length) {
+    var rng = dest.getRange(layout.nextRow, 1, out.length, layout.width);
+    rng.setNumberFormat('@');
+    rng.setValues(out);
+  }
+  SpreadsheetApp.getUi().alert(
+    '已同步到官方匯入表「' + dest.getName() + '」\n\n' +
+    '新增：' + out.length + ' 筆\n' +
+    '已存在（略過）：' + skippedDup + ' 筆\n' +
+    '非賣貨便列略過：' + skipped + ' 筆\n\n' +
+    '請核對姓名／門市後，到賣貨便後台「訂單匯入」上傳。成功後把來源表 Status 設為 imported。'
+  );
+  } catch (err) {
+    SpreadsheetApp.getUi().alert('同步失敗：' + err);
+  }
+}
+
+function isTwMyshipSourceRow_(v) {
+  var region = String(v[col_('Region') - 1] || '').toUpperCase();
+  var orderId = String(v[col_('Order ID') - 1] || '');
+  if (!region && orderId.indexOf('TW-') === 0) region = 'TW';
+  if (region !== 'TW') return false;
+  var status = String(v[col_('Status') - 1] || '').toLowerCase();
+  if (status.indexOf('cancel') >= 0) return false;
+  var fulfillmentId = String(v[col_('FulfillmentId') - 1] || '');
+  var orderType = String(v[col_('OrderType') - 1] || '').toLowerCase();
+  return orderType === 'myship' || fulfillmentId === 'myship_711';
+}
+
+function myshipImportLayout_(sheet) {
+  var lastCol = Math.max(sheet.getLastColumn(), 10);
+  var scanRows = Math.min(10, Math.max(1, sheet.getLastRow()));
+  var headerRow = 1;
+  var found = false;
+  var values = sheet.getRange(1, 1, scanRows, lastCol).getValues();
+  for (var r = 0; r < values.length; r++) {
+    var a = String(values[r][0] || '');
+    if (a.indexOf('取件人姓名') >= 0) {
+      headerRow = r + 1;
+      found = true;
+      break;
+    }
+  }
+  if (!found) {
+    throw new Error('找不到「取件人姓名」表頭。請確認分頁為官方 訂單匯入 格式。');
+  }
+  var headers = values[headerRow - 1];
+  function idx(part) {
+    for (var c = 0; c < headers.length; c++) {
+      if (String(headers[c] || '').indexOf(part) >= 0) return c;
+    }
+    return -1;
+  }
+  var layout = {
+    headerRow: headerRow,
+    nextRow: Math.max(sheet.getLastRow() + 1, headerRow + 1),
+    width: lastCol,
+    colName: idx('取件人姓名'),
+    colPhone: idx('取件人手機'),
+    colStore: idx('取件門市'),
+    colTemp: idx('溫層'),
+    colGoods: idx('商品'),
+    colAmount: idx('訂單金額'),
+    colShip: idx('運費金額'),
+    colDate: idx('買家下訂日期'),
+    colRemark: idx('商品備註'),
+    colExtra: idx('其他資訊')
+  };
+  if (layout.colName < 0 || layout.colPhone < 0 || layout.colStore < 0 || layout.colGoods < 0) {
+    throw new Error('官方表頭欄位不完整（需要姓名／手機／門市／商品）。');
+  }
+  if (layout.colTemp < 0) layout.colTemp = 3;
+  if (layout.colAmount < 0) layout.colAmount = 5;
+  if (layout.colShip < 0) layout.colShip = 6;
+  if (layout.colDate < 0) layout.colDate = 7;
+  if (layout.colRemark < 0) layout.colRemark = 8;
+  if (layout.colExtra < 0) layout.colExtra = 9;
+  layout.width = Math.max(layout.width, 10);
+  return layout;
+}
+
+function myshipImportExistingIds_(sheet, layout) {
+  var map = {};
+  var last = sheet.getLastRow();
+  if (last <= layout.headerRow || layout.colRemark < 0) return map;
+  var col = layout.colRemark + 1;
+  var vals = sheet.getRange(layout.headerRow + 1, col, last - layout.headerRow, 1).getValues();
+  for (var i = 0; i < vals.length; i++) {
+    var id = String(vals[i][0] || '').trim();
+    if (id) map[id.toLowerCase()] = true;
+  }
+  return map;
+}
+
+function padMyshipRow_(sparse, width) {
+  var row = [];
+  for (var i = 0; i < width; i++) row[i] = sparse[i] != null ? sparse[i] : '';
+  return row;
+}
+
+function sanitizeMyshipName_(raw) {
+  var s = String(raw || '');
+  s = s.replace(/[0-9`~!@#$%^&*()\/\\|,.\s<>'"?;:_+\-=\[\]{}]/g, '');
+  return s || String(raw || '').replace(/[0-9]/g, '').trim();
+}
+
+function normalizeMyshipPhone_(raw) {
+  var d = String(raw || '').replace(/\D/g, '');
+  if (d.indexOf('886') === 0) d = d.slice(3);
+  if (d.length === 9 && d.charAt(0) === '9') d = '0' + d;
+  return d;
+}
+
+function formatMyshipGoods_(items) {
+  var parts = [];
+  (items || []).forEach(function (it) {
+    if (!it) return;
+    var title = String(it.title || it.name || '').trim();
+    if (!title) return;
+    var qty = Number(it.qty) || 1;
+    parts.push(qty > 1 ? (title + '×' + qty) : title);
+  });
+  return parts.join('、') || '商品';
+}
+
+function formatMyshipDate_(ts) {
+  var d = ts instanceof Date ? ts : (ts ? new Date(ts) : new Date());
+  if (isNaN(d.getTime())) d = new Date();
+  return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + d.getDate();
 }

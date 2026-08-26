@@ -47,7 +47,7 @@ Google Sheet **File → Version history** is also available for accidental undos
 - **Edit / cancel** until Status is `imported` / `picked` / `cancelled` (`TW_MAIL_DEADLINE_ISO` empty = no calendar freeze)  
 - Same email cannot create another TW order within **24 hours**  
 - After 訂單匯入, set Status **`imported`**. See **`docs/myship-order-import.md`**.  
-- Staff Sheet menu: **賣貨便 → 重建匯入表**
+- Staff Sheet menu: **賣貨便 → 同步到官方匯入表** (copies TW 賣貨便 rows into the official 訂單匯入 spreadsheet). See **`docs/myship-order-import.md`**.
 
 ### Inventory POS linkage (optional)
 
