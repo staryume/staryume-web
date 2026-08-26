@@ -141,6 +141,7 @@
       },
     }));
     return {
+      ...cfg,
       shopStatus: {
         isOpen: !!(cfg.shopStatus && cfg.shopStatus.isOpen),
         nextOpenDate: (cfg.shopStatus && cfg.shopStatus.nextOpenDate) || '',

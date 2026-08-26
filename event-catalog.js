@@ -836,7 +836,7 @@ const eventCatalog = {
                         "coords": [
                             50.7,
                             55.7,
-                            47.0,
+                            47,
                             20.8
                         ]
                     },
@@ -846,7 +846,7 @@ const eventCatalog = {
                             1.9,
                             77.8,
                             37.6,
-                            21.0
+                            21
                         ]
                     },
                     {
@@ -854,8 +854,8 @@ const eventCatalog = {
                         "coords": [
                             41.3,
                             77.8,
-                            33.0,
-                            21.0
+                            33,
+                            21
                         ]
                     },
                     {
@@ -864,7 +864,7 @@ const eventCatalog = {
                             74.3,
                             77.8,
                             23.4,
-                            21.0
+                            21
                         ]
                     }
                 ]
@@ -1712,7 +1712,7 @@ const eventCatalog = {
                     {
                         "productId": "sleeve-gagaga",
                         "coords": [
-                            2.0,
+                            2,
                             55.8,
                             23.4,
                             20.9
@@ -1739,7 +1739,7 @@ const eventCatalog = {
                     {
                         "productId": "goods-deckbox",
                         "coords": [
-                            2.0,
+                            2,
                             77.8,
                             37.4,
                             20.9
@@ -1782,7 +1782,7 @@ const eventCatalog = {
                     {
                         "productId": "set-makeine",
                         "coords": [
-                            2.0,
+                            2,
                             12.3,
                             46.9,
                             37.5

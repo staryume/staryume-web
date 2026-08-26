@@ -2,7 +2,7 @@
 
 const storeConfig = {
     "shopStatus": {
-        "isOpen": true,
+        "isOpen": false,
         "nextOpenDate": ""
     },
     "banner": {
@@ -10,18 +10,12 @@ const storeConfig = {
         "link": "#",
         "text": ""
     },
-    /**
-     * Hong Kong on-site checkout (bag → checkout.html → Sheets + Drive).
-     * Production posts to Netlify edge /api/hk-order (rate-limited proxy).
-     * Localhost falls back to scriptUrlDirect (Apps Script) — see docs/hk-store-checkout-apps-script.md
-     */
     "hkCheckout": {
         "enabled": true,
         "currency": "HKD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
-        // Client compresses proofs under ~2.4MB; edge max body is 3.5MB.
         "maxProofBytes": 3500000,
         "payment": {
             "fps": {
@@ -48,7 +42,10 @@ const storeConfig = {
                     "zh": "只限在順豐站 / 順豐自助櫃 / 順豐合作點取貨；需填寫電話及順豐站代碼。",
                     "en": "Pickup only at SF Station / SF Locker / SF partner points. Phone and station code required."
                 },
-                "fields": ["phone", "sfCode"]
+                "fields": [
+                    "phone",
+                    "sfCode"
+                ]
             },
             {
                 "id": "palette_ring_11",
@@ -65,11 +62,6 @@ const storeConfig = {
             }
         ]
     },
-    /**
-     * Taiwan mail-order checkout (bag → checkout.html?region=TW).
-     * Customer fills once on staryu.me; seller 訂單匯入 to 7-11 賣貨便.
-     * Pay at 7-11 pickup (取貨付款). Reuses same order endpoint as HK (no proof).
-     */
     "booth": {
         "shopUrl": "https://staryume.booth.pm"
     },
@@ -80,7 +72,6 @@ const storeConfig = {
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
         "discordInvite": "https://discord.gg/staryume",
         "maxProofBytes": 3500000,
-        // Storefront banner + 管理訂單 shortcut. Off between events; set true next Fancy Frontier.
         "showOrderManageBar": false,
         "myship": {
             "storefrontUrl": "https://myship.7-11.com.tw/general/detail/GM2608255230612",
@@ -88,8 +79,12 @@ const storeConfig = {
             "maxOrderTwd": 20000
         },
         "payment": {
-            "fps": { "enabled": false },
-            "payme": { "enabled": false }
+            "fps": {
+                "enabled": false
+            },
+            "payme": {
+                "enabled": false
+            }
         },
         "fulfillment": [
             {
@@ -103,7 +98,10 @@ const storeConfig = {
                     "zh": "在本站填門市並送出即完成下單，不必再開賣貨便自己選商品。我們匯入後，你到指定 7-11 取貨付款。",
                     "en": "Choose a 7-11 store. We import the order into MyShip; pay when you pick up. R18 cannot ship this way."
                 },
-                "fields": ["storeId", "storeName"]
+                "fields": [
+                    "storeId",
+                    "storeName"
+                ]
             }
         ]
     },
@@ -162,10 +160,6 @@ const storeConfig = {
                 "jp": "R18同人誌",
                 "en": "R18 Doujin",
                 "zh": "R18同人本"
-            },
-            "nameByRegion": {
-                "HK": { "jp": "失物認領", "en": "Lost & Found", "zh": "失物認領" },
-                "TW": { "jp": "R18商品", "en": "R18", "zh": "R18商品" }
             }
         },
         {
@@ -177,12 +171,6 @@ const storeConfig = {
             }
         }
     ],
-    /**
-     * 裏 store (R18) — HK unlock via ??? + 通關密碼 (Discord).
-     * TW catalog shows R18 openly (no passcode).
-     * Passcode is client-side only (obscurity for fans, not true secrecy).
-     * Rotate passcode and redeploy when Discord announces a new code.
-     */
     "ura": {
         "enabled": true,
         "passcode": "STARYUME15TH",
@@ -201,13 +189,16 @@ const storeConfig = {
 };
 
 const storeProducts = [
-{
+    {
         "id": 103,
         "category": [
             "featured",
             "set"
         ],
-        "regions": ["TW", "HK"],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": false,
@@ -240,16 +231,23 @@ const storeProducts = [
             "zh": "星夢亭15週年紀念套組。<br>① 新刊 - Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子<br>（自製卡有不同稀有度：UR / PSE / GMR）"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": "https://staryume.booth.pm/items/8728889"
     },
-{
+    {
         "id": 206,
         "category": [
             "featured",
             "sleeves"
         ],
-        "regions": ["TW"],
+        "regions": [
+            "TW"
+        ],
         "isNew": true,
         "isSoldOut": true,
         "isPreorder": false,
@@ -262,23 +260,32 @@ const storeProducts = [
         },
         "priceTW": 300,
         "priceHK": 80,
-        "imgs": ["./blog/20260719/products/sleeve-gagaga/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/sleeve-gagaga/01.jpg"
+        ],
         "desc": {
             "jp": "新作カードスリーブ。我我我女孩。遊戯王サイズ / 60枚。",
             "en": "New card sleeves featuring Gagaga Girl. Yu-Gi-Oh! size / 60 pcs.",
             "zh": "遊戲王尺寸、每包含60個"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 207,
         "category": [
             "featured",
             "sleeves"
         ],
-        "regions": ["TW"],
+        "regions": [
+            "TW"
+        ],
         "isNew": true,
         "isSoldOut": true,
         "isPreorder": false,
@@ -291,23 +298,33 @@ const storeProducts = [
         },
         "priceTW": 300,
         "priceHK": 80,
-        "imgs": ["./blog/20260719/products/sleeve-dmg-2026/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/sleeve-dmg-2026/01.jpg"
+        ],
         "desc": {
             "jp": "新作カードスリーブ。ブラック・マジシャン・ガール ver. 2026。遊戯王サイズ / 60枚。",
             "en": "New card sleeves featuring Dark Magician Girl (ver. 2026). Yu-Gi-Oh! size / 60 pcs.",
             "zh": "遊戲王尺寸、每包含60個"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 302,
         "category": [
             "featured",
             "tcg"
         ],
-        "regions": ["TW", "HK"],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": false,
@@ -331,16 +348,24 @@ const storeProducts = [
             "zh": "新作遊戲墊 - 黑魔導女孩 (ver. 2026)。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 402,
         "category": [
             "featured",
             "tcg"
         ],
-        "regions": ["TW", "HK"],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": false,
@@ -367,16 +392,24 @@ const storeProducts = [
             "zh": "皮質卡片收納盒。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 405,
         "category": [
             "featured",
             "other"
         ],
-        "regions": ["TW", "HK"],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": false,
@@ -389,23 +422,33 @@ const storeProducts = [
         },
         "priceTW": 600,
         "priceHK": 180,
-        "imgs": ["./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"],
+        "imgs": [
+            "./blog/20260719/products/tapestry/tapestry-bmg2026.jpg"
+        ],
         "desc": {
             "jp": "新作タペストリー。ブラック・マジシャン・ガール ver. 2026。日本製しろもうふ／B2。",
             "en": "New tapestry featuring Dark Magician Girl (ver. 2026). Japanese-made shiromofu / B2.",
             "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ／尺寸：B2"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 406,
         "category": [
             "featured",
             "other"
         ],
-        "regions": ["TW", "HK"],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": true,
         "isSoldOut": false,
         "isPreorder": false,
@@ -418,17 +461,24 @@ const storeProducts = [
         },
         "priceTW": 600,
         "priceHK": 180,
-        "imgs": ["./blog/20260719/products/tapestry/tapestry-gagaga.jpg"],
+        "imgs": [
+            "./blog/20260719/products/tapestry/tapestry-gagaga.jpg"
+        ],
         "desc": {
             "jp": "新作タペストリー。ガガガガール。日本製しろもうふ／B2。",
             "en": "New tapestry featuring Gagaga Girl. Japanese-made shiromofu / B2.",
             "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ／尺寸：B2"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 102,
         "category": [
             "set"
@@ -467,12 +517,18 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 104,
-        "category": ["set"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "set"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -499,10 +555,15 @@ const storeProducts = [
             "zh": "敗北女角相關既有套組商品。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 101,
         "category": [
             "set",
@@ -540,9 +601,10 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 201,
         "category": [
             "sleeves",
@@ -576,9 +638,10 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 202,
         "category": [
             "sleeves",
@@ -612,9 +675,10 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 203,
         "category": [
             "sleeves",
@@ -648,9 +712,10 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 204,
         "category": [
             "sleeves",
@@ -684,9 +749,10 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 205,
         "category": [
             "sleeves",
@@ -719,12 +785,18 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 208,
-        "category": ["sleeves"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "sleeves"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -736,20 +808,32 @@ const storeProducts = [
         },
         "priceTW": 300,
         "priceHK": 80,
-        "imgs": ["./blog/20260719/products/sleeve-legacy/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/sleeve-legacy/01.jpg"
+        ],
         "desc": {
             "jp": "既存スリーブ。ブラック・マジシャン・ガール 2025。遊戯王サイズ / 60枚。",
             "en": "Catalog sleeves — Dark Magician Girl 2025. Yu-Gi-Oh! size / 60 pcs.",
             "zh": "既存卡套 · 黑魔導女孩 2025。遊戲王尺寸、每包含60個。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 209,
-        "category": ["sleeves"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "sleeves"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -761,17 +845,24 @@ const storeProducts = [
         },
         "priceTW": 300,
         "priceHK": 80,
-        "imgs": ["./blog/20260719/products/sleeve-legacy/02.jpg"],
+        "imgs": [
+            "./blog/20260719/products/sleeve-legacy/02.jpg"
+        ],
         "desc": {
             "jp": "既存スリーブ。閃刀姫－ゼロ。遊戯王サイズ / 60枚。",
             "en": "Catalog sleeves — Sky Striker Ace Zero. Yu-Gi-Oh! size / 60 pcs.",
             "zh": "既存卡套 · 閃刀姬 零。遊戲王尺寸、每包含60個。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 301,
         "category": [
             "tcg",
@@ -804,9 +895,10 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 401,
         "category": [
             "goods"
@@ -838,12 +930,18 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 303,
-        "category": ["tcg"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "tcg"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -856,22 +954,32 @@ const storeProducts = [
         },
         "priceTW": 600,
         "priceHK": 180,
-        "imgs": ["./blog/20260719/products/mat-legacy/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/mat-legacy/01.jpg"
+        ],
         "desc": {
             "jp": "既存プレイマット。八奈見杏菜。",
             "en": "Legacy playmat featuring Yanami.",
             "zh": "既作遊戲墊（八奈見）。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 403,
         "category": [
             "tcg"
         ],
-        "regions": ["TW", "HK"],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -894,13 +1002,23 @@ const storeProducts = [
             "zh": "Dream Card Box 2025 收納盒。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 404,
-        "category": ["other"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "other"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -912,17 +1030,24 @@ const storeProducts = [
         },
         "priceTW": 200,
         "priceHK": 50,
-        "imgs": ["./blog/20260719/products/goods-akkey/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/goods-akkey/01.jpg"
+        ],
         "desc": {
             "jp": "敗北ヒロイン関連アクリルキーホルダー。",
             "en": "Makeine acrylic keychain set.",
             "zh": "敗北女角太多了!<br>天愛星 + 八奈見 亞加力匙扣。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 503,
         "category": [
             "books"
@@ -958,12 +1083,18 @@ const storeProducts = [
             "en": true,
             "zh": true
         },
-        "linkHK": null
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 500,
-        "category": ["books"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "books"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -988,13 +1119,23 @@ const storeProducts = [
             "zh": "全彩插圖本。<br>20P / 全彩"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 501,
-        "category": ["books"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "books"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -1020,13 +1161,23 @@ const storeProducts = [
             "zh": "既刊 Overlay Magic Color 3。<br>B5・20P・全彩插圖本"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 502,
-        "category": ["books"],
-        "regions": ["TW", "HK"],
+        "category": [
+            "books"
+        ],
+        "regions": [
+            "TW",
+            "HK"
+        ],
         "isNew": false,
         "isSoldOut": false,
         "useTwCart": true,
@@ -1039,20 +1190,32 @@ const storeProducts = [
         },
         "priceTW": 150,
         "priceHK": 60,
-        "imgs": ["./blog/20260719/products/book-om-gala/01.jpg"],
+        "imgs": [
+            "./blog/20260719/products/book-om-gala/01.jpg"
+        ],
         "desc": {
             "jp": "Overlay Magic GALA 既刊。<br>フルカラー / 32P",
             "en": "Overlay Magic GALA catalog book.<br>Full color / 32P",
             "zh": "既刊 Overlay Magic GALA。<br>全彩 / 32P"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 603,
-        "category": ["ura"],
-        "regions": ["HK", "TW"],
+        "category": [
+            "ura"
+        ],
+        "regions": [
+            "HK",
+            "TW"
+        ],
         "hidden": true,
         "contentRating": "r18",
         "isNew": true,
@@ -1078,13 +1241,23 @@ const storeProducts = [
             "zh": "R18 同人誌。詳情請見 Discord 通關／失物認領公告。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 601,
-        "category": ["ura"],
-        "regions": ["HK", "TW"],
+        "category": [
+            "ura"
+        ],
+        "regions": [
+            "HK",
+            "TW"
+        ],
         "hidden": true,
         "contentRating": "r18",
         "isNew": true,
@@ -1111,13 +1284,23 @@ const storeProducts = [
             "zh": "R18 既刊。詳情請見 Discord 通關／失物認領公告。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 604,
-        "category": ["ura"],
-        "regions": ["HK", "TW"],
+        "category": [
+            "ura"
+        ],
+        "regions": [
+            "HK",
+            "TW"
+        ],
         "hidden": true,
         "contentRating": "r18",
         "isNew": true,
@@ -1143,13 +1326,23 @@ const storeProducts = [
             "zh": "R18 總集篇。詳情請見 Discord 通關／失物認領公告。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 602,
-        "category": ["ura-daki"],
-        "regions": ["HK", "TW"],
+        "category": [
+            "ura-daki"
+        ],
+        "regions": [
+            "HK",
+            "TW"
+        ],
         "hidden": true,
         "contentRating": "r18",
         "isNew": true,
@@ -1174,13 +1367,23 @@ const storeProducts = [
             "zh": "R18 抱枕套。詳情請見 Discord 通關／失物認領公告。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     },
-{
+    {
         "id": 605,
-        "category": ["ura-daki"],
-        "regions": ["HK", "TW"],
+        "category": [
+            "ura-daki"
+        ],
+        "regions": [
+            "HK",
+            "TW"
+        ],
         "hidden": true,
         "contentRating": "r18",
         "isNew": true,
@@ -1205,11 +1408,15 @@ const storeProducts = [
             "zh": "R18 抱枕套。詳情請見 Discord 通關／失物認領公告。"
         },
         "linkTW": null,
-        "langs": { "jp": true, "en": true, "zh": true },
-        "linkHK": null
+        "langs": {
+            "jp": true,
+            "en": true,
+            "zh": true
+        },
+        "linkHK": null,
+        "linkJP": null
     }
 ];
-
 // ── 裏 store unlock (session only) ──────────────────────────────────────────
 function getUraConfig() {
     return (typeof storeConfig !== "undefined" && storeConfig.ura) || null;

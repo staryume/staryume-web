@@ -119,7 +119,22 @@
     return fn();
   }
 
+  let storeJsRuntimeTail = '\n';
+
+  function extractStoreJsTail(text) {
+    const src = String(text || '');
+    const marked = src.search(/\n\/\/ ── 裏 store unlock/);
+    if (marked >= 0) return src.slice(marked);
+    const fnAt = src.search(/\nfunction getUraConfig\s*\(/);
+    if (fnAt >= 0) return src.slice(fnAt);
+    return '';
+  }
+
   function parseStoreJs(text) {
+    const tail = extractStoreJsTail(text);
+    if (tail && tail.trim()) {
+      storeJsRuntimeTail = tail.startsWith('\n') ? tail : '\n' + tail;
+    }
     const fn = new Function(text + '\nreturn { storeConfig, storeProducts };');
     return fn();
   }
@@ -134,6 +149,9 @@
   }
 
   function serializeStoreJs(storeConfig, storeProducts) {
+    const tail = storeJsRuntimeTail && storeJsRuntimeTail.trim()
+      ? (storeJsRuntimeTail.startsWith('\n') ? storeJsRuntimeTail : '\n' + storeJsRuntimeTail)
+      : '\n';
     return (
       '// STORE CONFIGURATION & DATABASE\n\n' +
       'const storeConfig = ' +
@@ -141,7 +159,8 @@
       ';\n\n' +
       'const storeProducts = ' +
       JSON.stringify(storeProducts, null, 4) +
-      ';\n'
+      ';' +
+      (tail.endsWith('\n') ? tail : tail + '\n')
     );
   }
 
