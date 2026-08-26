@@ -1350,7 +1350,7 @@ const storeProducts = [
         "title": {
             "jp": "抱き枕カバー - ヴィヴィアン優衣",
             "en": "Dakimakura cover - Vivian Yui",
-            "zh": "抱枕套 - 薇薇安優衣"
+            "zh": "抱枕套 - 薇薇安"
         },
         "priceTW": 2700,
         "priceHK": 680,
