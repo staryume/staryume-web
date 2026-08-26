@@ -66,7 +66,7 @@ const storeConfig = {
         "shopUrl": "https://staryume.booth.pm"
     },
     "twCheckout": {
-        "enabled": false,
+        "enabled": true,
         "currency": "TWD",
         "scriptUrl": "/api/hk-order",
         "scriptUrlDirect": "https://script.google.com/macros/s/AKfycbzujFWTxCxOCkPSkxzQ7ykj6uwvbZbj7N053QY6QIydDmSsodN2_w-IFcCHI-RJt9QBgw/exec",
