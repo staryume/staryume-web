@@ -975,12 +975,13 @@ function onOpen() {
     .addToUi();
   SpreadsheetApp.getUi()
     .createMenu('訂單統計')
-    .addItem('商品數量統計（HK + TW）', 'tallyOrderItems_')
+    .addItem('商品數量統計（HK + FF47後TW通販）', 'tallyOrderItems_')
     .addToUi();
 }
 
 /**
- * New tab 「商品統計」: qty per product, split HK / TW. Skips cancelled.
+ * New tab 「商品統計」: qty per product.
+ * HK: all non-cancelled. TW: 賣貨便通販 only (excludes FF47 booth preorders).
  */
 function tallyOrderItems_() {
   ensureHeaders_();
@@ -993,7 +994,8 @@ function tallyOrderItems_() {
   var width = Math.max(src.getLastColumn(), HEADERS.length);
   var data = src.getRange(2, 1, last, width).getValues();
   var map = {};
-  var orders = 0;
+  var ordersHk = 0;
+  var ordersTw = 0;
   for (var i = 0; i < data.length; i++) {
     var v = data[i];
     var status = String(v[col_('Status') - 1] || '').toLowerCase();
@@ -1003,6 +1005,7 @@ function tallyOrderItems_() {
     if (!region && orderId.indexOf('TW-') === 0) region = 'TW';
     if (!region && orderId.indexOf('HK-') === 0) region = 'HK';
     if (region !== 'TW') region = 'HK';
+    if (region === 'TW' && !isTwMyshipSourceRow_(v)) continue;
     var items = [];
     try {
       items = JSON.parse(String(v[col_('ItemsJson') - 1] || '[]'));
@@ -1011,7 +1014,8 @@ function tallyOrderItems_() {
     }
     if (!items || !items.length) items = parseItemsText_(v[col_('Items') - 1]);
     if (!items.length) continue;
-    orders++;
+    if (region === 'TW') ordersTw++;
+    else ordersHk++;
     for (var j = 0; j < items.length; j++) {
       var it = items[j] || {};
       var title = String(it.title || it.name || '').trim();
@@ -1030,7 +1034,7 @@ function tallyOrderItems_() {
   var out = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('商品統計');
   if (!out) out = SpreadsheetApp.getActiveSpreadsheet().insertSheet('商品統計');
   out.clearContents();
-  out.getRange(1, 1, 1, 4).setValues([['商品', 'HK 數量', 'TW 數量', '合計']]);
+  out.getRange(1, 1, 1, 4).setValues([['商品', 'HK 數量', 'TW 通販（FF47後）', '合計']]);
   if (rows.length) {
     var body = rows.map(function (r) {
       return [r.title, r.hk, r.tw, r.hk + r.tw];
@@ -1038,7 +1042,9 @@ function tallyOrderItems_() {
     out.getRange(2, 1, body.length, 4).setValues(body);
   }
   SpreadsheetApp.getUi().alert(
-    '已寫入分頁「商品統計」：' + rows.length + ' 種商品（' + orders + ' 筆有效訂單，已略過取消單）。'
+    '已寫入分頁「商品統計」。\nHK 訂單：' + ordersHk +
+    ' 筆\nTW 通販（FF47後／賣貨便）：' + ordersTw +
+    ' 筆\n已略過取消單與 FF47 現場預購。'
   );
 }
 
