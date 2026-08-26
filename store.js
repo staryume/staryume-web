@@ -1236,9 +1236,9 @@ const storeProducts = [
             "./blog/20251224/products/book-nukumizu/06.jpg"
         ],
         "desc": {
-            "jp": "R18 同人誌。詳細は Discord 通關案内を参照。",
-            "en": "R18 doujinshi. See Discord unlock guide for details.",
-            "zh": "R18 同人誌。詳情請見 Discord 通關／失物認領公告。"
+            "jp": "R18 同人誌。",
+            "en": "R18 doujinshi.",
+            "zh": "R18 同人誌。"
         },
         "linkTW": null,
         "langs": {
@@ -1279,9 +1279,9 @@ const storeProducts = [
             "./blog/20251224/products/book-om6/06.jpg"
         ],
         "desc": {
-            "jp": "R18 既刊。詳細は Discord 失物認領の案内を参照。",
-            "en": "R18 artbook. See Discord unlock guide for details.",
-            "zh": "R18 既刊。詳情請見 Discord 通關／失物認領公告。"
+            "jp": "R18 既刊。",
+            "en": "R18 artbook.",
+            "zh": "R18 既刊。"
         },
         "linkTW": null,
         "langs": {
@@ -1321,9 +1321,9 @@ const storeProducts = [
             "./blog/20251224/products/book-om-omnibus/06.jpg"
         ],
         "desc": {
-            "jp": "R18 総集編。詳細は Discord 通關案内を参照。",
-            "en": "R18 omnibus. See Discord unlock guide for details.",
-            "zh": "R18 總集篇。詳情請見 Discord 通關／失物認領公告。"
+            "jp": "R18 総集編。",
+            "en": "R18 omnibus.",
+            "zh": "R18 總集篇。"
         },
         "linkTW": null,
         "langs": {
