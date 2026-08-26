@@ -33,6 +33,11 @@
   function = "pos"
   path = "/api/pos"
 
+# HK book form (require 流水號, forward to Apps Script)
+[[edge_functions]]
+  function = "hk-form"
+  path = "/api/hk-form"
+
 # FF47 booth backorder (returns auto serial to the form)
 [[edge_functions]]
   function = "ff47-event-preorder"

@@ -95,6 +95,7 @@
         已收到你的登記資料。<br>
         確認電郵已發送到你填寫的電郵地址（請檢查垃圾郵件匣）。
       </p>
+      <p class="mt-4 text-sm font-bold font-mono">流水號：<span id="successSerial">—</span></p>
       <div class="mt-6 p-4 bg-tech-gray rounded-xl text-left text-sm">
         <p class="font-bold mb-2">有問題？加入 Discord 查詢</p>
         <p class="text-gray-600 text-xs mb-3">活動後如有疑問，歡迎到 Discord 聯絡我們：</p>
@@ -253,10 +254,15 @@
   </footer>
 
   <script>
-    // ── Paste your Google Apps Script Web App URL here after deploy ──
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylUcTL4YOQ4gm25J1CMb_fE8HZmecGg2UuuKZ7FtyWW_o7lJlveOod8TmWbt8Tm-_rmA/exec';
-    // ── Paste your Discord invite (also update href on #discordLink above) ──
+    const API_URL = '/api/hk-form';
+    const SCRIPT_URL_DIRECT = 'https://script.google.com/macros/s/AKfycbylUcTL4YOQ4gm25J1CMb_fE8HZmecGg2UuuKZ7FtyWW_o7lJlveOod8TmWbt8Tm-_rmA/exec';
     const DISCORD_INVITE_URL = 'https://discord.gg/staryume';
+
+    function formEndpoint() {
+      const host = location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') return SCRIPT_URL_DIRECT;
+      return API_URL;
+    }
 
     const form = document.getElementById('hkForm');
     const successCard = document.getElementById('successCard');
@@ -270,7 +276,7 @@
       discordLink.href = DISCORD_INVITE_URL;
     }
 
-    if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
+    if (!formEndpoint()) {
       configHint.classList.remove('hidden');
     }
 
@@ -381,17 +387,11 @@
       e.preventDefault();
       if (!validate()) return;
 
-      if (!SCRIPT_URL || SCRIPT_URL === 'YOUR_SCRIPT_URL_HERE') {
-        configHint.classList.remove('hidden');
-        formError.textContent = '尚未設定表單後端，暫時無法提交。';
-        formError.classList.remove('hidden');
-        return;
-      }
-
       const method = selectedMethod();
+      const serial = normalizeSerial(document.getElementById('serial').value);
       const payload = {
         method: method,
-        serial: normalizeSerial(document.getElementById('serial').value),
+        serial: serial,
         name: document.getElementById('name').value.trim(),
         email: document.getElementById('email').value.trim(),
         snsType: document.getElementById('snsType').value,
@@ -406,19 +406,41 @@
       formError.classList.add('hidden');
 
       try {
-        // Apps Script web apps typically require no-cors; body still arrives server-side.
-        await fetch(SCRIPT_URL, {
+        const local = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        const res = await fetch(formEndpoint(), {
           method: 'POST',
-          mode: 'no-cors',
+          mode: local ? 'no-cors' : 'cors',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify(payload),
         });
 
+        if (local) {
+          form.classList.add('hidden');
+          const serialEl = document.getElementById('successSerial');
+          if (serialEl) serialEl.textContent = serial;
+          successCard.classList.remove('hidden');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+          return;
+        }
+
+        let body = {};
+        try { body = await res.json(); } catch (e) { body = {}; }
+        if (!res.ok || body.ok === false) {
+          const code = body.error || ('http_' + res.status);
+          let msg = '提交失敗，請稍後再試。';
+          if (code === 'missing_serial') msg = '請填寫流水號。';
+          if (code === 'duplicate_serial') msg = '這個流水號已經登記過，沒有重複建立。';
+          if (code === 'rate_limited') msg = '提交太頻繁，請稍後再試。';
+          throw new Error(msg);
+        }
+
         form.classList.add('hidden');
+        const serialEl = document.getElementById('successSerial');
+        if (serialEl) serialEl.textContent = body.serial || serial;
         successCard.classList.remove('hidden');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
-        formError.textContent = '提交失敗，請檢查網路後再試一次。';
+        formError.textContent = (err && err.message) ? err.message : '提交失敗，請檢查網路後再試一次。';
         formError.classList.remove('hidden');
         submitBtn.disabled = false;
         submitBtn.textContent = '提交';
