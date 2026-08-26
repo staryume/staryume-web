@@ -968,10 +968,93 @@ function jsonOut_(obj) {
 }
 
 function onOpen() {
-  SpreadsheetApp.getUi().createMenu('賣貨便')
+  SpreadsheetApp.getUi()
+    .createMenu('賣貨便')
     .addItem('同步到官方匯入表', 'syncMyshipOrdersToImportSheet_')
     .addItem('重建匯入表（本檔「賣貨便匯入」分頁）', 'rebuildMyshipExportSheet_')
     .addToUi();
+  SpreadsheetApp.getUi()
+    .createMenu('訂單統計')
+    .addItem('商品數量統計（HK + TW）', 'tallyOrderItems_')
+    .addToUi();
+}
+
+/**
+ * New tab 「商品統計」: qty per product, split HK / TW. Skips cancelled.
+ */
+function tallyOrderItems_() {
+  ensureHeaders_();
+  var src = orderSheet_();
+  var last = src.getLastRow();
+  if (last < 2) {
+    SpreadsheetApp.getUi().alert('沒有訂單列。');
+    return;
+  }
+  var width = Math.max(src.getLastColumn(), HEADERS.length);
+  var data = src.getRange(2, 1, last, width).getValues();
+  var map = {};
+  var orders = 0;
+  for (var i = 0; i < data.length; i++) {
+    var v = data[i];
+    var status = String(v[col_('Status') - 1] || '').toLowerCase();
+    if (status.indexOf('cancel') >= 0) continue;
+    var region = String(v[col_('Region') - 1] || '').toUpperCase();
+    var orderId = String(v[col_('Order ID') - 1] || '');
+    if (!region && orderId.indexOf('TW-') === 0) region = 'TW';
+    if (!region && orderId.indexOf('HK-') === 0) region = 'HK';
+    if (region !== 'TW') region = 'HK';
+    var items = [];
+    try {
+      items = JSON.parse(String(v[col_('ItemsJson') - 1] || '[]'));
+    } catch (e) {
+      items = [];
+    }
+    if (!items || !items.length) items = parseItemsText_(v[col_('Items') - 1]);
+    if (!items.length) continue;
+    orders++;
+    for (var j = 0; j < items.length; j++) {
+      var it = items[j] || {};
+      var title = String(it.title || it.name || '').trim();
+      if (!title) continue;
+      var qty = Number(it.qty);
+      if (!qty || qty < 0) qty = 1;
+      if (!map[title]) map[title] = { title: title, hk: 0, tw: 0 };
+      if (region === 'TW') map[title].tw += qty;
+      else map[title].hk += qty;
+    }
+  }
+  var rows = Object.keys(map).map(function (k) { return map[k]; });
+  rows.sort(function (a, b) {
+    return (b.hk + b.tw) - (a.hk + a.tw) || a.title.localeCompare(b.title, 'zh');
+  });
+  var out = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('商品統計');
+  if (!out) out = SpreadsheetApp.getActiveSpreadsheet().insertSheet('商品統計');
+  out.clearContents();
+  out.getRange(1, 1, 1, 4).setValues([['商品', 'HK 數量', 'TW 數量', '合計']]);
+  if (rows.length) {
+    var body = rows.map(function (r) {
+      return [r.title, r.hk, r.tw, r.hk + r.tw];
+    });
+    out.getRange(2, 1, body.length, 4).setValues(body);
+  }
+  SpreadsheetApp.getUi().alert(
+    '已寫入分頁「商品統計」：' + rows.length + ' 種商品（' + orders + ' 筆有效訂單，已略過取消單）。'
+  );
+}
+
+function parseItemsText_(raw) {
+  var text = String(raw || '');
+  if (!text) return [];
+  var lines = text.split(/\r?\n/);
+  var out = [];
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i].trim();
+    if (!line) continue;
+    var m = line.match(/^(.*?)\s*[×xX]\s*(\d+)/);
+    if (m) out.push({ title: m[1].trim(), qty: Number(m[2]) || 1 });
+    else out.push({ title: line.replace(/\s*@.*$/, '').trim(), qty: 1 });
+  }
+  return out;
 }
 
 /**
