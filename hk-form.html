@@ -342,6 +342,11 @@
       return String(value || '').trim().replace(/\s+/g, '');
     }
 
+    try {
+      const qSerial = normalizeSerial(new URLSearchParams(location.search).get('serial'));
+      if (qSerial) document.getElementById('serial').value = qSerial;
+    } catch (e) { /* ignore */ }
+
     function validate() {
       let ok = true;
       formError.classList.add('hidden');

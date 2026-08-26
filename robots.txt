@@ -15,6 +15,7 @@ Disallow: /auction.html
 Disallow: /auction-board.html
 Disallow: /pos.html
 Disallow: /pos.js
+Disallow: /qr-generator.html
 Disallow: /api/
 
 Sitemap: https://staryu.me/sitemap.xml
