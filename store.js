@@ -1362,9 +1362,9 @@ const storeProducts = [
             "./blog/20251224/products/daki-vivian/05.jpg"
         ],
         "desc": {
-            "jp": "R18 抱き枕カバー。詳細は Discord 通關案内を参照。",
-            "en": "R18 dakimakura cover. See Discord unlock guide for details.",
-            "zh": "R18 抱枕套。詳情請見 Discord 通關／失物認領公告。"
+            "jp": "160x50 cm / A&J ライトロンリッチ",
+            "en": "160x50 cm / A&J ライトロンリッチ",
+            "zh": "160x50 cm / A&J ライトロンリッチ"
         },
         "linkTW": null,
         "langs": {
@@ -1403,9 +1403,9 @@ const storeProducts = [
             "./blog/20251224/products/daki-yui-star/05.jpg"
         ],
         "desc": {
-            "jp": "R18 抱き枕カバー。詳細は Discord 通關案内を参照。",
-            "en": "R18 dakimakura cover. See Discord unlock guide for details.",
-            "zh": "R18 抱枕套。詳情請見 Discord 通關／失物認領公告。"
+            "jp": "160x50 cm / A&J ライトロンリッチ",
+            "en": "160x50 cm / A&J ライトロンリッチ",
+            "zh": "160x50 cm / A&J ライトロンリッチ"
         },
         "linkTW": null,
         "langs": {
