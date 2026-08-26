@@ -777,12 +777,7 @@
                     <p class="text-[11px] text-gray-400 text-center mt-2">${hint}</p>`;
             } else if (currentRegion === 'TW') {
                 const twOn = storeConfig.twCheckout && storeConfig.twCheckout.enabled !== false;
-                const isR18 = typeof productIsR18 === 'function' ? productIsR18(product) : !!(product.hidden || product.contentRating === 'r18');
-                const discord = (storeConfig.twCheckout && storeConfig.twCheckout.discordInvite) || 'https://discord.gg/staryume';
-                if (isR18) {
-                    actions.innerHTML = `<a href="${discord}" target="_blank" rel="noopener noreferrer" class="block w-full bg-black text-white text-center font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">R18 請 Discord 私訊</a>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">7-11 賣貨便禁止上架色情／情趣商品，台灣 R18 不走通販結帳。</p>`;
-                } else if (twOn) {
+                if (twOn) {
                     actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車（本站結帳）</button>
                     <p class="text-[11px] text-gray-400 text-center mt-2">請在本站完成訂單。不必再開賣貨便自己選商品；取貨時在 7-11 付款。</p>`;
                 } else {
@@ -1016,7 +1011,7 @@
             }
 
             const hint = currentRegion === 'TW'
-                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">請在本站結帳並填 7-11 門市。<strong>不必再開賣貨便自己選商品。</strong>我們匯入後，你到門市取貨付款。R18 請 Discord 私訊。</p>'
+                ? '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">請在本站結帳並填 7-11 門市。<strong>不必再開賣貨便自己選商品。</strong>我們匯入後，你到門市取貨付款。</p>'
                 : '<p class="text-[11px] text-gray-500 mb-3 leading-relaxed">香港：順豐到付 或 9 月 Palette Ring 11 現場取貨。</p>';
 
             container.innerHTML = hint + lines.map((line) => `
@@ -1048,10 +1043,6 @@
             if (currentRegion === 'TW' && storeConfig.twCheckout && storeConfig.twCheckout.enabled === false) return;
             const product = storeProducts.find((p) => p.id === id);
             if (product && product.regions && !product.regions.includes(currentRegion)) return;
-            if (currentRegion === 'TW' && product && (typeof productIsR18 === 'function' ? productIsR18(product) : (product.hidden || product.contentRating === 'r18'))) {
-                alert('台灣賣貨便無法販售 R18。請改用 Discord 私訊。');
-                return;
-            }
             const key = String(id);
             if (!cart[key]) cart[key] = 0;
             cart[key]++;

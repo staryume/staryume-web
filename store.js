@@ -96,7 +96,7 @@ const storeConfig = {
                 },
                 "desc": {
                     "zh": "在本站填門市並送出即完成下單，不必再開賣貨便自己選商品。我們匯入後，你到指定 7-11 取貨付款。",
-                    "en": "Choose a 7-11 store. We import the order into MyShip; pay when you pick up. R18 cannot ship this way."
+                    "en": "Choose a 7-11 store. We import the order into MyShip; pay when you pick up."
                 },
                 "fields": [
                     "storeId",

@@ -86,7 +86,7 @@
                 },
                 "desc": {
                     "zh": "在本站填門市並送出即完成下單，不必再開賣貨便自己選商品。我們匯入後，你到指定 7-11 取貨付款。",
-                    "en": "Choose a 7-11 store. We import the order into MyShip; pay when you pick up. R18 cannot ship this way."
+                    "en": "Choose a 7-11 store. We import the order into MyShip; pay when you pick up."
                 },
                 "fields": [
                     "storeId",
@@ -259,9 +259,9 @@ function productIsR18(product) {
     return !!(product && (product.hidden || product.contentRating === "r18"));
 }
 
-/** All-ages TW catalog SKUs go through the staryu.me bag → 賣貨便 訂單匯入. R18 cannot. */
+/** TW catalog SKUs go through the staryu.me bag → 賣貨便 訂單匯入. */
 function productUsesTwCart(product) {
-    if (!product || productIsR18(product)) return false;
+    if (!product) return false;
     if (product.useTwCart === true) return true;
     if (product.eventSource === "acghk2026" || product.eventSource === "ff47") return true;
     return false;

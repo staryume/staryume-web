@@ -204,9 +204,9 @@ describe("productUsesTwCart", () => {
     expect(api.productUsesTwCart(sampleProducts[0])).toBe(false);
     expect(api.productUsesTwCart(null)).toBe(false);
   });
-  it("false for R18 even if useTwCart", () => {
+  it("R18 can use TW cart when useTwCart is set", () => {
     expect(api.productIsR18(sampleProducts[2])).toBe(true);
-    expect(api.productUsesTwCart({ id: 8, useTwCart: true, contentRating: "r18" })).toBe(false);
+    expect(api.productUsesTwCart({ id: 8, useTwCart: true, contentRating: "r18" })).toBe(true);
   });
 });
 

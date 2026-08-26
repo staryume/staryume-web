@@ -279,7 +279,7 @@
       const currencyNote = document.getElementById('summaryCurrencyNote');
       if (currencyNote) {
         currencyNote.textContent = checkoutRegion === 'TW'
-          ? '價格以新台幣 TWD 計算。7-11 取貨時付款；單筆含運上限 NT$ 20,000。R18 無法走賣貨便。'
+          ? '價格以新台幣 TWD 計算。7-11 取貨時付款；單筆含運上限 NT$ 20,000。'
           : '價格以港幣 HKD 計算。送出訂單前請確認商品與數量。';
       }
     }
@@ -789,9 +789,6 @@
         if (!lines.length) return '購物車是空的。';
         if (lines.some((l) => l.soldOut)) return '購物車含完售商品，請先移除。';
         if (cartTotal() <= 0) return '訂單金額無效，請返回商店重新加入商品。';
-        if (isTwMyshipCheckout() && lines.some((l) => l.product && (typeof productIsR18 === 'function' ? productIsR18(l.product) : (l.product.hidden || l.product.contentRating === 'r18')))) {
-          return '購物車含 R18 商品，台灣賣貨便無法寄送。請移除後改 Discord 私訊。';
-        }
         const cap = typeof twMyshipMaxOrderTwd === 'function' ? twMyshipMaxOrderTwd(storeConfig) : 20000;
         if (isTwMyshipCheckout() && cartTotal() > cap) {
           return '賣貨便單筆上限 NT$ ' + cap + '（含運）。請減少數量後再結帳。';
