@@ -210,7 +210,7 @@ const storeProducts = [
         "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "thumbPosition": "left",
         "eventSource": "acghk2026",
@@ -252,7 +252,7 @@ const storeProducts = [
         "regions": ["TW"],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "eventSource": "acghk2026",
         "title": {
@@ -266,7 +266,7 @@ const storeProducts = [
         "desc": {
             "jp": "新作カードスリーブ。我我我女孩。遊戯王サイズ / 60枚。",
             "en": "New card sleeves featuring Gagaga Girl. Yu-Gi-Oh! size / 60 pcs.",
-            "zh": "遊戲王尺寸、每包含60個／預購"
+            "zh": "遊戲王尺寸、每包含60個"
         },
         "linkTW": null,
         "langs": { "jp": true, "en": true, "zh": true },
@@ -281,7 +281,7 @@ const storeProducts = [
         "regions": ["TW"],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "eventSource": "acghk2026",
         "title": {
@@ -295,7 +295,7 @@ const storeProducts = [
         "desc": {
             "jp": "新作カードスリーブ。ブラック・マジシャン・ガール ver. 2026。遊戯王サイズ / 60枚。",
             "en": "New card sleeves featuring Dark Magician Girl (ver. 2026). Yu-Gi-Oh! size / 60 pcs.",
-            "zh": "遊戲王尺寸、每包含60個／預購"
+            "zh": "遊戲王尺寸、每包含60個"
         },
         "linkTW": null,
         "langs": { "jp": true, "en": true, "zh": true },
@@ -310,7 +310,7 @@ const storeProducts = [
         "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "thumbPosition": "right",
         "eventSource": "acghk2026",
@@ -341,9 +341,9 @@ const storeProducts = [
             "tcg"
         ],
         "regions": ["TW", "HK"],
-        "isNew": false,
+        "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "eventSource": "acghk2026",
         "title": {
@@ -379,7 +379,7 @@ const storeProducts = [
         "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
         "title": {
@@ -408,7 +408,7 @@ const storeProducts = [
         "regions": ["TW", "HK"],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
         "title": {
@@ -933,7 +933,7 @@ const storeProducts = [
         ],
         "isNew": true,
         "isSoldOut": false,
-        "isPreorder": true,
+        "isPreorder": false,
         "useTwCart": true,
         "thumbPosition": "top",
         "eventSource": "acghk2026",
