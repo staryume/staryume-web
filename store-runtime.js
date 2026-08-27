@@ -259,6 +259,18 @@ function productIsR18(product) {
     return !!(product && (product.hidden || product.contentRating === "r18"));
 }
 
+/** HK event-pickup window (ISO). After this instant the SKU is sold out on HK. */
+function productIsSoldOutInRegion(product, region) {
+    if (!product) return true;
+    const r = normalizeStoreRegion(region);
+    if (r === "HK" && product.hkAvailableUntil) {
+        const until = Date.parse(product.hkAvailableUntil);
+        if (Number.isFinite(until) && Date.now() >= until) return true;
+        return false;
+    }
+    return !!product.isSoldOut;
+}
+
 /** TW catalog SKUs go through the staryu.me bag → 賣貨便 訂單匯入. */
 function productUsesTwCart(product) {
     if (!product) return false;
@@ -369,7 +381,9 @@ function getRegionCartLines(cart, products, lang, region) {
             thumb,
             unit,
             lineTotal: unit * qty,
-            soldOut: !!item.isSoldOut,
+            soldOut: typeof productIsSoldOutInRegion === "function"
+                ? productIsSoldOutInRegion(item, r)
+                : !!item.isSoldOut,
             product: item
         };
     }).filter(Boolean);

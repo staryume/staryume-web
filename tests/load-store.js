@@ -91,6 +91,7 @@ export function loadStore() {
       productBoothUrl,
       storeUsesBoothCheckout,
       productIsR18,
+      productIsSoldOutInRegion,
       twMyshipMaxOrderTwd,
       normalizeTwStoreId,
       isValidTwStoreId,

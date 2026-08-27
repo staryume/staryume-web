@@ -415,6 +415,8 @@ const storeProducts = [
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
+        "hkFulfillment": ["palette_ring_11"],
+        "hkAvailableUntil": "2026-09-20T16:00:00+08:00",
         "title": {
             "jp": "タペストリー ブラック・マジシャン・ガール (ver. 2026)",
             "en": "Tapestry - Dark Magician Girl (ver. 2026)",
@@ -454,6 +456,8 @@ const storeProducts = [
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
+        "hkFulfillment": ["palette_ring_11"],
+        "hkAvailableUntil": "2026-09-20T16:00:00+08:00",
         "title": {
             "jp": "タペストリー ガガガガール",
             "en": "Tapestry - Gagaga Girl",

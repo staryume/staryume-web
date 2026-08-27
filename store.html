@@ -470,6 +470,12 @@
             return typeof isUraUnlocked === 'function' && isUraUnlocked();
         }
 
+        function productSoldOut(p) {
+            return typeof productIsSoldOutInRegion === 'function'
+                ? productIsSoldOutInRegion(p, currentRegion)
+                : !!p.isSoldOut;
+        }
+
         function productPassesFilters(p) {
             const unlocked = uraCatalogOpen();
             if (typeof isProductVisibleInStore === 'function') {
@@ -485,7 +491,7 @@
             } else if (p.regions && !p.regions.includes(currentRegion)) {
                 return false;
             }
-            if (!showOutOfStock && p.isSoldOut) return false;
+            if (!showOutOfStock && productSoldOut(p)) return false;
             if (!booth && p.langs && typeof p.langs[currentLang] === 'boolean' && !p.langs[currentLang]) return false;
             return true;
         }
@@ -493,8 +499,8 @@
         /** Keep in-stock first; SOLD OUT always at the bottom (stable for ties). */
         function sortProductsForDisplay(items) {
             return items.slice().sort((a, b) => {
-                const aOut = a.isSoldOut ? 1 : 0;
-                const bOut = b.isSoldOut ? 1 : 0;
+                const aOut = productSoldOut(a) ? 1 : 0;
+                const bOut = productSoldOut(b) ? 1 : 0;
                 return aOut - bOut;
             });
         }
@@ -683,7 +689,7 @@
             const posClass = posMap[pos] || 'object-center';
             
             let badge = '';
-            if (product.isSoldOut) badge = `<div class="absolute inset-0 bg-black/60 z-20 flex items-center justify-center"><span class="bg-black text-tech-purple -rotate-12 px-3 py-1 font-bold text-sm border-2 border-tech-purple shadow-lg">SOLD OUT</span></div>`;
+            if (productSoldOut(product)) badge = `<div class="absolute inset-0 bg-black/60 z-20 flex items-center justify-center"><span class="bg-black text-tech-purple -rotate-12 px-3 py-1 font-bold text-sm border-2 border-tech-purple shadow-lg">SOLD OUT</span></div>`;
             else {
                 const bits = [];
                 if (product.contentRating === 'r18' || product.hidden) bits.push(`<div class="absolute top-0 left-0 bg-black text-tech-purple text-[10px] font-bold px-2 py-1 z-10 shadow-md">R18</div>`);
@@ -761,7 +767,7 @@
             // Logic for buttons (Shop Closed / Sold Out / Buy)
             if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">SHOP CLOSED / 目前關閉中</button>`;
-            } else if (product.isSoldOut) {
+            } else if (productSoldOut(product)) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
             } else if (typeof storeUsesBoothCheckout === 'function' && storeUsesBoothCheckout(currentRegion)) {
                 const boothUrl = typeof productBoothUrl === 'function'
@@ -786,8 +792,14 @@
             } else {
                 const hkOn = storeConfig.hkCheckout && storeConfig.hkCheckout.enabled !== false;
                 if (hkOn) {
+                    const eventOnly = Array.isArray(product.hkFulfillment)
+                        && product.hkFulfillment.length === 1
+                        && product.hkFulfillment[0] === 'palette_ring_11';
+                    const hkHint = eventOnly
+                        ? '只限 9/19–9/20 Palette Ring 11 現場取貨，不接受順豐郵寄。'
+                        : 'PayMe · FPS · 順豐到付 / Palette Ring 11';
                     actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車</button>
-                    <p class="text-[11px] text-gray-400 text-center mt-2">PayMe · FPS · 順豐到付 / Palette Ring 11</p>`;
+                    <p class="text-[11px] text-gray-400 text-center mt-2">${hkHint}</p>`;
                 } else {
                     actions.innerHTML = `<button type="button" disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">香港預購暫停</button>`;
                 }

@@ -210,6 +210,16 @@ describe("productUsesTwCart", () => {
   });
 });
 
+describe("productIsSoldOutInRegion", () => {
+  it("HK hkAvailableUntil is in stock before the cutoff and sold out after", () => {
+    const p = { id: 405, isSoldOut: true, hkAvailableUntil: "2099-01-01T00:00:00+08:00" };
+    expect(api.productIsSoldOutInRegion(p, "HK")).toBe(false);
+    expect(api.productIsSoldOutInRegion(p, "TW")).toBe(true);
+    const past = { id: 405, isSoldOut: true, hkAvailableUntil: "2020-01-01T00:00:00+08:00" };
+    expect(api.productIsSoldOutInRegion(past, "HK")).toBe(true);
+  });
+});
+
 describe("BOOTH JP handoff", () => {
   it("uses linkJP when set, else shop URL", () => {
     expect(api.boothShopUrl({})).toBe("https://staryume.booth.pm");
