@@ -14,6 +14,7 @@
 | HTTP headers | CSP (+ base-uri, object-src, form-action, upgrade-insecure-requests), XFO, nosniff, HSTS (Netlify) |
 | Checkout indexing | `noindex` + robots Disallow |
 | FF47 booth backorder | `ff47-event-preorder.html`: serial unique, server-side prices, `noindex` + robots Disallow |
+| Private knowledge vault | `/kb.html` + `/api/kb`: passphrase in Netlify env `KB_PASS` (not Git). Vault JSON in **Netlify Blobs**, not the repo. Session is HttpOnly cookie. Per-page share is a random token URL (`/kb-share.html?t=`). `noindex` + robots Disallow. |
 
 ## Operator checklist
 
@@ -23,6 +24,7 @@
 4. Prefer production testing on Netlify (edge proxy); localhost uses direct Apps Script URL.  
 5. Full order / checkout regression: follow **`docs/R3-QA-CHECKLIST.md`** after each edge or Apps Script deploy.  
 6. If Google is down, checkout tries **Netlify Forms** (`store-order-backup`) and optional env `DISCORD_ORDER_BACKUP_WEBHOOK`. Check **Netlify → Forms**. Download Store Orders xlsx weekly while Google still works.  
+7. Knowledge vault: set Netlify env **`KB_PASS`** (and optional **`KB_SECRET`**) after first deploy of `/kb.html`. Rotate `KB_PASS` if the passphrase leaks; revoke share links from each page. Vault data lives in Netlify Blobs (`staryume-kb`), not GitHub.  
 
 ## Residual risk (accepted for this stack)
 

@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KB | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { 'tech-purple': '#D8B4FE', 'tech-black': '#0a0a0a' } } } }</script>
+</head>
+<body class="bg-gray-100 text-tech-black min-h-screen">
+  <div id="lock" class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-sm bg-white rounded-2xl border border-gray-200 p-6">
+      <p class="text-[10px] font-mono tracking-widest text-gray-400 mb-1">STARYUME / KB</p>
+      <h1 class="text-xl font-bold mb-4">Unlock</h1>
+      <p id="lockHint" class="hidden text-xs text-red-600 mb-3"></p>
+      <input id="pass" type="password" placeholder="Passphrase"
+        class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm mb-3"
+        autocomplete="current-password">
+      <button type="button" id="btnUnlock" class="w-full py-2.5 bg-tech-black text-white font-bold rounded-xl text-sm">Enter</button>
+    </div>
+  </div>
+
+  <div id="app" class="hidden min-h-screen flex flex-col">
+    <header class="bg-tech-black text-white px-4 py-3 flex items-center gap-2 sticky top-0 z-40">
+      <p class="text-xs font-mono tracking-widest flex-1">staryume / kb</p>
+      <button type="button" id="btnFolder" class="text-xs font-bold px-2 py-1.5 bg-gray-800 rounded-lg">+ Folder</button>
+      <button type="button" id="btnNew" class="text-xs font-bold px-3 py-1.5 bg-tech-purple text-black rounded-lg">+ Page</button>
+      <button type="button" id="btnOut" class="text-xs text-gray-400">Out</button>
+    </header>
+    <div class="flex-1 max-w-3xl mx-auto w-full px-3 py-4 space-y-3">
+      <input id="q" type="search" placeholder="Search"
+        class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-white">
+      <div id="folders" class="flex flex-wrap gap-1.5"></div>
+      <div id="list" class="space-y-2"></div>
+    </div>
+  </div>
+
+  <div id="editor" class="hidden fixed inset-0 bg-gray-100 z-50 overflow-y-auto">
+    <div class="sticky top-0 bg-tech-black text-white px-3 py-3 flex items-center gap-2 z-10">
+      <button type="button" id="btnBack" class="text-sm font-bold">←</button>
+      <span class="flex-1 text-xs font-mono truncate" id="edTitleLabel">Page</span>
+      <button type="button" id="btnDup" class="text-[11px] font-bold px-2 py-1 bg-gray-800 rounded">Dup</button>
+      <button type="button" id="btnDel" class="text-[11px] font-bold px-2 py-1 bg-red-700 rounded">Del</button>
+    </div>
+    <div class="max-w-3xl mx-auto px-3 py-4 space-y-3 pb-28">
+      <input id="edTitle" class="w-full text-xl font-bold bg-transparent border-b border-gray-200 py-1" placeholder="Title">
+      <div class="flex gap-2">
+        <select id="edFolder" class="flex-1 border border-gray-200 rounded-lg px-2 py-2 text-sm bg-white"></select>
+        <button type="button" id="btnShare" class="text-xs font-bold px-3 py-2 border border-gray-300 rounded-lg">Share</button>
+      </div>
+      <p id="shareBox" class="hidden text-[11px] break-all bg-white border border-gray-200 rounded-lg p-2"></p>
+      <div id="blocks" class="space-y-3"></div>
+      <div class="flex flex-wrap gap-1.5 pt-2">
+        <button type="button" data-add="text" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Text</button>
+        <button type="button" data-add="checklist" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Checklist</button>
+        <button type="button" data-add="table" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Table</button>
+        <button type="button" data-add="image" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Image/QR</button>
+        <button type="button" data-add="sop" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">SOP</button>
+        <button type="button" data-add="contact" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Contact</button>
+        <button type="button" data-add="place" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Place</button>
+        <button type="button" data-add="event" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Event</button>
+        <button type="button" data-add="subscription" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Subscription</button>
+        <button type="button" data-add="receipt" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Receipt</button>
+        <button type="button" data-add="inventory" class="addBlk text-[11px] px-2 py-1 bg-white border rounded-lg">Inventory</button>
+      </div>
+      <p id="saveState" class="text-[10px] text-gray-400 font-mono">Saved</p>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/kb';
+    let vault = { v: 1, folders: [], pages: [] };
+    let folder = 'all';
+    let current = null;
+    let saveTimer = null;
+
+    const $ = (id) => document.getElementById(id);
+
+    async function api(action, body, method) {
+      const m = method || (action === 'vault' && !body ? 'GET' : 'POST');
+      const url = m === 'GET' ? API + '?action=' + encodeURIComponent(action) : API;
+      const opts = { method: m, credentials: 'include', headers: { 'Content-Type': 'application/json' } };
+      if (m !== 'GET') opts.body = JSON.stringify({ action, ...(body || {}) });
+      const res = await fetch(url, opts);
+      let json = {};
+      try { json = await res.json(); } catch (e) { json = {}; }
+      return { res, json };
+    }
+
+    function uid() {
+      return (crypto.randomUUID && crypto.randomUUID()) || ('id' + Math.random().toString(16).slice(2) + Date.now());
+    }
+
+    function nowIso() { return new Date().toISOString(); }
+
+    function page(title, folder, blocks) {
+      return { id: uid(), title, folder, updatedAt: nowIso(), shareToken: null, blocks };
+    }
+
+    function seedPages() {
+      if ((vault.pages && vault.pages.length) || vault.initialized) return false;
+      vault.pages = [
+        page('ibon 寄賣貨便 SOP', '賣貨便', [
+          { id: uid(), type: 'sop', steps: ['7-11 ibon → 寄件／賣貨便', '輸入賣貨便單號或依畫面操作', '列印託運單、貼單', '放件後拍照留底（單號＋門市）'] },
+          { id: uid(), type: 'text', html: '注意：門市截止時間、溫層、商品與訂單金額要跟匯入檔一致。失敗時先看 Excel 是否有空白列。' }
+        ]),
+        page('北車 → 桃機 行李服務', 'Travel', [
+          { id: uid(), type: 'text', html: '台北車站 → 桃園機場 行李服務請提前 3 小時。\n地點／櫃檯：\n營業時間：\n費用：' }
+        ]),
+        page('Taipei taxi cheat sheet', 'Travel', [
+          { id: uid(), type: 'table', headers: ['From', 'To', 'Approx NT$'], rows: [
+            ['Taipei Main', 'TPE Airport', ''],
+            ['Ximending', 'Songshan Airport', ''],
+            ['Home', 'Taipei Main', ''],
+            ['Home', 'FF / World Trade', '']
+          ]}
+        ]),
+        page('Priority Pass QR', 'Travel', [
+          { id: uid(), type: 'image', dataUrl: '', caption: 'Priority Pass QR / membership. Keep this page private unless you share it on purpose.' }
+        ]),
+        page('入境 QR（台灣 / 日本 Visit Japan Web）', 'Travel', [
+          { id: uid(), type: 'text', html: '台灣入境登記 QR：\n日本 Visit Japan Web QR：\n截圖過期要重登。' },
+          { id: uid(), type: 'image', dataUrl: '', caption: 'Taiwan entry QR' },
+          { id: uid(), type: 'image', dataUrl: '', caption: 'Visit Japan Web QR' }
+        ]),
+        page('各地注意事項 HK / TW / JP / Other', 'Travel', [
+          { id: uid(), type: 'text', html: 'HK — Do:\nHK — Don’t:\n' },
+          { id: uid(), type: 'text', html: 'TW — Do:\nTW — Don’t:\n' },
+          { id: uid(), type: 'text', html: 'JP — Do:\nJP — Don’t:\n' },
+          { id: uid(), type: 'text', html: 'Other — Do:\nOther — Don’t:\n' }
+        ]),
+        page('附近銀行營業時間', 'Money', [
+          { id: uid(), type: 'place', name: '', hours: '', mapUrl: '', prices: '', notes: '填入住家附近台灣銀行的平日／週六時間與補摺機位置。' }
+        ]),
+        page('攜帶現金出境上限 TW / JP', 'Money', [
+          { id: uid(), type: 'text', html: '以海關官網為準，出發前再核一次。\n\n台灣：外幣現鈔逾等值美金 1 萬、新台幣現鈔逾 10 萬需申報。\n日本：現金／支票等合計逾 100 萬日圓需向海關申報。\n\n官網：\nTW customs:\nJP customs:' }
+        ]),
+        page('順豐 / 郵局 寄件價格 TW ↔ HK', 'Money', [
+          { id: uid(), type: 'table', headers: ['Route', 'Service', 'Weight', 'Price', 'Days'], rows: [
+            ['TW → HK', 'SF Express', '', '', ''],
+            ['TW → HK', 'Local mail / 郵局', '', '', ''],
+            ['HK → TW', 'SF Express', '', '', ''],
+            ['HK → TW', 'Local mail', '', '', '']
+          ]}
+        ]),
+        page('供應商連絡', 'Suppliers', [
+          { id: uid(), type: 'contact', name: '', role: '', phone: '', email: '', url: '', notes: '', products: '' },
+          { id: uid(), type: 'text', html: '可再加 Image 區塊放他們做的東西。Duplicate 這頁當下一個供應商。' }
+        ]),
+        page('印刷收據與成本', 'Suppliers', [
+          { id: uid(), type: 'receipt', date: '', vendor: '', what: '', amount: '', currency: 'TWD', dataUrl: '' },
+          { id: uid(), type: 'table', headers: ['Date', 'What', 'Qty', 'Unit', 'Total', 'Vendor'], rows: [['', '', '', '', '', '']] }
+        ]),
+        page('Fancy Frontier 準備 SOP', 'FF SOP', [
+          { id: uid(), type: 'sop', steps: ['核對攤位編號與進場時間', '印價目表 / 小卡', '裝箱清單打勾', '零錢與刷卡機', '備援 QR（PayMe / FPS 等）', '收攤盤點'] },
+          { id: uid(), type: 'inventory', have: '', need: '價目表、桌布、零錢、膠箱、筆、膠帶、名片、電源、延長線' }
+        ]),
+        page('活動報名時程與攤位費', 'Events', [
+          { id: uid(), type: 'event', name: 'Fancy Frontier', announce: '', deadline: '', fee: '', dates: '' },
+          { id: uid(), type: 'event', name: 'C / コミケ', announce: '', deadline: '', fee: '', dates: '' },
+          { id: uid(), type: 'event', name: 'ACGHK', announce: '', deadline: '', fee: '', dates: '' }
+        ]),
+        page('訂閱服務起迄', 'Subscriptions', [
+          { id: uid(), type: 'subscription', name: '', start: '', end: '', cost: '' }
+        ]),
+        page('好吃名單', 'Food', [
+          { id: uid(), type: 'place', name: '', hours: '', mapUrl: '', prices: '', notes: '描述＋價位。Map 貼 Google Maps 連結。' }
+        ])
+      ];
+      vault.initialized = true;
+      return true;
+    }
+
+    async function unlock() {
+      const passphrase = $('pass').value;
+      const { json } = await api('unlock', { passphrase });
+      if (json.error === 'needs_setup') {
+        $('lockHint').textContent = json.message || 'Set KB_PASS in Netlify env.';
+        $('lockHint').classList.remove('hidden');
+        return;
+      }
+      if (!json.ok) {
+        $('lockHint').textContent = json.error === 'rate_limited' ? 'Too many tries. Wait a few minutes.' : 'Wrong passphrase.';
+        $('lockHint').classList.remove('hidden');
+        return;
+      }
+      await loadVault();
+    }
+
+    async function loadVault() {
+      const { res, json } = await api('vault', null, 'GET');
+      if (res.status === 401) { $('lock').classList.remove('hidden'); $('app').classList.add('hidden'); return; }
+      if (!json.ok) {
+        $('lockHint').textContent = json.message || json.error || 'Load failed';
+        $('lockHint').classList.remove('hidden');
+        return;
+      }
+      vault = json.vault || vault;
+      if (!vault.folders || !vault.folders.length) {
+        vault.folders = ['Travel', 'Money', '賣貨便', 'Events', 'Suppliers', 'Food', 'Subscriptions', 'FF SOP', 'Other'];
+      }
+      const seeded = seedPages();
+      $('lock').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      renderList();
+      if (seeded) saveNow();
+    }
+
+    function scheduleSave() {
+      $('saveState').textContent = 'Saving…';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(saveNow, 600);
+    }
+
+    async function saveNow() {
+      if (current) {
+        current.title = $('edTitle').value.trim() || 'Untitled';
+        current.folder = $('edFolder').value;
+        current.updatedAt = new Date().toISOString();
+        readBlocksFromDom();
+      }
+      const { json } = await api('vault', { vault }, 'POST');
+      $('saveState').textContent = json.ok ? 'Saved' : ('Save failed: ' + (json.error || ''));
+    }
+
+    function pagesFiltered() {
+      const q = ($('q').value || '').toLowerCase();
+      return (vault.pages || []).filter((p) => {
+        if (folder !== 'all' && p.folder !== folder) return false;
+        if (!q) return true;
+        const blob = (p.title + ' ' + JSON.stringify(p.blocks || [])).toLowerCase();
+        return blob.includes(q);
+      }).sort((a, b) => String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')));
+    }
+
+    function renderList() {
+      const f = $('folders');
+      const all = ['all'].concat(vault.folders || []);
+      f.innerHTML = all.map((name) => {
+        const on = folder === name;
+        const label = name === 'all' ? 'All' : name;
+        return `<button type="button" data-f="${name}" class="px-2.5 py-1 rounded-full text-[11px] font-bold ${on ? 'bg-tech-black text-white' : 'bg-white border text-gray-600'}">${label}</button>`;
+      }).join('');
+      f.querySelectorAll('[data-f]').forEach((b) => b.onclick = () => { folder = b.dataset.f; renderList(); });
+      const list = pagesFiltered();
+      $('list').innerHTML = list.length ? list.map((p) => `
+        <button type="button" data-id="${p.id}" class="w-full text-left bg-white border border-gray-200 rounded-xl px-3 py-3">
+          <p class="font-bold text-sm">${esc(p.title)}${p.shareToken ? ' <span class="text-[10px] font-mono text-indigo-500">shared</span>' : ''}</p>
+          <p class="text-[10px] text-gray-400 mt-0.5">${esc(p.folder || '')} · ${(p.blocks || []).length} blocks</p>
+        </button>
+      `).join('') : '<p class="text-sm text-gray-400 px-1">No pages in this folder.</p>';
+      $('list').querySelectorAll('[data-id]').forEach((b) => b.onclick = () => openPage(b.dataset.id));
+    }
+
+    function openPage(id) {
+      current = vault.pages.find((p) => p.id === id);
+      if (!current) return;
+      $('app').classList.add('hidden');
+      $('editor').classList.remove('hidden');
+      $('edTitle').value = current.title || '';
+      $('edTitleLabel').textContent = current.title || 'Page';
+      $('edFolder').innerHTML = (vault.folders || []).map((n) => `<option ${n === current.folder ? 'selected' : ''}>${esc(n)}</option>`).join('');
+      renderShare();
+      renderBlocks();
+    }
+
+    function closeEditor() {
+      saveNow();
+      current = null;
+      $('editor').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      renderList();
+    }
+
+    function renderShare() {
+      const box = $('shareBox');
+      if (current && current.shareToken) {
+        const url = location.origin + '/kb-share.html?t=' + encodeURIComponent(current.shareToken);
+        box.innerHTML = `<p class="break-all select-all mb-1">${esc(url)}</p>
+          <button type="button" id="btnCopyShare" class="text-[11px] font-bold underline">Copy link</button>
+          <p class="text-gray-400 mt-1">Anyone with this link can read this page only. Revoke anytime.</p>`;
+        box.classList.remove('hidden');
+        $('btnShare').textContent = 'Revoke share';
+        const copy = $('btnCopyShare');
+        if (copy) copy.onclick = async () => {
+          try { await navigator.clipboard.writeText(url); copy.textContent = 'Copied'; }
+          catch (e) { copy.textContent = 'Select the URL and copy'; }
+        };
+      } else {
+        box.classList.add('hidden');
+        $('btnShare').textContent = 'Share';
+      }
+    }
+
+    function newBlock(type) {
+      const b = { id: uid(), type };
+      if (type === 'text') b.html = '';
+      if (type === 'checklist') b.items = [{ text: '', done: false }];
+      if (type === 'table') b.headers = ['Col A', 'Col B']; b.rows = [['', '']];
+      if (type === 'image') b.dataUrl = ''; b.caption = '';
+      if (type === 'sop') b.steps = [''];
+      if (type === 'contact') b.name = b.role = b.phone = b.email = b.url = b.notes = b.products = '';
+      if (type === 'place') b.name = b.hours = b.mapUrl = b.prices = b.notes = '';
+      if (type === 'event') b.name = b.announce = b.deadline = b.fee = b.dates = '';
+      if (type === 'subscription') b.name = b.start = b.end = b.cost = '';
+      if (type === 'receipt') { b.date = ''; b.vendor = ''; b.what = ''; b.amount = ''; b.currency = 'TWD'; b.dataUrl = ''; }
+      if (type === 'inventory') b.have = ''; b.need = '';
+      return b;
+    }
+
+    function renderBlocks() {
+      const el = $('blocks');
+      el.innerHTML = (current.blocks || []).map((b, i) => blockHtml(b, i)).join('');
+      el.querySelectorAll('[data-rm]').forEach((btn) => {
+        btn.onclick = () => { current.blocks.splice(Number(btn.dataset.rm), 1); renderBlocks(); scheduleSave(); };
+      });
+      el.querySelectorAll('input[type=file]').forEach((inp) => {
+        inp.onchange = () => compressFile(inp.files[0]).then((url) => {
+          const i = Number(inp.dataset.i);
+          current.blocks[i].dataUrl = url;
+          renderBlocks();
+          scheduleSave();
+        });
+      });
+    }
+
+    function blockHtml(b, i) {
+      const bar = `<div class="flex justify-between items-center mb-1"><span class="text-[10px] font-mono text-gray-400">${b.type}</span><button type="button" data-rm="${i}" class="text-[10px] text-red-500">remove</button></div>`;
+      const ta = (key, ph, rows) => `<textarea data-k="${key}" data-i="${i}" rows="${rows || 3}" placeholder="${ph || ''}" class="w-full border rounded-lg px-2 py-1.5 text-sm">${esc(b[key] || '')}</textarea>`;
+      const inn = (key, ph) => `<input data-k="${key}" data-i="${i}" value="${esc(b[key] || '')}" placeholder="${ph || ''}" class="w-full border rounded-lg px-2 py-1.5 text-sm mb-1">`;
+      let body = '';
+      if (b.type === 'text') body = ta('html', 'Notes…', 4);
+      else if (b.type === 'checklist') {
+        body = (b.items || []).map((it, j) =>
+          `<label class="flex gap-2 items-center mb-1"><input type="checkbox" data-i="${i}" data-j="${j}" data-k="done" ${it.done ? 'checked' : ''}><input data-i="${i}" data-j="${j}" data-k="text" class="flex-1 border rounded px-2 py-1 text-sm" value="${esc(it.text || '')}"></label>`
+        ).join('') + `<button type="button" class="text-[11px] underline" onclick="addCheck(${i})">+ item</button>`;
+      } else if (b.type === 'table') {
+        const heads = (b.headers || []).map((h, c) => `<input data-i="${i}" data-c="${c}" data-k="header" class="border px-1 py-1 text-xs font-bold" value="${esc(h)}">`).join('');
+        const rows = (b.rows || []).map((row, r) =>
+          `<div class="flex gap-1 mb-1">${row.map((cell, c) => `<input data-i="${i}" data-r="${r}" data-c="${c}" data-k="cell" class="flex-1 border px-1 py-1 text-xs" value="${esc(cell)}">`).join('')}</div>`
+        ).join('');
+        body = `<div class="flex gap-1 mb-1">${heads}</div>${rows}<button type="button" class="text-[11px] underline" onclick="addRow(${i})">+ row</button>`;
+      } else if (b.type === 'image') {
+        body = `${b.dataUrl ? `<img src="${b.dataUrl}" class="max-h-48 mb-2 rounded">` : ''}<input type="file" accept="image/*" data-i="${i}">${ta('caption', 'Caption', 2)}`;
+      } else if (b.type === 'sop') {
+        body = (b.steps || []).map((s, j) => `<input data-i="${i}" data-j="${j}" data-k="step" class="w-full border rounded px-2 py-1 text-sm mb-1" value="${esc(s)}">`).join('') +
+          `<button type="button" class="text-[11px] underline" onclick="addStep(${i})">+ step</button>`;
+      } else if (b.type === 'contact') {
+        body = inn('name', 'Name') + inn('role', 'Role') + inn('phone', 'Phone') + inn('email', 'Email') + inn('url', 'URL') + ta('products', 'What they produce', 2) + ta('notes', 'Notes', 2);
+      } else if (b.type === 'place') {
+        body = inn('name', 'Name') + inn('hours', 'Hours') + inn('mapUrl', 'Google Maps URL') + ta('prices', 'Prices', 2) + ta('notes', 'Notes', 2);
+      } else if (b.type === 'event') {
+        body = inn('name', 'Event') + inn('announce', 'Announcement date') + inn('deadline', 'Enroll deadline') + inn('fee', 'Fee') + inn('dates', 'Event dates');
+      } else if (b.type === 'subscription') {
+        body = inn('name', 'Service') + inn('start', 'Start') + inn('end', 'End') + inn('cost', 'Cost');
+      } else if (b.type === 'receipt') {
+        body = inn('date', 'Date') + inn('vendor', 'Vendor') + inn('what', 'What') + inn('amount', 'Amount') + inn('currency', 'Currency') +
+          (b.dataUrl ? `<img src="${b.dataUrl}" class="max-h-40 mb-2 rounded">` : '') + `<input type="file" accept="image/*" data-i="${i}">`;
+      } else if (b.type === 'inventory') {
+        body = ta('have', 'Have', 3) + ta('need', 'Need / to-do', 3);
+      }
+      return `<div class="bg-white border border-gray-200 rounded-xl p-3">${bar}${body}</div>`;
+    }
+
+    window.addCheck = (i) => { current.blocks[i].items.push({ text: '', done: false }); renderBlocks(); scheduleSave(); };
+    window.addRow = (i) => { const n = (current.blocks[i].headers || []).length || 2; current.blocks[i].rows.push(Array(n).fill('')); renderBlocks(); scheduleSave(); };
+    window.addStep = (i) => { current.blocks[i].steps.push(''); renderBlocks(); scheduleSave(); };
+
+    function readBlocksFromDom() {
+      document.querySelectorAll('#blocks [data-k]').forEach((el) => {
+        const i = Number(el.dataset.i);
+        const b = current.blocks[i];
+        if (!b) return;
+        const k = el.dataset.k;
+        const val = el.type === 'checkbox' ? el.checked : el.value;
+        if (k === 'done' || k === 'text') {
+          const j = Number(el.dataset.j);
+          if (!b.items[j]) b.items[j] = { text: '', done: false };
+          b.items[j][k] = val;
+        } else if (k === 'header') {
+          b.headers[Number(el.dataset.c)] = val;
+        } else if (k === 'cell') {
+          if (!b.rows[Number(el.dataset.r)]) b.rows[Number(el.dataset.r)] = [];
+          b.rows[Number(el.dataset.r)][Number(el.dataset.c)] = val;
+        } else if (k === 'step') {
+          b.steps[Number(el.dataset.j)] = val;
+        } else {
+          b[k] = val;
+        }
+      });
+    }
+
+    function esc(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function compressFile(file) {
+      if (!file) return Promise.resolve('');
+      return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+          const max = 1400;
+          let w = img.width, h = img.height;
+          if (w > max || h > max) { const s = max / Math.max(w, h); w *= s; h *= s; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          URL.revokeObjectURL(url);
+          const usePng = file.type !== 'image/jpeg';
+          resolve(c.toDataURL(usePng ? 'image/png' : 'image/jpeg', 0.85));
+        };
+        img.onerror = () => resolve('');
+        img.src = url;
+      });
+    }
+
+    $('btnUnlock').onclick = unlock;
+    $('pass').addEventListener('keydown', (e) => { if (e.key === 'Enter') unlock(); });
+    $('q').oninput = renderList;
+    $('btnFolder').onclick = () => {
+      const name = (prompt('Folder name') || '').trim();
+      if (!name) return;
+      if (!(vault.folders || []).includes(name)) vault.folders.push(name);
+      folder = name;
+      renderList();
+      scheduleSave();
+    };
+    $('btnNew').onclick = () => {
+      const p = { id: uid(), title: 'New page', folder: folder === 'all' ? (vault.folders[0] || 'Other') : folder, updatedAt: new Date().toISOString(), shareToken: null, blocks: [newBlock('text')] };
+      vault.pages.unshift(p);
+      openPage(p.id);
+      scheduleSave();
+    };
+    $('btnBack').onclick = closeEditor;
+    $('edTitle').oninput = () => { $('edTitleLabel').textContent = $('edTitle').value; scheduleSave(); };
+    $('edFolder').onchange = scheduleSave;
+    $('blocks').addEventListener('input', scheduleSave);
+    $('blocks').addEventListener('change', scheduleSave);
+    document.querySelectorAll('.addBlk').forEach((b) => b.onclick = () => {
+      if (!current.blocks) current.blocks = [];
+      current.blocks.push(newBlock(b.dataset.add));
+      renderBlocks();
+      scheduleSave();
+    });
+    $('btnDup').onclick = () => {
+      const copy = JSON.parse(JSON.stringify(current));
+      copy.id = uid();
+      copy.title = (copy.title || 'Page') + ' copy';
+      copy.shareToken = null;
+      copy.updatedAt = new Date().toISOString();
+      (copy.blocks || []).forEach((bl) => { bl.id = uid(); });
+      vault.pages.unshift(copy);
+      openPage(copy.id);
+      scheduleSave();
+    };
+    $('btnDel').onclick = () => {
+      if (!confirm('Delete this page?')) return;
+      vault.pages = vault.pages.filter((p) => p.id !== current.id);
+      current = null;
+      $('editor').classList.add('hidden');
+      $('app').classList.remove('hidden');
+      renderList();
+      saveNow();
+    };
+    $('btnShare').onclick = () => {
+      if (current.shareToken) current.shareToken = null;
+      else current.shareToken = Array.from(crypto.getRandomValues(new Uint8Array(18))).map((n) => n.toString(16).padStart(2, '0')).join('');
+      renderShare();
+      scheduleSave();
+    };
+    $('btnOut').onclick = async () => { await api('logout'); location.reload(); };
+
+    loadVault();
+  </script>
+</body>
+</html>

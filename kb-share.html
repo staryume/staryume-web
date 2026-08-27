@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shared note | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { theme: { extend: { colors: { 'tech-purple': '#D8B4FE', 'tech-black': '#0a0a0a' } } } }</script>
+</head>
+<body class="bg-gray-100 text-tech-black min-h-screen">
+  <header class="bg-tech-black text-white px-4 py-3">
+    <p class="text-xs font-mono tracking-widest">staryume / shared</p>
+  </header>
+  <main id="main" class="max-w-3xl mx-auto px-3 py-6">
+    <p class="text-sm text-gray-400">Loading…</p>
+  </main>
+
+  <script>
+    const API = '/api/kb';
+    const $main = document.getElementById('main');
+
+    function esc(s) {
+      return String(s || '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function safeImg(src) {
+      const s = String(src || '');
+      if (s.startsWith('data:image/') || s.startsWith('https://') || s.startsWith('http://')) return s;
+      return '';
+    }
+
+    function safeHref(url) {
+      const s = String(url || '').trim();
+      if (/^https?:\/\//i.test(s) || s.startsWith('mailto:') || s.startsWith('tel:')) return s;
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s)) return 'mailto:' + s;
+      if (/^[+\d][\d\s\-()]{6,}$/.test(s)) return 'tel:' + s.replace(/[\s\-()]/g, '');
+      return '';
+    }
+
+    function field(label, value, asLink) {
+      if (!value) return '';
+      const href = asLink ? safeHref(value) : '';
+      const body = href
+        ? `<a class="text-indigo-700 underline break-all" href="${esc(href)}" target="_blank" rel="noopener noreferrer">${esc(value)}</a>`
+        : `<span class="whitespace-pre-wrap break-words">${esc(value)}</span>`;
+      return `<p class="text-sm mb-1"><span class="text-[10px] font-mono text-gray-400 uppercase mr-2">${esc(label)}</span>${body}</p>`;
+    }
+
+    function renderBlock(b) {
+      const type = b && b.type ? b.type : 'text';
+      let inner = '';
+      if (type === 'text') {
+        inner = `<p class="text-sm whitespace-pre-wrap break-words">${esc(b.html || '')}</p>`;
+      } else if (type === 'checklist') {
+        inner = (b.items || []).map((it) =>
+          `<label class="flex gap-2 items-start mb-1 text-sm"><input type="checkbox" disabled ${it.done ? 'checked' : ''} class="mt-1">${esc(it.text || '')}</label>`
+        ).join('');
+      } else if (type === 'table') {
+        const heads = (b.headers || []).map((h) => `<th class="border px-2 py-1 text-left text-xs bg-gray-50">${esc(h)}</th>`).join('');
+        const rows = (b.rows || []).map((row) =>
+          `<tr>${(row || []).map((cell) => `<td class="border px-2 py-1 text-sm">${esc(cell)}</td>`).join('')}</tr>`
+        ).join('');
+        inner = `<div class="overflow-x-auto"><table class="min-w-full border-collapse">${heads ? `<thead><tr>${heads}</tr></thead>` : ''}<tbody>${rows}</tbody></table></div>`;
+      } else if (type === 'image') {
+        const src = safeImg(b.dataUrl);
+        inner = (src ? `<img src="${src}" alt="" class="max-h-80 rounded-lg mb-2">` : '') +
+          (b.caption ? `<p class="text-xs text-gray-500 whitespace-pre-wrap">${esc(b.caption)}</p>` : '');
+      } else if (type === 'sop') {
+        inner = `<ol class="list-decimal pl-5 space-y-1 text-sm">${(b.steps || []).map((s) => `<li>${esc(s)}</li>`).join('')}</ol>`;
+      } else if (type === 'contact') {
+        inner = field('name', b.name) + field('role', b.role) + field('phone', b.phone, true) +
+          field('email', b.email, true) + field('url', b.url, true) +
+          field('products', b.products) + field('notes', b.notes);
+      } else if (type === 'place') {
+        inner = field('name', b.name) + field('hours', b.hours) + field('map', b.mapUrl, true) +
+          field('prices', b.prices) + field('notes', b.notes);
+      } else if (type === 'event') {
+        inner = field('event', b.name) + field('announce', b.announce) + field('deadline', b.deadline) +
+          field('fee', b.fee) + field('dates', b.dates);
+      } else if (type === 'subscription') {
+        inner = field('service', b.name) + field('start', b.start) + field('end', b.end) + field('cost', b.cost);
+      } else if (type === 'receipt') {
+        const src = safeImg(b.dataUrl);
+        inner = field('date', b.date) + field('vendor', b.vendor) + field('what', b.what) +
+          field('amount', b.amount) + field('currency', b.currency) +
+          (src ? `<img src="${src}" alt="" class="max-h-64 rounded-lg mt-2">` : '');
+      } else if (type === 'inventory') {
+        inner = field('have', b.have) + field('need', b.need);
+      } else {
+        inner = `<p class="text-sm whitespace-pre-wrap">${esc(JSON.stringify(b, null, 2))}</p>`;
+      }
+      return `<section class="bg-white border border-gray-200 rounded-xl p-4 mb-3">
+        <p class="text-[10px] font-mono text-gray-400 mb-2">${esc(type)}</p>
+        ${inner}
+      </section>`;
+    }
+
+    async function run() {
+      const t = new URLSearchParams(location.search).get('t') || '';
+      if (!t || t.length < 16) {
+        $main.innerHTML = '<p class="text-sm text-gray-500">This share link is missing or invalid.</p>';
+        return;
+      }
+      let json = {};
+      try {
+        const res = await fetch(API + '?action=share&t=' + encodeURIComponent(t), { credentials: 'omit' });
+        json = await res.json();
+      } catch (e) {
+        $main.innerHTML = '<p class="text-sm text-red-600">Could not load this page.</p>';
+        return;
+      }
+      if (json.error === 'needs_setup') {
+        $main.innerHTML = '<p class="text-sm text-gray-500">This vault is not available yet.</p>';
+        return;
+      }
+      if (!json.ok || !json.page) {
+        $main.innerHTML = '<p class="text-sm text-gray-500">This share link is invalid or has been revoked.</p>';
+        return;
+      }
+      const p = json.page;
+      document.title = (p.title || 'Shared note') + ' | STARYUME';
+      const updated = p.updatedAt ? new Date(p.updatedAt).toLocaleString() : '';
+      const blocks = (p.blocks || []).map(renderBlock).join('') || '<p class="text-sm text-gray-400">Empty page.</p>';
+      $main.innerHTML = `
+        <p class="text-[10px] font-mono text-gray-400 mb-1">${esc(p.folder || '')}${updated ? ' · ' + esc(updated) : ''}</p>
+        <h1 class="text-2xl font-bold mb-4">${esc(p.title || 'Untitled')}</h1>
+        ${blocks}
+        <p class="text-[10px] text-gray-400 mt-6">Read-only shared page. Do not post this URL publicly.</p>
+      `;
+    }
+
+    run();
+  </script>
+</body>
+</html>
