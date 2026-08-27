@@ -793,11 +793,13 @@
                 const hkOn = storeConfig.hkCheckout && storeConfig.hkCheckout.enabled !== false;
                 if (hkOn) {
                     const eventOnly = Array.isArray(product.hkFulfillment)
-                        && product.hkFulfillment.length === 1
-                        && product.hkFulfillment[0] === 'palette_ring_11';
-                    const hkHint = eventOnly
-                        ? '只限 9/19–9/20 Palette Ring 11 現場取貨，不接受順豐郵寄。'
-                        : 'PayMe · FPS · 順豐到付 / Palette Ring 11';
+                        && product.hkFulfillment.length > 0
+                        && !product.hkFulfillment.includes('sf_station');
+                    const hkHint = product.hkFulfillment && product.hkFulfillment[0] === 'rainbow_gala_34'
+                        ? '只限 12/25–12/26 Rainbow Gala 34 現場取貨，不接受順豐郵寄。'
+                        : (eventOnly
+                            ? '只限活動現場取貨，不接受順豐郵寄。'
+                            : 'PayMe · FPS · 順豐到付 / Palette Ring 11');
                     actions.innerHTML = `<button type="button" onclick="addToCart(${product.id})" class="block w-full bg-black text-white font-bold py-4 rounded-lg hover:bg-tech-purple hover:text-black transition-colors shadow-lg">加入購物車</button>
                     <p class="text-[11px] text-gray-400 text-center mt-2">${hkHint}</p>`;
                 } else {

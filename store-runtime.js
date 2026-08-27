@@ -52,6 +52,19 @@
                     "en": "Pickup at the booth on 9/19–9/20 at <a href=\"https://www.palette-ring.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Palette Ring 11</a> (details via Discord / event notice)."
                 },
                 "fields": []
+            },
+            {
+                "id": "rainbow_gala_34",
+                "enabled": true,
+                "label": {
+                    "zh": "同人活動 Rainbow Gala 34 現場取貨",
+                    "en": "Event pickup — Rainbow Gala 34"
+                },
+                "desc": {
+                    "zh": "於 12/25–12/26 <a href=\"https://www.rainbow-gala.com/34/main.html\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Rainbow Gala 34</a> 攤位現場領取（詳情留意 Discord／活動公告）。",
+                    "en": "Pickup at the booth on 12/25–12/26 at <a href=\"https://www.rainbow-gala.com/34/main.html\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Rainbow Gala 34</a> (details via Discord / event notice)."
+                },
+                "fields": []
             }
         ]
     };

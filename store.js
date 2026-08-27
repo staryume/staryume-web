@@ -59,6 +59,19 @@ const storeConfig = {
                     "en": "Pickup at the booth on 9/19–9/20 at <a href=\"https://www.palette-ring.com\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Palette Ring 11</a> (details via Discord / event notice)."
                 },
                 "fields": []
+            },
+            {
+                "id": "rainbow_gala_34",
+                "enabled": true,
+                "label": {
+                    "zh": "同人活動 Rainbow Gala 34 現場取貨",
+                    "en": "Event pickup — Rainbow Gala 34"
+                },
+                "desc": {
+                    "zh": "於 12/25–12/26 <a href=\"https://www.rainbow-gala.com/34/main.html\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Rainbow Gala 34</a> 攤位現場領取（詳情留意 Discord／活動公告）。",
+                    "en": "Pickup at the booth on 12/25–12/26 at <a href=\"https://www.rainbow-gala.com/34/main.html\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"font-bold underline decoration-tech-purple underline-offset-2 hover:text-black\">Rainbow Gala 34</a> (details via Discord / event notice)."
+                },
+                "fields": []
             }
         ]
     },
@@ -415,8 +428,8 @@ const storeProducts = [
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
-        "hkFulfillment": ["palette_ring_11"],
-        "hkAvailableUntil": "2026-09-20T16:00:00+08:00",
+        "hkFulfillment": ["rainbow_gala_34"],
+        "hkAvailableUntil": "2026-12-26T19:00:00+08:00",
         "title": {
             "jp": "タペストリー ブラック・マジシャン・ガール (ver. 2026)",
             "en": "Tapestry - Dark Magician Girl (ver. 2026)",
@@ -430,7 +443,7 @@ const storeProducts = [
         "desc": {
             "jp": "新作タペストリー。ブラック・マジシャン・ガール ver. 2026。日本製しろもうふ／B2。",
             "en": "New tapestry featuring Dark Magician Girl (ver. 2026). Japanese-made shiromofu / B2.",
-            "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ／尺寸：B2<br>只限 9/19–9/20 Palette Ring 11 現場取貨，不接受順豐郵寄。"
+            "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ／尺寸：B2<br>只限 12/25–12/26 Rainbow Gala 34 現場取貨，不接受順豐郵寄。"
         },
         "linkTW": null,
         "langs": {
@@ -456,8 +469,6 @@ const storeProducts = [
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "ff47",
-        "hkFulfillment": ["palette_ring_11"],
-        "hkAvailableUntil": "2026-09-20T16:00:00+08:00",
         "title": {
             "jp": "タペストリー ガガガガール",
             "en": "Tapestry - Gagaga Girl",
@@ -471,7 +482,7 @@ const storeProducts = [
         "desc": {
             "jp": "新作タペストリー。ガガガガール。日本製しろもうふ／B2。",
             "en": "New tapestry featuring Gagaga Girl. Japanese-made shiromofu / B2.",
-            "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ／尺寸：B2<br>只限 9/19–9/20 Palette Ring 11 現場取貨，不接受順豐郵寄。"
+            "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ／尺寸：B2"
         },
         "linkTW": null,
         "langs": {
