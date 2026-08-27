@@ -430,7 +430,7 @@ const storeProducts = [
         "desc": {
             "jp": "新作タペストリー。ブラック・マジシャン・ガール ver. 2026。日本製しろもうふ／B2。",
             "en": "New tapestry featuring Dark Magician Girl (ver. 2026). Japanese-made shiromofu / B2.",
-            "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ／尺寸：B2"
+            "zh": "新作掛軸。黑魔導女孩 (ver. 2026)。<br>日本製 しろもうふ／尺寸：B2<br>只限 9/19–9/20 Palette Ring 11 現場取貨，不接受順豐郵寄。"
         },
         "linkTW": null,
         "langs": {
@@ -471,7 +471,7 @@ const storeProducts = [
         "desc": {
             "jp": "新作タペストリー。ガガガガール。日本製しろもうふ／B2。",
             "en": "New tapestry featuring Gagaga Girl. Japanese-made shiromofu / B2.",
-            "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ／尺寸：B2"
+            "zh": "新作掛軸。我我我女孩。<br>日本製 しろもうふ／尺寸：B2<br>只限 9/19–9/20 Palette Ring 11 現場取貨，不接受順豐郵寄。"
         },
         "linkTW": null,
         "langs": {
