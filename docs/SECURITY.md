@@ -22,6 +22,7 @@
 3. After editing Apps Script: **Deploy → New version**.  
 4. Prefer production testing on Netlify (edge proxy); localhost uses direct Apps Script URL.  
 5. Full order / checkout regression: follow **`docs/R3-QA-CHECKLIST.md`** after each edge or Apps Script deploy.  
+6. If Google is down, checkout tries **Netlify Forms** (`store-order-backup`) and optional env `DISCORD_ORDER_BACKUP_WEBHOOK`. Check **Netlify → Forms**. Download Store Orders xlsx weekly while Google still works.  
 
 ## Residual risk (accepted for this stack)
 

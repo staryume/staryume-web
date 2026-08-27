@@ -56,6 +56,24 @@
 </head>
 <body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
 
+  <!-- Detected by Netlify at deploy. Used if Google Apps Script is unreachable. -->
+  <form name="store-order-backup" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="store-order-backup">
+    <input name="bot-field">
+    <input name="orderId">
+    <input name="region">
+    <input name="name">
+    <input name="email">
+    <input name="phone">
+    <input name="total">
+    <input name="fulfillmentId">
+    <input name="storeId">
+    <input name="storeName">
+    <input name="sns">
+    <input name="notes">
+    <input name="items">
+  </form>
+
   <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-50">
     <a id="hdr-logo" href="./store.html" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
       <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
@@ -72,6 +90,9 @@
       <p id="successBlurb" class="text-sm text-gray-500 mb-6 leading-relaxed">
         已收到你的訂單與付款證明。<br>
         我們會核對後再安排出貨／取貨。
+      </p>
+      <p id="successFallback" class="hidden text-sm font-bold text-red-600 mb-4 leading-relaxed">
+        Google 訂單系統暫時無法連線。本筆已另存備份，我們會手動處理，請保留訂單編號並在 Discord 聯絡。
       </p>
       <div class="bg-tech-gray rounded-xl p-4 text-center mb-6">
         <p class="text-[10px] font-bold text-gray-400 tracking-widest uppercase mb-1">Order ID</p>
@@ -1075,7 +1096,7 @@
           return;
         }
 
-        if (result && result.ok === false) {
+        if (result && result.ok === false && result.error !== 'proxy_failed' && result.error !== 'upstream_error') {
           console.error('[checkout] backend error', result);
           let msg = humanizeOrderError(result.error, result);
           if (result.error === 'preorder_cooldown' && result.orderId) {
@@ -1096,6 +1117,23 @@
           return;
         }
 
+        const googleDown = (result && result.fallback === true)
+          || (result && (result.error === 'proxy_failed' || result.error === 'upstream_error'))
+          || (!res.ok && !result);
+
+        if (result && result.ok === true && result.fallback === true) {
+          finishOrder(orderId, total, true);
+          return;
+        }
+
+        if (googleDown) {
+          const saved = await saveOrderBackup_(payload);
+          if (saved) {
+            finishOrder(orderId, total, true);
+            return;
+          }
+        }
+
         if (!res.ok && !result) {
           showError('提交失敗（伺服器 ' + res.status + '），請稍後再試。');
           next.disabled = false;
@@ -1103,10 +1141,7 @@
           return;
         }
 
-        if (typeof clearRegionCart === 'function') clearRegionCart(checkoutRegion);
-        else clearHkCart();
-        cart = {};
-        showSuccess(orderId, total);
+        finishOrder(orderId, total, false);
       } catch (e) {
         // Direct Apps Script (localhost) may need no-cors fallback
         if (isLocal && scriptUrl.includes('script.google.com')) {
@@ -1117,17 +1152,59 @@
               headers: { 'Content-Type': 'text/plain;charset=utf-8' },
               body: JSON.stringify(payload),
             });
-            if (typeof clearRegionCart === 'function') clearRegionCart(checkoutRegion);
-            else clearHkCart();
-            cart = {};
-            showSuccess(orderId, total);
+            finishOrder(orderId, total, false);
             return;
           } catch (e2) { /* fall through */ }
         }
+        try {
+          const saved = await saveOrderBackup_(payload);
+          if (saved) {
+            finishOrder(orderId, total, true);
+            return;
+          }
+        } catch (e3) { /* fall through */ }
         showError('提交失敗，請檢查網路後再試一次。');
         next.disabled = false;
         next.textContent = '提交訂單 · Place order';
       }
+    }
+
+    function finishOrder(orderId, total, fallback) {
+      if (typeof clearRegionCart === 'function') clearRegionCart(checkoutRegion);
+      else clearHkCart();
+      cart = {};
+      showSuccess(orderId, total, fallback);
+    }
+
+    /** Google-independent copy: Netlify Forms inbox (Site → Forms). */
+    async function saveOrderBackup_(payload) {
+      const items = (payload.items || []).map((it) => ({
+        id: it.id,
+        title: it.title || it.name,
+        qty: it.qty,
+        unit: it.unit != null ? it.unit : it.price,
+      }));
+      const body = new URLSearchParams({
+        'form-name': 'store-order-backup',
+        orderId: String(payload.orderId || ''),
+        region: String(payload.region || ''),
+        name: String(payload.name || ''),
+        email: String(payload.email || ''),
+        phone: String(payload.phone || ''),
+        total: String(payload.total != null ? payload.total : payload.totalHkd || ''),
+        fulfillmentId: String(payload.fulfillmentId || ''),
+        storeId: String(payload.storeId || ''),
+        storeName: String(payload.storeName || ''),
+        sns: [payload.snsType, payload.snsContact].filter(Boolean).join(' '),
+        notes: String(payload.notes || ''),
+        items: JSON.stringify(items),
+      });
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      });
+      return res.ok || res.status === 200 || res.status === 302;
     }
 
     /** Production → /api/hk-order; localhost → direct Apps Script URL */
@@ -1167,7 +1244,7 @@
       return map[code] || code || '請稍後再試，或聯絡賣家。';
     }
 
-    function showSuccess(orderId, total) {
+    function showSuccess(orderId, total, fallback) {
       document.getElementById('checkoutFlow').classList.add('hidden');
       document.getElementById('successView').classList.remove('hidden');
       document.getElementById('successOrderId').textContent = orderId;
@@ -1175,6 +1252,8 @@
         document.getElementById('successTotal').textContent = '合計 ' + money(total) +
           (isTwMyshipCheckout() ? '（7-11 取貨時支付）' : '');
       }
+      const fb = document.getElementById('successFallback');
+      if (fb) fb.classList.toggle('hidden', !fallback);
       const discord = hk().discordInvite;
       if (discord) document.getElementById('successDiscord').href = discord;
       const manageWrap = document.getElementById('successPreorderManage');

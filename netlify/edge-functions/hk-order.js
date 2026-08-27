@@ -138,12 +138,43 @@ export default async (request) => {
     if (upstream.ok) {
       return json({ ok: true, orderId: data.orderId }, 200);
     }
+    const fb = await notifyOrderBackup_(data, "upstream_error " + upstream.status);
+    if (fb) return json({ ok: true, fallback: true, orderId: data.orderId }, 200);
     return json({ ok: false, error: "upstream_error", status: upstream.status }, 502);
   } catch (err) {
     console.error("hk-order proxy error:", err);
+    const fb = await notifyOrderBackup_(data, String(err && err.message ? err.message : err));
+    if (fb) return json({ ok: true, fallback: true, orderId: data.orderId }, 200);
     return json({ ok: false, error: "proxy_failed" }, 502);
   }
 };
+
+async function notifyOrderBackup_(data, reason) {
+  const hook =
+    (typeof Deno !== "undefined" && Deno.env && Deno.env.get("DISCORD_ORDER_BACKUP_WEBHOOK")) ||
+    "";
+  if (!hook || !data) return false;
+  try {
+    const items = Array.isArray(data.items)
+      ? data.items.map((it) => `${it.title || it.name || it.id}×${it.qty || 1}`).join("、")
+      : "";
+    const text = [
+      "**Google 訂單備援** `" + (data.orderId || "") + "`",
+      reason,
+      `${data.region || ""} · ${data.name || ""} · ${data.email || ""} · ${data.phone || ""}`,
+      items,
+      data.storeId ? `門市 ${data.storeId} ${data.storeName || ""}` : "",
+    ].filter(Boolean).join("\n");
+    const res = await fetch(hook, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content: text.slice(0, 1800) }),
+    });
+    return res.ok || res.status === 204;
+  } catch {
+    return false;
+  }
+}
 
 export const config = {
   path: "/api/hk-order",
