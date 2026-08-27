@@ -129,10 +129,13 @@ export const config = { path: "/api/kb" };
 
 function env(name) {
   try {
-    if (typeof Netlify !== "undefined" && Netlify.env && Netlify.env.get) return Netlify.env.get(name) || "";
+    if (typeof Netlify !== "undefined" && Netlify.env && Netlify.env.get) {
+      const v = Netlify.env.get(name);
+      if (v) return v;
+    }
   } catch { /* ignore */ }
   try {
-    if (typeof Deno !== "undefined" && Deno.env && Deno.env.get) return Deno.env.get(name) || "";
+    if (typeof process !== "undefined" && process.env && process.env[name]) return process.env[name];
   } catch { /* ignore */ }
   return "";
 }

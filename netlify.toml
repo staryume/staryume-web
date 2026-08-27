@@ -33,10 +33,7 @@
   function = "pos"
   path = "/api/pos"
 
-# Private knowledge vault (Netlify Blobs)
-[[edge_functions]]
-  function = "kb"
-  path = "/api/kb"
+# Private knowledge vault API: netlify/functions/kb.mjs (path set in the function)
 
 [[headers]]
   for = "/kb.html"
