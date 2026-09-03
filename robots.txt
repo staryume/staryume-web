@@ -15,6 +15,9 @@ Disallow: /auction.html
 Disallow: /auction-board.html
 Disallow: /pos.html
 Disallow: /pos.js
+Disallow: /survey.html
+Disallow: /survey-dashboard.html
+Disallow: /survey-validate.js
 Disallow: /qr-generator.html
 Disallow: /kb.html
 Disallow: /kb-share.html

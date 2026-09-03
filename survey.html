@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>星夢亭 2026 夏季活動問卷 | STARYUME</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="星夢亭夏季活動問卷。完成後可於冬季活動憑確認電郵領取實體卡片禮物。">
+
+  <!-- Setup: docs/survey-apps-script.md -->
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-20978566"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-20978566');
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
+  <script src="./survey-validate.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Noto Sans JP"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+            nav: ['"Montserrat"', 'sans-serif'],
+          },
+          colors: {
+            'tech-purple': '#D8B4FE',
+            'tech-black': '#0a0a0a',
+            'tech-gray': '#f2f2f2',
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0a0a0a; }
+    ::-webkit-scrollbar-thumb { background: #D8B4FE; }
+    .field-error { border-color: #ef4444 !important; }
+    .hp-field { position: absolute; left: -9999px; opacity: 0; height: 0; overflow: hidden; }
+    .likert-btn[aria-pressed="true"] {
+      background: #0a0a0a;
+      color: #fff;
+      border-color: #0a0a0a;
+    }
+    html[lang="ja"] body { font-family: "Noto Sans JP", "Noto Sans TC", Inter, sans-serif; }
+  </style>
+</head>
+<body class="bg-tech-gray text-tech-black font-sans min-h-screen selection:bg-tech-purple selection:text-black">
+
+  <header class="w-full h-16 bg-white/95 backdrop-blur-md border-b border-gray-200 flex items-center justify-center sticky top-0 z-50 px-4">
+    <a href="./index.html" class="hover:opacity-80 transition-opacity">
+      <img src="./assets/coreimg/logo.png" class="w-10 h-10 object-contain" alt="staryume">
+    </a>
+    <div class="absolute right-4 flex items-center gap-1 text-xs font-bold">
+      <button type="button" id="langZh" class="px-2 py-1 rounded-lg">中文</button>
+      <button type="button" id="langJp" class="px-2 py-1 rounded-lg">日本語</button>
+    </div>
+  </header>
+
+  <main class="max-w-lg mx-auto px-4 py-8 md:py-12">
+    <div class="mb-6 text-center">
+      <p class="text-xs font-tech tracking-widest text-gray-400 mb-2">SUMMER 2026 SURVEY</p>
+      <h1 id="pageTitle" class="text-2xl font-bold tracking-tight"></h1>
+      <p id="pageLead" class="text-sm text-gray-500 mt-3 leading-relaxed"></p>
+    </div>
+
+    <div id="giftBox" class="mb-6 p-4 bg-white rounded-2xl border border-tech-purple/60 text-sm leading-relaxed"></div>
+
+    <div id="closedBanner" class="hidden mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-900"></div>
+
+    <div id="successCard" class="hidden bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center">
+      <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-tech-purple/40 flex items-center justify-center text-2xl">✓</div>
+      <h2 id="successTitle" class="text-xl font-bold mb-2"></h2>
+      <p id="successBody" class="text-sm text-gray-600 leading-relaxed"></p>
+      <p class="mt-4 text-sm font-bold">
+        <span id="successSerialLabel"></span>
+        <span id="successSerial" class="font-mono">—</span>
+      </p>
+      <p id="dupNote" class="hidden mt-3 text-xs text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2"></p>
+      <p id="mailWarn" class="hidden mt-3 text-xs text-amber-700"></p>
+      <div class="mt-6 p-4 bg-tech-gray rounded-xl text-left text-sm">
+        <p id="discordBlurb" class="text-gray-600 text-xs mb-3"></p>
+        <a href="https://discord.gg/staryume" target="_blank" rel="noopener noreferrer"
+          class="inline-flex items-center justify-center w-full py-2.5 bg-[#5865F2] text-white font-bold rounded-lg hover:opacity-90 transition text-sm">
+          Discord
+        </a>
+      </div>
+      <a href="./index.html" id="homeLink" class="inline-block mt-6 text-sm font-bold text-black underline decoration-tech-purple underline-offset-4 hover:text-gray-600"></a>
+    </div>
+
+    <form id="surveyForm" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8 space-y-8" novalidate>
+      <input type="text" name="website" id="website" class="hp-field" tabindex="-1" autocomplete="off">
+
+      <fieldset id="eventField">
+        <legend id="eventLegend" class="block text-sm font-bold mb-3"></legend>
+        <div class="space-y-3">
+          <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple transition has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+            <input type="radio" name="event" value="acghk" class="mt-1 accent-black">
+            <span>
+              <span class="block font-medium">ACGHK2026</span>
+              <span class="block text-xs text-gray-500 mt-0.5" id="eventAcghkHint"></span>
+            </span>
+          </label>
+          <label class="flex items-start gap-3 p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-tech-purple transition has-[:checked]:border-tech-purple has-[:checked]:bg-tech-purple/10">
+            <input type="radio" name="event" value="ff47" class="mt-1 accent-black">
+            <span>
+              <span class="block font-medium">FF47</span>
+              <span class="block text-xs text-gray-500 mt-0.5" id="eventFf47Hint"></span>
+            </span>
+          </label>
+        </div>
+        <p id="err-event" class="hidden text-xs text-red-500 mt-2"></p>
+      </fieldset>
+
+      <div id="c108Badge" class="hidden p-4 bg-tech-gray rounded-xl text-sm">
+        <p class="text-xs font-tech tracking-widest text-gray-400 mb-1">EVENT</p>
+        <p class="font-bold">Comic Market 108</p>
+      </div>
+
+      <div id="q1Wrap" class="hidden"></div>
+      <div id="q2Wrap"></div>
+      <div id="q3Wrap"></div>
+      <div id="q4Wrap"></div>
+
+      <div>
+        <label for="q5" class="block text-sm font-bold mb-2" id="q5Label"></label>
+        <input id="q5" name="q5" type="text" maxlength="200"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+      </div>
+      <div>
+        <label for="q6" class="block text-sm font-bold mb-2" id="q6Label"></label>
+        <input id="q6" name="q6" type="text" maxlength="200"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+      </div>
+
+      <div id="q7Wrap"></div>
+
+      <div>
+        <label for="q8" class="block text-sm font-bold mb-2" id="q8Label"></label>
+        <input id="q8" name="q8" type="text" maxlength="200"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+      </div>
+      <div>
+        <label for="q9" class="block text-sm font-bold mb-2" id="q9Label"></label>
+        <textarea id="q9" name="q9" rows="4" maxlength="2000"
+          class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>
+      </div>
+
+      <div class="border-t border-gray-100 pt-6 space-y-4">
+        <p id="contactHead" class="text-xs font-bold text-gray-400 tracking-wider"></p>
+        <div>
+          <label for="handle" class="block text-sm font-bold mb-2" id="handleLabel"></label>
+          <input id="handle" name="handle" type="text" maxlength="80" autocomplete="nickname"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+        </div>
+        <div>
+          <label for="snsType" class="block text-sm font-bold mb-2" id="snsTypeLabel"></label>
+          <select id="snsType" name="snsType"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+            <option value=""></option>
+            <option value="x">X (Twitter)</option>
+            <option value="pixiv">Pixiv</option>
+            <option value="instagram">Instagram</option>
+            <option value="discord">Discord</option>
+            <option value="plurk">Plurk</option>
+            <option value="facebook">Facebook</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="snsContact" class="block text-sm font-bold mb-2" id="snsContactLabel"></label>
+          <input id="snsContact" name="snsContact" type="text" maxlength="120"
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+        </div>
+        <div>
+          <label for="email" class="block text-sm font-bold mb-2" id="emailLabel"></label>
+          <input id="email" name="email" type="email" autocomplete="email" required
+            class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition">
+          <p id="emailHint" class="text-xs text-gray-400 mt-1.5 leading-relaxed"></p>
+          <p id="err-email" class="hidden text-xs text-red-500 mt-2"></p>
+        </div>
+      </div>
+
+      <p id="formError" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3"></p>
+      <p id="configHint" class="hidden text-sm text-amber-800 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3"></p>
+
+      <button type="submit" id="submitBtn"
+        class="w-full py-3.5 bg-tech-black text-white font-bold rounded-xl hover:bg-gray-800 transition disabled:opacity-50 disabled:cursor-not-allowed">
+      </button>
+    </form>
+  </main>
+
+  <footer class="text-center py-8 text-xs text-gray-400 font-mono">STARYUME WEB // SURVEY</footer>
+
+  <script>
+    const API_URL = '/api/survey';
+    const SCRIPT_URL_DIRECT = 'https://script.google.com/macros/s/AKfycbxGpA6yDeUDhHnLNeuDWAW_O4po6So7pf-QLKrdniSK7aQMjeNGxcJ2I27yZQj74vLI/exec';
+    const DISCORD_INVITE_URL = 'https://discord.gg/staryume';
+
+    const I18N = {
+      zh: {
+        htmlLang: 'zh-Hant',
+        title: '星夢亭 2026 夏季活動問卷',
+        docTitle: '星夢亭 2026 夏季活動問卷 | STARYUME',
+        lead: '感謝你來到星夢亭的攤位。想聽你對這次夏季活動的感想，也想知道下次你希望看到什麼。',
+        gift: '完成問卷後會寄出確認電郵。請於即將到來的冬季大型活動（C109、FF48 等）向星夢亭出示該電郵，即可領取實體卡片禮物。每個活動、每個電郵限填一次。',
+        eventLegend: '你參加的是哪個活動？ *',
+        eventAcghk: '香港 ACGHK 2026',
+        eventFf47: '台北 Fancy Frontier 47',
+        errEvent: '請選擇活動',
+        q1: '1. 你對這次星夢亭的事前預約系統滿意嗎？',
+        q2: '2. 你對這次新設立的互動價目表滿意嗎？',
+        q3: '3. 你對這次的新刊 / 新商品滿意嗎？',
+        q4: '4. 你對這次的活動後通販的初步預購安排滿意嗎？',
+        q5: '5. 如果是遊戲王題材的話，你最希望下次看到我畫什麼角色？',
+        q6: '6. 如果是非遊戲王二創題材的話，你最希望下次看到我畫什麼角色？',
+        q7: '7. 對於這次同人活動的海報猜拳 / 色紙競標的話，你感到滿意嗎？',
+        q8: '8. 除了海報猜拳 / 色紙競標之外，你希望有沒有什麼特別活動嗎？',
+        q9: '9. 還有什麼特別意見 / 感想希望告訴我嗎？',
+        optional: '（選填）',
+        notes: '補充說明（選填）',
+        notesPh: '有想補充的可以寫在這裡',
+        scaleLo: '非常不滿意',
+        scaleHi: '非常滿意',
+        na: '沒有使用／沒參加',
+        errScore: '請選擇 1 到 5，或「沒有使用／沒參加」',
+        contactHead: '聯絡資料',
+        handle: '名稱 / 通稱（選填）',
+        snsType: 'SNS（選填）',
+        snsNone: '不填寫',
+        snsContact: 'SNS 帳號（選填）',
+        email: '電郵 *',
+        emailHint: '必填。確認信會寄到這裡，冬季活動領取卡片禮物時請出示該電郵。',
+        errEmail: '請填寫有效的電郵地址',
+        submit: '提交問卷',
+        submitting: '提交中…',
+        successTitle: '提交成功！',
+        successBody: '確認電郵已發送（請同時檢查垃圾郵件匣）。冬季活動請出示該電郵領取卡片禮物。',
+        serialLabel: '確認編號：',
+        dupNote: '這個活動你已經填過。確認編號不變，請用原本的確認電郵領取禮物。',
+        mailWarn: '電郵可能未送出。請截圖保存上方確認編號。',
+        discord: '有問題歡迎加入 Discord 查詢。',
+        home: '返回首頁',
+        closed: '問卷已關閉。',
+        config: '表單尚未連接 Google 試算表。請先完成 Apps Script 部署（docs/survey-apps-script.md）。',
+        fail: '提交失敗，請稍後再試。',
+        shortPh: '想看的角色…',
+        longPh: '想說的都可以寫在這裡',
+      },
+      jp: {
+        htmlLang: 'ja',
+        title: '星夢亭 2026 夏イベントアンケート',
+        docTitle: '星夢亭 2026 夏イベントアンケート | STARYUME',
+        lead: 'ブースにお越しくださりありがとうございました。今回の夏イベントの感想と、次に描いてほしいキャラクターを教えてください。',
+        gift: '回答完了後に確認メールをお送りします。次回の冬の大型イベント（C109 など）でそのメールを星夢亭ブースにご提示いただくと、特製カードをプレゼントします。同じイベント・同じメールアドレスでの回答は1回のみです。',
+        eventLegend: '',
+        eventAcghk: '',
+        eventFf47: '',
+        errEvent: '',
+        q1: '',
+        q2: '2. 今回新しく導入したインタラクティブなお品書きに満足していますか？',
+        q3: '3. 今回の新刊・新作グッズに満足していますか？',
+        q4: '4. 今回のイベント後通販の事前予約の案内に満足していますか？',
+        q5: '5. 遊戯王テーマの場合、次に描いてほしいキャラクターは？',
+        q6: '6. 遊戯王以外の二次創作の場合、次に描いてほしいキャラクターは？',
+        q7: '7. 今回のサークルポスターじゃんけん企画に満足していますか？',
+        q8: '8. ポスターじゃんけん以外に、何か特別企画があれば嬉しいですか？',
+        q9: '9. その他、ご意見・ご感想があれば教えてください。',
+        optional: '（任意）',
+        notes: '補足（任意）',
+        notesPh: '補足があればご記入ください',
+        scaleLo: '非常に不満',
+        scaleHi: '非常に満足',
+        na: '利用していない／不参加',
+        errScore: '1〜5、または「利用していない／不参加」を選んでください',
+        contactHead: '連絡先',
+        handle: 'ハンドルネーム（任意）',
+        snsType: 'SNS（任意）',
+        snsNone: '未記入',
+        snsContact: 'SNSアカウント（任意）',
+        email: 'メールアドレス *',
+        emailHint: '必須です。確認メールを送ります。冬イベントでカードを受け取る際にこのメールをご提示ください。',
+        errEmail: '有効なメールアドレスを入力してください',
+        submit: '送信する',
+        submitting: '送信中…',
+        successTitle: '送信しました！',
+        successBody: '確認メールを送りました（迷惑メールフォルダもご確認ください）。冬イベントではそのメールをご提示ください。',
+        serialLabel: '確認番号：',
+        dupNote: 'このイベントはすでに回答済みです。確認番号は変わりません。元の確認メールをご利用ください。',
+        mailWarn: 'メールが届いていない可能性があります。上の確認番号をスクリーンショットで保存してください。',
+        discord: 'ご不明点は Discord へどうぞ。',
+        home: 'トップへ戻る',
+        closed: 'アンケートは終了しました。',
+        config: 'バックエンド未接続です。docs/survey-apps-script.md を参照してください。',
+        fail: '送信に失敗しました。しばらくしてから再度お試しください。',
+        shortPh: '描いてほしいキャラクター…',
+        longPh: 'ご自由にご記入ください',
+      }
+    };
+
+    function formEndpoint() {
+      const host = location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') return SCRIPT_URL_DIRECT;
+      return API_URL;
+    }
+
+    const V = window.SurveyValidate;
+    const scores = { q1: '', q2: '', q3: '', q4: '', q7: '' };
+
+    function detectLang() {
+      const params = new URLSearchParams(location.search);
+      const q = (params.get('lang') || params.get('l') || '').toLowerCase();
+      if (q === 'jp' || q === 'ja') return 'jp';
+      if (q === 'zh' || q.indexOf('zh') === 0) return 'zh';
+      try {
+        const stored = (localStorage.getItem('siteLang') || '').toLowerCase();
+        if (stored === 'jp' || stored === 'ja') return 'jp';
+        if (stored === 'zh') return 'zh';
+      } catch (_) {}
+      return 'zh';
+    }
+
+    let lang = detectLang();
+
+    function t() { return I18N[lang] || I18N.zh; }
+
+    function selectedEvent() {
+      if (lang === 'jp') return 'c108';
+      const el = document.querySelector('input[name="event"]:checked');
+      return el ? el.value : '';
+    }
+
+    function setLang(next, pushUrl) {
+      lang = next === 'jp' ? 'jp' : 'zh';
+      if (pushUrl) {
+        const u = new URL(location.href);
+        u.searchParams.set('lang', lang);
+        history.replaceState({}, '', u);
+      }
+      applyI18n();
+    }
+
+    function scaleBlock(id, title) {
+      return (
+        '<fieldset data-scale="' + id + '">' +
+          '<legend class="block text-sm font-bold mb-3">' + title + ' <span class="text-red-500">*</span></legend>' +
+          '<div class="flex gap-2">' +
+            [1, 2, 3, 4, 5].map(function (n) {
+              return '<button type="button" class="likert-btn flex-1 py-3 border border-gray-200 rounded-xl text-sm font-bold bg-gray-50 hover:border-tech-purple transition" data-scale="' + id + '" data-value="' + n + '" aria-pressed="false">' + n + '</button>';
+            }).join('') +
+          '</div>' +
+          '<div class="flex justify-between text-[10px] text-gray-400 mt-1.5 px-0.5">' +
+            '<span>' + t().scaleLo + '</span><span>' + t().scaleHi + '</span>' +
+          '</div>' +
+          '<button type="button" class="likert-btn mt-2 text-xs px-3 py-2 border border-gray-200 rounded-lg text-gray-600 hover:border-tech-purple" data-scale="' + id + '" data-value="na" aria-pressed="false">' + t().na + '</button>' +
+          '<label class="block text-xs text-gray-400 mt-3 mb-1">' + t().notes + '</label>' +
+          '<textarea id="' + id + 'Notes" rows="2" maxlength="500" placeholder="' + t().notesPh + '" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-tech-purple focus:bg-white transition resize-y"></textarea>' +
+          '<p id="err-' + id + '" class="hidden text-xs text-red-500 mt-2">' + t().errScore + '</p>' +
+        '</fieldset>'
+      );
+    }
+
+    function applyI18n() {
+      const s = t();
+      document.documentElement.lang = s.htmlLang;
+      document.title = s.docTitle;
+      document.getElementById('pageTitle').textContent = s.title;
+      document.getElementById('pageLead').textContent = s.lead;
+      document.getElementById('giftBox').textContent = s.gift;
+      document.getElementById('eventLegend').innerHTML = s.eventLegend;
+      document.getElementById('eventAcghkHint').textContent = s.eventAcghk;
+      document.getElementById('eventFf47Hint').textContent = s.eventFf47;
+      document.getElementById('err-event').textContent = s.errEvent;
+      document.getElementById('q5Label').textContent = s.q5 + ' ' + s.optional;
+      document.getElementById('q6Label').textContent = s.q6 + ' ' + s.optional;
+      document.getElementById('q8Label').textContent = s.q8 + ' ' + s.optional;
+      document.getElementById('q9Label').textContent = s.q9 + ' ' + s.optional;
+      document.getElementById('q5').placeholder = s.shortPh;
+      document.getElementById('q6').placeholder = s.shortPh;
+      document.getElementById('q8').placeholder = s.shortPh;
+      document.getElementById('q9').placeholder = s.longPh;
+      document.getElementById('contactHead').textContent = s.contactHead;
+      document.getElementById('handleLabel').textContent = s.handle;
+      document.getElementById('snsTypeLabel').textContent = s.snsType;
+      document.getElementById('snsContactLabel').textContent = s.snsContact;
+      document.getElementById('emailLabel').textContent = s.email;
+      document.getElementById('emailHint').textContent = s.emailHint;
+      document.getElementById('err-email').textContent = s.errEmail;
+      document.getElementById('submitBtn').textContent = s.submit;
+      document.getElementById('successTitle').textContent = s.successTitle;
+      document.getElementById('successBody').textContent = s.successBody;
+      document.getElementById('successSerialLabel').textContent = s.serialLabel;
+      document.getElementById('dupNote').textContent = s.dupNote;
+      document.getElementById('mailWarn').textContent = s.mailWarn;
+      document.getElementById('discordBlurb').textContent = s.discord;
+      document.getElementById('homeLink').textContent = s.home;
+      document.getElementById('closedBanner').textContent = s.closed;
+      document.getElementById('configHint').textContent = s.config;
+      document.getElementById('snsType').options[0].text = s.snsNone;
+
+      document.getElementById('q1Wrap').innerHTML = scaleBlock('q1', s.q1);
+      document.getElementById('q2Wrap').innerHTML = scaleBlock('q2', s.q2);
+      document.getElementById('q3Wrap').innerHTML = scaleBlock('q3', s.q3);
+      document.getElementById('q4Wrap').innerHTML = scaleBlock('q4', s.q4);
+      document.getElementById('q7Wrap').innerHTML = scaleBlock('q7', s.q7);
+      bindLikert();
+      restoreLikertPressed();
+
+      const jp = lang === 'jp';
+      document.getElementById('eventField').classList.toggle('hidden', jp);
+      document.getElementById('c108Badge').classList.toggle('hidden', !jp);
+      document.getElementById('langZh').className = 'px-2 py-1 rounded-lg ' + (jp ? 'text-gray-400' : 'bg-black text-white');
+      document.getElementById('langJp').className = 'px-2 py-1 rounded-lg ' + (jp ? 'bg-black text-white' : 'text-gray-400');
+      toggleQ1();
+    }
+
+    function restoreLikertPressed() {
+      Object.keys(scores).forEach(function (id) {
+        if (!scores[id]) return;
+        document.querySelectorAll('.likert-btn[data-scale="' + id + '"]').forEach(function (btn) {
+          btn.setAttribute('aria-pressed', btn.getAttribute('data-value') === scores[id] ? 'true' : 'false');
+        });
+      });
+    }
+
+    function bindLikert() {
+      document.querySelectorAll('.likert-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          const id = btn.getAttribute('data-scale');
+          const val = btn.getAttribute('data-value');
+          scores[id] = val;
+          document.querySelectorAll('.likert-btn[data-scale="' + id + '"]').forEach(function (b) {
+            b.setAttribute('aria-pressed', b === btn ? 'true' : 'false');
+          });
+          showError(id, false);
+        });
+      });
+    }
+
+    function toggleQ1() {
+      const show = selectedEvent() === 'ff47';
+      document.getElementById('q1Wrap').classList.toggle('hidden', !show);
+      if (!show) scores.q1 = '';
+    }
+
+    function showError(id, show) {
+      const err = document.getElementById('err-' + id);
+      const field = document.getElementById(id);
+      if (err) err.classList.toggle('hidden', !show);
+      if (field) field.classList.toggle('field-error', !!show);
+    }
+
+    function humanError(code) {
+      const s = t();
+      const map = {
+        bad_email: s.errEmail,
+        bad_event: s.errEvent,
+        missing_score: s.errScore,
+        bad_score: s.errScore,
+        closed: s.closed,
+        rate_limited: lang === 'jp' ? '送信が多すぎます。しばらくしてから再度お試しください。' : '提交次數過多，請稍後再試。',
+        not_configured: s.config,
+      };
+      return map[code] || s.fail;
+    }
+
+    document.getElementById('langZh').addEventListener('click', function () { setLang('zh', true); });
+    document.getElementById('langJp').addEventListener('click', function () { setLang('jp', true); });
+    document.querySelectorAll('input[name="event"]').forEach(function (r) {
+      r.addEventListener('change', function () {
+        showError('event', false);
+        toggleQ1();
+      });
+    });
+
+    applyI18n();
+
+    if (!formEndpoint()) {
+      document.getElementById('configHint').classList.remove('hidden');
+    }
+
+    document.getElementById('surveyForm').addEventListener('submit', async function (ev) {
+      ev.preventDefault();
+      const s = t();
+      const formError = document.getElementById('formError');
+      const submitBtn = document.getElementById('submitBtn');
+      formError.classList.add('hidden');
+      ['event', 'email', 'q1', 'q2', 'q3', 'q4', 'q7'].forEach(function (id) { showError(id, false); });
+
+      const event = selectedEvent();
+      const payload = {
+        action: 'submit',
+        lang: lang,
+        event: event,
+        email: document.getElementById('email').value,
+        handle: document.getElementById('handle').value,
+        snsType: document.getElementById('snsType').value,
+        snsContact: document.getElementById('snsContact').value,
+        q1: { score: event === 'ff47' ? scores.q1 : '', notes: document.getElementById('q1Notes') ? document.getElementById('q1Notes').value : '' },
+        q2: { score: scores.q2, notes: document.getElementById('q2Notes').value },
+        q3: { score: scores.q3, notes: document.getElementById('q3Notes').value },
+        q4: { score: scores.q4, notes: document.getElementById('q4Notes').value },
+        q5: document.getElementById('q5').value,
+        q6: document.getElementById('q6').value,
+        q7: { score: scores.q7, notes: document.getElementById('q7Notes').value },
+        q8: document.getElementById('q8').value,
+        q9: document.getElementById('q9').value,
+        website: document.getElementById('website').value,
+      };
+
+      const checked = V.validateSubmit(payload);
+      if (!checked.ok) {
+        if (checked.field) showError(checked.field, true);
+        formError.textContent = humanError(checked.error);
+        formError.classList.remove('hidden');
+        return;
+      }
+
+      const endpoint = formEndpoint();
+      if (!endpoint) {
+        document.getElementById('configHint').classList.remove('hidden');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = s.submitting;
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          redirect: 'follow',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload),
+        });
+        let result = null;
+        try {
+          const text = await res.text();
+          if (text && text.trim().startsWith('{')) result = JSON.parse(text);
+        } catch (_) {}
+
+        if (!result || result.ok === false) {
+          const err = (result && result.error) || 'fail';
+          if (result && result.field) showError(result.field, true);
+          if (err === 'closed') document.getElementById('closedBanner').classList.remove('hidden');
+          formError.textContent = humanError(err);
+          formError.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.textContent = s.submit;
+          return;
+        }
+
+        document.getElementById('surveyForm').classList.add('hidden');
+        document.getElementById('giftBox').classList.add('hidden');
+        document.getElementById('successCard').classList.remove('hidden');
+        document.getElementById('successSerial').textContent = result.serial || '—';
+        if (result.duplicate) document.getElementById('dupNote').classList.remove('hidden');
+        if (result.mailError || result.emailSent === false) document.getElementById('mailWarn').classList.remove('hidden');
+      } catch (e) {
+        formError.textContent = s.fail;
+        formError.classList.remove('hidden');
+        submitBtn.disabled = false;
+        submitBtn.textContent = s.submit;
+      }
+    });
+  </script>
+</body>
+</html>

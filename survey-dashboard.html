@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>問卷儀表板 | STARYUME</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/coreimg/favicon.svg">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Noto+Sans+TC:wght@400;700&family=Rajdhani:wght@600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Noto Sans TC"', '"Inter"', 'sans-serif'],
+            tech: ['"Rajdhani"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: { 'tech-purple': '#D8B4FE', 'tech-black': '#0a0a0a' },
+        }
+      }
+    }
+  </script>
+  <style>
+    .tab-active { color: #0a0a0a; border-bottom-color: #D8B4FE; background: #faf5ff; }
+    .chip-on { background: #0a0a0a; color: #fff; border-color: #0a0a0a; }
+  </style>
+</head>
+<body class="bg-gray-50 text-tech-black font-sans min-h-screen antialiased">
+
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-6">
+    <form id="login-form" class="w-full max-w-sm bg-white border border-gray-200 rounded-2xl shadow-sm p-6 space-y-4">
+      <div class="text-center">
+        <img src="./assets/coreimg/logo.png" alt="" class="w-14 h-14 mx-auto object-contain mb-3">
+        <h1 class="font-tech text-xl font-bold tracking-wide">SURVEY DASHBOARD</h1>
+        <p class="text-xs text-gray-500 mt-1">工作人員專用 · 請輸入通關密碼</p>
+      </div>
+      <div>
+        <label class="block text-[10px] font-bold uppercase text-gray-400 mb-1">Passcode</label>
+        <input id="login-passcode" type="password" autocomplete="current-password"
+          class="w-full border border-gray-300 rounded-lg px-3 py-3 text-base focus:outline-none focus:border-tech-purple focus:ring-1 focus:ring-tech-purple"
+          placeholder="••••••••" required>
+      </div>
+      <p id="login-error" class="text-sm text-red-600 min-h-[1.25rem]"></p>
+      <button id="login-submit" type="submit"
+        class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-900">進入</button>
+      <p class="text-[10px] text-gray-400 text-center">設定見 docs/survey-apps-script.md</p>
+    </form>
+  </div>
+
+  <div id="app-shell" class="hidden min-h-screen flex flex-col">
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur border-b border-gray-200 px-3 py-2">
+      <div class="flex items-center justify-between gap-2 max-w-5xl mx-auto">
+        <div class="flex items-center gap-2 min-w-0">
+          <img src="./assets/coreimg/logo.png" class="w-8 h-8 object-contain shrink-0" alt="">
+          <div class="min-w-0">
+            <div class="font-tech font-bold text-sm tracking-wide">SURVEY · SUMMER 2026</div>
+            <div id="status-bar" class="text-[10px] text-gray-400 truncate">—</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-1 shrink-0">
+          <button type="button" id="btn-refresh" class="text-[10px] font-bold px-2 py-1.5 border border-gray-200 rounded-lg">同步</button>
+          <button type="button" id="btn-logout" class="text-[10px] font-bold px-2 py-1.5 text-gray-500">登出</button>
+        </div>
+      </div>
+      <nav class="flex overflow-x-auto max-w-5xl mx-auto mt-2 -mb-2" style="scrollbar-width:none">
+        <button type="button" data-tab="overview" class="tab-active px-3 py-2 text-xs font-bold border-b-2 whitespace-nowrap">總覽</button>
+        <button type="button" data-tab="notes" class="px-3 py-2 text-xs font-bold border-b-2 border-transparent text-gray-500 whitespace-nowrap">評分備註</button>
+        <button type="button" data-tab="open" class="px-3 py-2 text-xs font-bold border-b-2 border-transparent text-gray-500 whitespace-nowrap">自由回答</button>
+        <button type="button" data-tab="redeem" class="px-3 py-2 text-xs font-bold border-b-2 border-transparent text-gray-500 whitespace-nowrap">兌換</button>
+      </nav>
+    </header>
+
+    <main class="max-w-5xl mx-auto w-full px-3 py-4 pb-16">
+      <div class="flex flex-wrap gap-2 mb-4" id="filter-row">
+        <button type="button" class="chip chip-on text-xs font-bold px-3 py-1.5 rounded-full border" data-filter="all">全部</button>
+        <button type="button" class="chip text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200" data-filter="c108">C108</button>
+        <button type="button" class="chip text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200" data-filter="acghk">ACGHK</button>
+        <button type="button" class="chip text-xs font-bold px-3 py-1.5 rounded-full border border-gray-200" data-filter="ff47">FF47</button>
+      </div>
+
+      <section data-panel="overview" class="space-y-4">
+        <div id="count-grid" class="grid grid-cols-2 md:grid-cols-4 gap-2"></div>
+        <div id="avg-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+      </section>
+
+      <section data-panel="notes" class="hidden space-y-4" id="notes-panel"></section>
+      <section data-panel="open" class="hidden space-y-4" id="open-panel"></section>
+
+      <section data-panel="redeem" class="hidden space-y-4">
+        <form id="lookup-form" class="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col sm:flex-row gap-2">
+          <input id="lookup-query" type="text" placeholder="確認編號或電郵"
+            class="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-mono">
+          <button type="submit" class="bg-black text-white font-bold rounded-xl px-4 py-2.5 text-sm">查詢</button>
+        </form>
+        <p id="lookup-msg" class="text-sm text-gray-500"></p>
+        <div id="lookup-results" class="space-y-3"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const API_URL = '/api/survey';
+    const SCRIPT_URL_DIRECT = 'https://script.google.com/macros/s/AKfycbxGpA6yDeUDhHnLNeuDWAW_O4po6So7pf-QLKrdniSK7aQMjeNGxcJ2I27yZQj74vLI/exec';
+    const SESSION_KEY = 'staryume_survey_passcode';
+
+    const Q_META = {
+      q1: { title: 'Q1 事前預約系統', hint: '僅 FF47' },
+      q2: { title: 'Q2 互動價目表', hint: '' },
+      q3: { title: 'Q3 新刊／新商品', hint: '' },
+      q4: { title: 'Q4 活動後通販預購', hint: '' },
+      q7: { title: 'Q7 海報猜拳／色紙競標', hint: '日文版無色紙' },
+    };
+    const OPEN_META = {
+      q5: 'Q5 遊戲王想看的角色',
+      q6: 'Q6 非遊戲王二創角色',
+      q8: 'Q8 希望的特別活動',
+      q9: 'Q9 其他意見／感想',
+    };
+    const EVENT_LABEL = { c108: 'C108', acghk: 'ACGHK', ff47: 'FF47' };
+
+    const state = { passcode: '', filter: 'all', tab: 'overview', summary: null };
+
+    function endpoint() {
+      const host = location.hostname;
+      if (host === 'localhost' || host === '127.0.0.1') return SCRIPT_URL_DIRECT;
+      return API_URL;
+    }
+
+    async function api(body) {
+      const url = endpoint();
+      if (!url) throw new Error('後端尚未設定 SCRIPT_URL_DIRECT / /api/survey');
+      const res = await fetch(url, {
+        method: 'POST',
+        redirect: 'follow',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(Object.assign({ passcode: state.passcode }, body)),
+      });
+      const text = await res.text();
+      if (!text || !text.trim().startsWith('{')) throw new Error('伺服器沒有回傳 JSON');
+      return JSON.parse(text);
+    }
+
+    function showLogin() {
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('app-shell').classList.add('hidden');
+    }
+    function showApp() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('app-shell').classList.remove('hidden');
+    }
+
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const code = document.getElementById('login-passcode').value.trim();
+      const err = document.getElementById('login-error');
+      const btn = document.getElementById('login-submit');
+      err.textContent = '';
+      btn.disabled = true;
+      btn.textContent = '…';
+      state.passcode = code;
+      try {
+        const res = await api({ action: 'ping' });
+        if (!res.ok) {
+          err.textContent = res.message || '通關密碼錯誤';
+          state.passcode = '';
+          return;
+        }
+        sessionStorage.setItem(SESSION_KEY, code);
+        showApp();
+        await loadSummary();
+      } catch (ex) {
+        err.textContent = String(ex.message || ex);
+        state.passcode = '';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '進入';
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', function () {
+      sessionStorage.removeItem(SESSION_KEY);
+      state.passcode = '';
+      location.reload();
+    });
+    document.getElementById('btn-refresh').addEventListener('click', loadSummary);
+
+    document.querySelectorAll('[data-tab]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.tab = btn.getAttribute('data-tab');
+        document.querySelectorAll('[data-tab]').forEach(function (b) {
+          b.classList.toggle('tab-active', b === btn);
+          b.classList.toggle('text-gray-500', b !== btn);
+          b.classList.toggle('border-transparent', b !== btn);
+        });
+        document.querySelectorAll('[data-panel]').forEach(function (p) {
+          p.classList.toggle('hidden', p.getAttribute('data-panel') !== state.tab);
+        });
+      });
+    });
+
+    document.querySelectorAll('.chip').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        state.filter = btn.getAttribute('data-filter');
+        document.querySelectorAll('.chip').forEach(function (c) {
+          c.classList.toggle('chip-on', c === btn);
+        });
+        loadSummary();
+      });
+    });
+
+    function barRow(label, n, max, color) {
+      const pct = max ? Math.round((n / max) * 100) : 0;
+      return (
+        '<div class="flex items-center gap-2 text-xs">' +
+          '<span class="w-4 text-gray-500 font-mono">' + label + '</span>' +
+          '<div class="flex-1 h-3 bg-gray-100 rounded-full overflow-hidden">' +
+            '<div class="h-full ' + color + '" style="width:' + pct + '%"></div>' +
+          '</div>' +
+          '<span class="w-8 text-right font-mono text-gray-600">' + n + '</span>' +
+        '</div>'
+      );
+    }
+
+    function renderOverview(sum) {
+      const c = sum.counts || {};
+      const cl = sum.claimed || {};
+      const cards = [
+        ['全部', c.all || 0, cl.all || 0],
+        ['C108', c.c108 || 0, cl.c108 || 0],
+        ['ACGHK', c.acghk || 0, cl.acghk || 0],
+        ['FF47', c.ff47 || 0, cl.ff47 || 0],
+      ];
+      document.getElementById('count-grid').innerHTML = cards.map(function (x) {
+        return '<div class="bg-white border border-gray-200 rounded-2xl p-4">' +
+          '<div class="text-[10px] font-bold text-gray-400 tracking-wider">' + x[0] + '</div>' +
+          '<div class="text-2xl font-bold font-mono mt-1">' + x[1] + '</div>' +
+          '<div class="text-[10px] text-gray-400 mt-1">已兌換 ' + x[2] + '</div>' +
+        '</div>';
+      }).join('');
+
+      const qs = sum.questions || {};
+      document.getElementById('avg-grid').innerHTML = Object.keys(Q_META).map(function (id) {
+        const m = Q_META[id];
+        const st = qs[id] || { n: 0, na: 0, avg: null, dist: {} };
+        const d = st.dist || {};
+        const max = Math.max(d['1'] || 0, d['2'] || 0, d['3'] || 0, d['4'] || 0, d['5'] || 0, 1);
+        const avg = st.avg == null ? '—' : st.avg.toFixed(1);
+        return '<div class="bg-white border border-gray-200 rounded-2xl p-4">' +
+          '<div class="flex items-baseline justify-between gap-2">' +
+            '<div><div class="text-sm font-bold">' + m.title + '</div>' +
+            (m.hint ? '<div class="text-[10px] text-gray-400">' + m.hint + '</div>' : '') +
+            '</div>' +
+            '<div class="text-3xl font-mono font-bold text-tech-black">' + avg + '</div>' +
+          '</div>' +
+          '<div class="text-[10px] text-gray-400 mt-1 mb-3">有效 n=' + (st.n || 0) + '　未使用 ' + (st.na || 0) + '</div>' +
+          barRow('1', d['1'] || 0, max, 'bg-red-300') +
+          barRow('2', d['2'] || 0, max, 'bg-orange-300') +
+          barRow('3', d['3'] || 0, max, 'bg-yellow-300') +
+          barRow('4', d['4'] || 0, max, 'bg-lime-300') +
+          barRow('5', d['5'] || 0, max, 'bg-emerald-400') +
+        '</div>';
+      }).join('');
+    }
+
+    function noteList(items) {
+      if (!items || !items.length) return '<p class="text-xs text-gray-400">沒有備註</p>';
+      return items.map(function (n) {
+        return '<div class="border-b border-gray-100 py-2">' +
+          '<div class="text-[10px] text-gray-400">' + (EVENT_LABEL[n.event] || n.event) + ' · ' + (n.serial || '') + ' · ' + (n.score || '') + '</div>' +
+          '<div class="text-sm whitespace-pre-wrap">' + escapeHtml(n.text) + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderNotes(sum) {
+      const qs = sum.questions || {};
+      document.getElementById('notes-panel').innerHTML = Object.keys(Q_META).map(function (id) {
+        return '<div class="bg-white border border-gray-200 rounded-2xl p-4">' +
+          '<h3 class="font-bold text-sm mb-2">' + Q_META[id].title + '</h3>' +
+          noteList(qs[id] && qs[id].notes) +
+        '</div>';
+      }).join('');
+    }
+
+    function renderOpen(sum) {
+      const freq = sum.freq || {};
+      const answers = sum.answers || {};
+      let html = '';
+      ['q5', 'q6'].forEach(function (id) {
+        const top = freq[id] || [];
+        html += '<div class="bg-white border border-gray-200 rounded-2xl p-4">' +
+          '<h3 class="font-bold text-sm mb-2">' + OPEN_META[id] + ' · 出現次數</h3>' +
+          (top.length ? top.map(function (f) {
+            return '<div class="flex justify-between gap-3 text-sm py-1 border-b border-gray-50">' +
+              '<span>' + escapeHtml(f.text) + '</span><span class="font-mono text-gray-500">×' + f.count + '</span></div>';
+          }).join('') : '<p class="text-xs text-gray-400">尚無</p>') +
+        '</div>';
+      });
+      ['q5', 'q6', 'q8', 'q9'].forEach(function (id) {
+        const list = answers[id] || [];
+        html += '<div class="bg-white border border-gray-200 rounded-2xl p-4">' +
+          '<h3 class="font-bold text-sm mb-2">' + OPEN_META[id] + ' <span class="text-gray-400 font-normal">(' + list.length + ')</span></h3>' +
+          (list.length ? list.map(function (a) {
+            return '<div class="py-2 border-b border-gray-100">' +
+              '<div class="text-[10px] text-gray-400">' + (EVENT_LABEL[a.event] || a.event) + (a.handle ? ' · ' + escapeHtml(a.handle) : '') + '</div>' +
+              '<div class="text-sm whitespace-pre-wrap">' + escapeHtml(a.text) + '</div></div>';
+          }).join('') : '<p class="text-xs text-gray-400">尚無</p>') +
+        '</div>';
+      });
+      document.getElementById('open-panel').innerHTML = html;
+    }
+
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      });
+    }
+
+    async function loadSummary() {
+      const bar = document.getElementById('status-bar');
+      bar.textContent = '載入中…';
+      try {
+        const sum = await api({ action: 'summary', filter: state.filter, event: state.filter });
+        if (!sum.ok) {
+          bar.textContent = sum.message || sum.error || '讀取失敗';
+          return;
+        }
+        state.summary = sum;
+        const n = (sum.counts && sum.counts[state.filter === 'all' ? 'all' : state.filter]) || 0;
+        bar.textContent = (sum.open === false ? '問卷已關閉 · ' : '') + '目前篩選 ' + n + ' 份';
+        renderOverview(sum);
+        renderNotes(sum);
+        renderOpen(sum);
+      } catch (e) {
+        bar.textContent = String(e.message || e);
+      }
+    }
+
+    function matchCard(m) {
+      const claimed = !!m.claimed;
+      return '<div class="bg-white border rounded-2xl p-4 ' + (claimed ? 'border-emerald-300' : 'border-gray-200') + '" data-serial="' + escapeHtml(m.serial) + '">' +
+        '<div class="flex items-start justify-between gap-2">' +
+          '<div>' +
+            '<div class="font-mono font-bold">' + escapeHtml(m.serial) + '</div>' +
+            '<div class="text-xs text-gray-500 mt-1">' + (EVENT_LABEL[m.event] || m.event) + ' · ' + escapeHtml(m.email) + '</div>' +
+            '<div class="text-xs text-gray-500">' + (m.handle ? escapeHtml(m.handle) : '（無名稱）') +
+              (m.snsType || m.snsContact ? ' · ' + escapeHtml(m.snsType) + ' ' + escapeHtml(m.snsContact) : '') + '</div>' +
+          '</div>' +
+          '<span class="text-[10px] font-bold px-2 py-1 rounded-full ' + (claimed ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600') + '">' +
+            (claimed ? '已兌換' : '未兌換') + '</span>' +
+        '</div>' +
+        '<div class="mt-3 flex gap-2">' +
+          (claimed
+            ? '<button type="button" class="unclaim-btn text-xs font-bold px-3 py-2 border border-gray-200 rounded-lg">取消兌換</button>'
+            : '<button type="button" class="claim-btn text-xs font-bold px-3 py-2 bg-black text-white rounded-lg">標記已兌換</button>') +
+        '</div>' +
+      '</div>';
+    }
+
+    document.getElementById('lookup-results').addEventListener('click', function (e) {
+      const card = e.target.closest('[data-serial]');
+      if (!card) return;
+      const serial = card.getAttribute('data-serial');
+      if (e.target.closest('.claim-btn')) setClaim(serial, true);
+      if (e.target.closest('.unclaim-btn')) setClaim(serial, false);
+    });
+
+    document.getElementById('lookup-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const q = document.getElementById('lookup-query').value.trim();
+      const msg = document.getElementById('lookup-msg');
+      const box = document.getElementById('lookup-results');
+      if (!q) return;
+      msg.textContent = '查詢中…';
+      box.innerHTML = '';
+      try {
+        const res = await api({ action: 'lookup', query: q });
+        if (!res.ok) {
+          msg.textContent = res.message || res.error || '查詢失敗';
+          return;
+        }
+        if (!res.found || !res.matches || !res.matches.length) {
+          msg.textContent = '找不到這筆資料';
+          return;
+        }
+        msg.textContent = '找到 ' + res.matches.length + ' 筆';
+        box.innerHTML = res.matches.map(matchCard).join('');
+      } catch (ex) {
+        msg.textContent = String(ex.message || ex);
+      }
+    });
+
+    async function setClaim(serial, claimed) {
+      const msg = document.getElementById('lookup-msg');
+      try {
+        const res = await api({ action: claimed ? 'claim' : 'unclaim', serial: serial });
+        if (!res.ok) {
+          msg.textContent = res.message || res.error || '更新失敗';
+          return;
+        }
+        msg.textContent = claimed ? '已標記兌換' : '已取消兌換';
+        if (res.match) {
+          const box = document.getElementById('lookup-results');
+          const el = box.querySelector('[data-serial="' + String(serial).replace(/"/g, '') + '"]');
+          if (el) el.outerHTML = matchCard(res.match);
+        }
+        loadSummary();
+      } catch (e) {
+        msg.textContent = String(e.message || e);
+      }
+    }
+
+    (function boot() {
+      const saved = sessionStorage.getItem(SESSION_KEY);
+      if (saved) {
+        state.passcode = saved;
+        showApp();
+        loadSummary();
+      } else {
+        showLogin();
+      }
+    })();
+  </script>
+</body>
+</html>

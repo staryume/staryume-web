@@ -29,6 +29,7 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 /
 ├── index.html, blog.html, post.html, gallery.html
 ├── store.html, checkout.html, preorder.html, hk-form.html, ff47-event-preorder.html
+├── survey.html, survey-dashboard.html, survey-validate.js  # summer 2026 questionnaire
 ├── data.js                 # site posts / translations / global site data
 ├── store.js                # storeConfig, storeProducts, cart/checkout helpers
 ├── events.js               # event definitions
@@ -39,7 +40,8 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 ├── netlify/edge-functions/
 │   ├── hk-order.js         # /api/hk-order — rate-limited order proxy
 │   ├── geo.js              # /api/geo — HK/TW region hint
-│   └── og-post.js          # /post.html — crawler Open Graph injection
+│   ├── og-post.js          # /post.html — crawler Open Graph injection
+│   └── survey.js           # /api/survey — questionnaire proxy
 ├── _redirects              # hide /admin* and /docs*
 ├── docs/                   # ops & security docs (also blocked publicly)
 │   ├── SECURITY.md
@@ -84,6 +86,7 @@ There is **no** `package.json` / bundler today. Prefer patterns that work withou
 6. **裏 (ura) store** — passcode gate in client `store.js`; **fan obscurity only** (see security).
 7. **Events & blog** — posts in `data.js`, event linkage, OG images for social crawlers.
 8. **Admin CMS** — local tooling to edit data; never exposed publicly.
+9. **Summer 2026 questionnaire** — `survey.html?lang=zh|jp` + `survey-dashboard.html`. One response per email per event (C108 / ACGHK / FF47). Confirmation Gmail serial is the winter-event card-present voucher. Setup: `docs/survey-apps-script.md`. Risk **R3** (PII).
 
 When requesting work, name the **domain** so the agent loads the right files and risk rules.
 
@@ -349,6 +352,14 @@ No “cleanup” of `store.js` without this.
 - [ ] Manage page: lookup by order id + email  
 - [ ] Edit/cancel only within documented deadline  
 - [ ] Copy matches deadline in Code.gs / docs  
+
+### Summer questionnaire (R3)
+
+- [ ] ZH: ACGHK hides Q1; FF47 shows 事前預約  
+- [ ] JP: locked C108; Q7 has no 色紙競標  
+- [ ] Required Likert + email; handle/SNS optional  
+- [ ] Duplicate same email+event does not create a second row  
+- [ ] Dashboard averages exclude `na`; redeem marks Claimed  
 
 ### Content / i18n (R0–R1)
 

@@ -63,3 +63,19 @@
 [[edge_functions]]
   function = "auction"
   path = "/api/auction"
+
+# Summer 2026 questionnaire (rate limit + proxy to Apps Script)
+[[edge_functions]]
+  function = "survey"
+  path = "/api/survey"
+
+[[headers]]
+  for = "/survey.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/survey-dashboard.html"
+  [headers.values]
+    Cache-Control = "no-store"
+    X-Robots-Tag = "noindex, nofollow"
