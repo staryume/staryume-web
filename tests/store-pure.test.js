@@ -218,6 +218,11 @@ describe("productIsSoldOutInRegion", () => {
     const past = { id: 405, isSoldOut: true, hkAvailableUntil: "2020-01-01T00:00:00+08:00" };
     expect(api.productIsSoldOutInRegion(past, "HK")).toBe(true);
   });
+  it("soldOutRegions marks only those storefronts sold out", () => {
+    const p = { id: 103, isSoldOut: false, soldOutRegions: ["TW"] };
+    expect(api.productIsSoldOutInRegion(p, "TW")).toBe(true);
+    expect(api.productIsSoldOutInRegion(p, "HK")).toBe(false);
+  });
 });
 
 describe("BOOTH JP handoff", () => {

@@ -214,6 +214,9 @@ const storeProducts = [
         ],
         "isNew": true,
         "isSoldOut": false,
+        "soldOutRegions": [
+            "TW"
+        ],
         "isPreorder": false,
         "useTwCart": true,
         "thumbPosition": "left",
@@ -340,6 +343,9 @@ const storeProducts = [
         ],
         "isNew": true,
         "isSoldOut": false,
+        "soldOutRegions": [
+            "TW"
+        ],
         "isPreorder": false,
         "useTwCart": true,
         "thumbPosition": "right",
@@ -381,6 +387,9 @@ const storeProducts = [
         ],
         "isNew": true,
         "isSoldOut": false,
+        "soldOutRegions": [
+            "TW"
+        ],
         "isPreorder": false,
         "useTwCart": true,
         "eventSource": "acghk2026",
@@ -1073,6 +1082,9 @@ const storeProducts = [
         ],
         "isNew": true,
         "isSoldOut": false,
+        "soldOutRegions": [
+            "TW"
+        ],
         "isPreorder": false,
         "useTwCart": true,
         "thumbPosition": "top",

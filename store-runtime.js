@@ -281,6 +281,7 @@ function productIsSoldOutInRegion(product, region) {
         if (Number.isFinite(until) && Date.now() >= until) return true;
         return false;
     }
+    if (Array.isArray(product.soldOutRegions) && product.soldOutRegions.indexOf(r) !== -1) return true;
     return !!product.isSoldOut;
 }
 
