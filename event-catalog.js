@@ -2810,6 +2810,39 @@ const eventCatalog = {
                     "label": null
                 }
             }
+        },
+        "afterShowcase": {
+            "zh": [
+                {
+                    "id": "free-paper",
+                    "title": "特別活動 - 任意消費贈送限定紙",
+                    "body": "於 Palette Ring 11 星夢亭攤位，任意消費即可獲贈這次的限定紙一張！<br><br>日時：2026/09/19–20（六、日）<br>場所：Palette Ring 11 A-11「星夢亭」攤位<br><br>每筆消費贈送 1 張。數量有限，送完即止。",
+                    "images": [
+                        {
+                            "src": "./blog/20260918/pr11-free-paper.jpg",
+                            "alt": "Palette Ring 11 任意消費限定紙",
+                            "caption": "",
+                            "wide": true
+                        }
+                    ]
+                }
+            ],
+            "en": [
+                {
+                    "id": "free-paper",
+                    "title": "Special — free limited paper with any purchase",
+                    "body": "At the Palette Ring 11 STARYUME booth, any purchase includes one limited paper!<br><br>When: 2026/09/19–20 (Sat–Sun)<br>Where: Palette Ring 11 booth A-11<br><br>One paper per purchase. Limited quantity; while supplies last.",
+                    "images": [
+                        {
+                            "src": "./blog/20260918/pr11-free-paper.jpg",
+                            "alt": "Palette Ring 11 free limited paper",
+                            "caption": "",
+                            "wide": true
+                        }
+                    ]
+                }
+            ],
+            "jp": null
         }
     }
 };
