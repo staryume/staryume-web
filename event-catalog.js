@@ -2518,9 +2518,9 @@ const eventCatalog = {
         "meta": {
             "event": "PALETTE RING 11",
             "booth": {
-                "jp": "9/19–9/20 A-11　啓徳ツインズ 1期 TT SITE",
-                "en": "9/19–9/20 Booth A-11, The Twins Phase 1 TT SITE, Kai Tak",
-                "zh": "9/19–9/20 A-11　啟德雙子匯 1 期 TT SITE"
+                "jp": "9/19–9/20 A-11 「星夢亭」　啓徳ツインズ 1期 TT SITE",
+                "en": "9/19–9/20 Booth A-11 「星夢亭」, The Twins Phase 1 TT SITE, Kai Tak",
+                "zh": "9/19–9/20 A-11 「星夢亭」　啟德雙子匯 1 期 TT SITE"
             },
             "dates": "2026/09/19–20"
         },

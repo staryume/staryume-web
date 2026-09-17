@@ -152,8 +152,8 @@ const siteData = {
             },
             "content": {
                 "jp": null,
-                "en": "## Palette Ring 11 Product Info\n\nThe Palette Ring 11 lineup is largely the same as ACGHK2026, but remaining stock is limited — please note.\n<br>\n<strong>Booth:</strong> A-11\n<br>\n<strong>Dates:</strong> 2026/09/19–20 (Sat–Sun) · The Twins Phase 1 TT SITE, Kai Tak\n<br>\n<strong>Last update:</strong> 2026/09/18",
-                "zh": "## Palette Ring 11 販售物情報\n\nPalette Ring 11 的販售物內容大致是跟 ACGHK2026 時相同，但是整體商品剩餘數量都不多，敬請留意。\n<br>\n<strong>攤位：</strong>A-11\n<br>\n<strong>日期：</strong>2026/09/19–20（六、日）　啟德雙子匯 1 期 TT SITE\n<br>\n<strong>最終更新：</strong> 2026/09/18"
+                "en": "## Palette Ring 11 Product Info\n\nThe Palette Ring 11 lineup is largely the same as ACGHK2026, but remaining stock is limited — please note.\n<br>\n<strong>Booth:</strong> A-11 「星夢亭」\n<br>\n<strong>Dates:</strong> 2026/09/19–20 (Sat–Sun) · The Twins Phase 1 TT SITE, Kai Tak\n<br>\n<strong>Last update:</strong> 2026/09/18",
+                "zh": "## Palette Ring 11 販售物情報\n\nPalette Ring 11 的販售物內容大致是跟 ACGHK2026 時相同，但是整體商品剩餘數量都不多，敬請留意。\n<br>\n<strong>攤位：</strong>A-11 「星夢亭」\n<br>\n<strong>日期：</strong>2026/09/19–20（六、日）　啟德雙子匯 1 期 TT SITE\n<br>\n<strong>最終更新：</strong> 2026/09/18"
             },
             "langs": {
                 "jp": false,
