@@ -30,4 +30,14 @@
       <lastmod>2026-08-18</lastmod>
       <priority>0.70</priority>
    </url>
+   <url>
+      <loc>https://staryu.me/post.html?id=8&amp;lang=zh</loc>
+      <lastmod>2026-09-18</lastmod>
+      <priority>0.80</priority>
+   </url>
+   <url>
+      <loc>https://staryu.me/post.html?id=8&amp;lang=en</loc>
+      <lastmod>2026-09-18</lastmod>
+      <priority>0.70</priority>
+   </url>
 </urlset>

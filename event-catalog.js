@@ -2507,5 +2507,309 @@ const eventCatalog = {
             ],
             "jp": null
         }
+    },
+    "pr11": {
+        "id": "pr11",
+        "title": {
+            "jp": "Palette Ring 11 お品書き",
+            "en": "Palette Ring 11 Merch",
+            "zh": "Palette Ring 11 販售物情報"
+        },
+        "meta": {
+            "event": "PALETTE RING 11",
+            "booth": {
+                "jp": "9/19–9/20 A-11　啓徳ツインズ 1期 TT SITE",
+                "en": "9/19–9/20 Booth A-11, The Twins Phase 1 TT SITE, Kai Tak",
+                "zh": "9/19–9/20 A-11　啟德雙子匯 1 期 TT SITE"
+            },
+            "dates": "2026/09/19–20"
+        },
+        "defaultCta": {
+            "label": {
+                "jp": "BOOTHで購入",
+                "en": "Buy on BOOTH",
+                "zh": "前往網店預購"
+            },
+            "url": "https://staryume.booth.pm",
+            "external": true,
+            "boothUrl": "https://staryume.booth.pm",
+            "storeUrl": "store.html",
+            "storeRegion": "HK"
+        },
+        "menuImages": [
+            {
+                "id": "page1",
+                "src": "./blog/20260918/pr11pricelist.jpg",
+                "label": {
+                    "jp": "新作",
+                    "en": "New Releases",
+                    "zh": "新作"
+                },
+                "langs": {
+                    "jp": false,
+                    "en": true,
+                    "zh": true
+                },
+                "hotspots": [
+                    {
+                        "productId": "anni-15-set",
+                        "coords": [1.9, 12.6, 95.6, 42.1]
+                    },
+                    {
+                        "productId": "sleeve-gagaga",
+                        "coords": [1.9, 55.8, 23.5, 20.9]
+                    },
+                    {
+                        "productId": "sleeve-dmg-2026",
+                        "coords": [25.4, 55.8, 23.5, 20.9]
+                    },
+                    {
+                        "productId": "mat-dmg-2026",
+                        "coords": [50.7, 55.8, 46.9, 20.9]
+                    },
+                    {
+                        "productId": "goods-deckbox",
+                        "coords": [1.9, 77.8, 47, 20.9]
+                    },
+                    {
+                        "productId": "goods-cardbox",
+                        "coords": [50.7, 77.8, 46.9, 20.9]
+                    }
+                ]
+            }
+        ],
+        "productOrder": [
+            "anni-15-set",
+            "sleeve-gagaga",
+            "sleeve-dmg-2026",
+            "mat-dmg-2026",
+            "goods-deckbox",
+            "goods-cardbox"
+        ],
+        "products": {
+            "anni-15-set": {
+                "id": "anni-15-set",
+                "category": "set",
+                "isNew": true,
+                "title": {
+                    "jp": "サークル15周年記念セット",
+                    "en": "Hoshiyumetei 15th Anniversary SET",
+                    "zh": "星夢亭15週年紀念SET"
+                },
+                "price": {
+                    "jp": "$240",
+                    "en": "$240",
+                    "zh": "$240"
+                },
+                "specs": {
+                    "jp": "新刊＋バッグ＋ストレージボックス＋アクスタ＋オリカ＋資料設定",
+                    "en": null,
+                    "zh": null
+                },
+                "desc": {
+                    "jp": "サークル15周年記念セット。<br>① 新刊 - Overlay Magic Color 4（B5 20P フルカラー）<br>② 透明フィルムバッグ（30×40×10 cm）<br>③ 大型ストレージボックス（21×33×8 cm）<br>④ アクリルフィールドセンターカード<br>⑤ オリカ×2 ＋ 鑑定品風のケース×2 ＋ 化粧箱付き<br>⑥ ゲーム「ワープマキナ」資料設定 Vol.0<br>※オリカのレアリティ（UR / PSE / GMR）はランダムでの封入となります",
+                    "en": "15th anniversary set.<br>① New book Overlay Magic Color 4 (B5 20P full color / foil cover)<br>② Frosted tote bag (30×40×10 cm)<br>③ Large storage box (21×33×8 cm)<br>④ Acrylic field center card<br>⑤ Custom cards ×2 + cases ×2 + gift box<br>⑥ Warp Machina setting booklet",
+                    "zh": "星夢亭15週年紀念套組。<br>① 新刊 - Overlay Magic Color 4（B5 20P 全彩 / 封面燙金）<br>② 半透明磨砂手提袋（30×40×10 cm）<br>③ 大型儲物盒（21×33×8 cm）<br>④ 亞加力場地中心卡<br>⑤ 自製卡×2 + 收藏磨砂卡磚×2 + 收藏禮盒<br>⑥ 遊戲「Warp Machina」初回資料設定小冊子<br>（自製卡有不同稀有度：UR / PSE / GMR）"
+                },
+                "gallery": [
+                    "./blog/20260719/products/anni-15-set/01.jpg",
+                    "./blog/20260719/products/anni-15-set/02.jpg",
+                    "./blog/20260719/products/anni-15-set/03.jpg",
+                    "./blog/20260719/products/anni-15-set/04.jpg",
+                    "./blog/20260719/products/anni-15-set/05.jpg",
+                    "./blog/20260719/products/anni-15-set/06.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/anni-15-set/01.jpg",
+                "cta": {
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "sleeve-gagaga": {
+                "id": "sleeve-gagaga",
+                "category": "sleeve",
+                "isNew": true,
+                "title": {
+                    "jp": "新作スリーブ ガガガガール",
+                    "en": "Sleeves - Gagaga Girl",
+                    "zh": "新作卡套 我我我女孩"
+                },
+                "price": {
+                    "jp": "$80",
+                    "en": "$80",
+                    "zh": "$80"
+                },
+                "specs": {
+                    "jp": "遊戯王サイズ／60枚入り",
+                    "en": "Yu-Gi-Oh! size / 60 pcs",
+                    "zh": "遊戲王尺寸、每包含60個"
+                },
+                "desc": {
+                    "jp": "新作カードスリーブ。ガガガガール。<br>遊戯王サイズ／60枚入り。",
+                    "en": "New card sleeves featuring Gagaga Girl.",
+                    "zh": "遊戲王尺寸、每包含60個"
+                },
+                "gallery": [
+                    "./blog/20260719/products/sleeve-gagaga/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/sleeve-gagaga/01.jpg",
+                "cta": {
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "sleeve-dmg-2026": {
+                "id": "sleeve-dmg-2026",
+                "category": "sleeve",
+                "isNew": true,
+                "title": {
+                    "jp": "新作スリーブ ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Sleeves - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作卡套 黑魔導女孩 (ver. 2026)"
+                },
+                "price": {
+                    "jp": "$80",
+                    "en": "$80",
+                    "zh": "$80"
+                },
+                "specs": {
+                    "jp": "遊戯王サイズ／60枚入り",
+                    "en": "Yu-Gi-Oh! size / 60 pcs",
+                    "zh": "遊戲王尺寸、每包含60個"
+                },
+                "desc": {
+                    "jp": "新作カードスリーブ。ブラック・マジシャン・ガール（ver. 2026）。<br>遊戯王サイズ／60枚入り。",
+                    "en": "New card sleeves featuring Dark Magician Girl (ver. 2026).",
+                    "zh": "遊戲王尺寸、每包含60個"
+                },
+                "gallery": [
+                    "./blog/20260719/products/sleeve-dmg-2026/01.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/sleeve-dmg-2026/01.jpg",
+                "cta": {
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "mat-dmg-2026": {
+                "id": "mat-dmg-2026",
+                "category": "mat",
+                "isNew": true,
+                "title": {
+                    "jp": "新作プレイマット ブラック・マジシャン・ガール（ver. 2026）",
+                    "en": "Playmat - Dark Magician Girl (ver. 2026)",
+                    "zh": "新作遊戲墊 黑魔導女孩 (ver. 2026)"
+                },
+                "price": {
+                    "jp": "$180",
+                    "en": "$180",
+                    "zh": "$180"
+                },
+                "specs": {
+                    "jp": "プレイマット",
+                    "en": "New playmat",
+                    "zh": null
+                },
+                "desc": {
+                    "jp": "新作プレイマット。ブラック・マジシャン・ガール（ver. 2026）。",
+                    "en": "New playmat featuring Dark Magician Girl (ver. 2026).",
+                    "zh": "新作遊戲墊 - 黑魔導女孩 (ver. 2026)。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/mat-dmg-2026/01.jpg",
+                    "./blog/20260719/products/mat-dmg-2026/02.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/mat-dmg-2026/01.jpg",
+                "cta": {
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "goods-deckbox": {
+                "id": "goods-deckbox",
+                "category": "goods",
+                "isNew": false,
+                "title": {
+                    "jp": "マグネットデッキケース",
+                    "en": "Leather Card Deck Box",
+                    "zh": "皮質卡片收納盒"
+                },
+                "price": {
+                    "jp": "$220",
+                    "en": "$220",
+                    "zh": "$220"
+                },
+                "specs": {
+                    "jp": "マグネット式デッキケース",
+                    "en": "Leather deck box",
+                    "zh": "皮質卡片收納盒"
+                },
+                "desc": {
+                    "jp": "マグネットデッキケース。ブラック・マジシャン・ガールイラスト仕様。",
+                    "en": "Leather-style card deck box.",
+                    "zh": "皮質卡片收納盒。"
+                },
+                "gallery": [
+                    "./blog/20260719/products/goods-deckbox/01.jpg",
+                    "./blog/20260719/products/goods-deckbox/02.jpg",
+                    "./blog/20260719/products/goods-deckbox/03.jpg",
+                    "./blog/20260719/products/goods-deckbox/04.jpg",
+                    "./blog/20260719/products/goods-deckbox/05.jpg",
+                    "./blog/20260719/products/goods-deckbox/06.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/goods-deckbox/01.jpg",
+                "cta": {
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            },
+            "goods-cardbox": {
+                "id": "goods-cardbox",
+                "category": "goods",
+                "isNew": false,
+                "title": {
+                    "jp": "収納箱 Dream Card Box 2025",
+                    "en": "Dream Card Box 2025",
+                    "zh": "既作收納盒 Dream Card Box 2025"
+                },
+                "price": {
+                    "jp": "$50",
+                    "en": "$50",
+                    "zh": "$50"
+                },
+                "specs": {
+                    "jp": "カード収納ボックス",
+                    "en": "Card storage box",
+                    "zh": null
+                },
+                "desc": {
+                    "jp": "収納箱 Dream Card Box 2025。",
+                    "en": "Dream Card Box 2025 storage box.",
+                    "zh": "Dream Card Box 2025 收納盒"
+                },
+                "gallery": [
+                    "./blog/20260719/products/goods-cardbox/01.jpg",
+                    "./blog/20260719/products/goods-cardbox/02.jpg",
+                    "./blog/20260719/products/goods-cardbox/03.jpg"
+                ],
+                "pages": [],
+                "thumb": "./blog/20260719/products/goods-cardbox/01.jpg",
+                "cta": {
+                    "enabled": false,
+                    "urlOverride": null,
+                    "label": null
+                }
+            }
+        }
     }
 };
