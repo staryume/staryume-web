@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Rajdhani:wght@500;600;700&family=Noto+Sans+JP:wght@400;700&family=Noto+Sans+TC:wght@400;700&family=Montserrat:ital,wght@1,650&display=swap" rel="stylesheet">
     
     <script src="data.js"></script>
-    <script src="store.js"></script>
+    <script src="store.js?v=20260918g"></script>
     <script src="store-runtime.js"></script>
 
     <script>
@@ -286,6 +286,30 @@
         let currentProductImgs = [];
         let showOutOfStock = true;
 
+        function shopIsClosedForCurrentRegion() {
+            if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) return true;
+            if (currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false) return true;
+            return false;
+        }
+
+        function updateShopClosedBanner() {
+            const banner = document.getElementById('shop-closed-banner');
+            const text = document.getElementById('shop-next-date');
+            if (!banner) return;
+            const globalClosed = storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false;
+            const hkClosed = currentRegion === 'HK' && storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false;
+            if (globalClosed || hkClosed) {
+                banner.classList.remove('hidden');
+                if (text) {
+                    text.innerText = globalClosed
+                        ? (storeConfig.shopStatus.nextOpenDate || '')
+                        : '香港網店暫停接收新訂單';
+                }
+            } else {
+                banner.classList.add('hidden');
+            }
+        }
+
         function updateLangDisplay() {
             const el = document.getElementById('currentLangDisplay');
             if (el) el.innerText = (currentLang || 'zh').toUpperCase();
@@ -408,15 +432,7 @@
 
             updateLangDisplay();
 
-            // --- CHECK SHOP STATUS ---
-            if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
-                const banner = document.getElementById('shop-closed-banner');
-                const text = document.getElementById('shop-next-date');
-                if(banner && text) {
-                    banner.classList.remove('hidden');
-                    text.innerText = storeConfig.shopStatus.nextOpenDate;
-                }
-            }
+            updateShopClosedBanner();
 
             // Geo / query-param region, then load the matching cart
             const initialRegion = await resolveInitialRegion();
@@ -765,7 +781,7 @@
             const actions = document.getElementById('modal-actions');
             
             // Logic for buttons (Shop Closed / Sold Out / Buy)
-            if (storeConfig.shopStatus && storeConfig.shopStatus.isOpen === false) {
+            if (shopIsClosedForCurrentRegion()) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-500 font-bold py-4 rounded-lg cursor-not-allowed">SHOP CLOSED / 目前關閉中</button>`;
             } else if (productSoldOut(product)) {
                 actions.innerHTML = `<button disabled class="w-full bg-gray-200 text-gray-400 font-bold py-4 rounded-lg cursor-not-allowed">SOLD OUT</button>`;
@@ -976,7 +992,7 @@
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Global · BOOTH';
             } else {
                 if(notice) notice.innerText = (storeConfig.hkCheckout && storeConfig.hkCheckout.enabled === false)
-                    ? "香港預購暫停 · HK PRE-ORDER PAUSED"
+                    ? "SHOP CLOSED · 目前關閉中"
                     : "PAYMENT: PAYME · FPS";
                 if(shipText) shipText.innerText = "Hong Kong: 順豐到付 或 9 月 Palette Ring 11 取貨。";
                 if(twBar) twBar.classList.add('hidden');
@@ -984,6 +1000,7 @@
                 if(bagRegionLabel) bagRegionLabel.textContent = 'Hong Kong Online Store';
             }
 
+            updateShopClosedBanner();
             updateCartUI();
         }
 
