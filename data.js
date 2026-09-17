@@ -152,8 +152,8 @@ const siteData = {
             },
             "content": {
                 "jp": null,
-                "en": "## Palette Ring 11 Product Info\n\nFor Hoshiyumetei's 15th anniversary, this lineup is richer than usual!\n<br>\nThis time the product menu is interactive — tap or click items on the image for details.\n<br>\nSee you at Palette Ring 11!\n<br>\n<strong>Booth:</strong> A-11\n<br>\n<strong>Dates:</strong> 2026/09/19–20 (Sat–Sun) · The Twins Phase 1 TT SITE, Kai Tak\n<br>\n<strong>Last update:</strong> 2026/09/18",
-                "zh": "## Palette Ring 11 販售物情報\n\n因為今年是星夢亭的成立 15週年紀念，這次的販售物會比以往的豐富!\n<br>\n同時這次價目表的顯示方式也超絕強化，變成一個可以 \"互動\" 的價目表、\n<br>\n只需要按下價目表內對應的商品位置、就可以看到詳細的介紹資訊!\n<br>\n期待 Palette Ring 11 活動當天見面!\n<br>\n<strong>攤位：</strong>A-11\n<br>\n<strong>日期：</strong>2026/09/19–20（六、日）　啟德雙子匯 1 期 TT SITE\n<br>\n<strong>最終更新：</strong> 2026/09/18"
+                "en": "## Palette Ring 11 Product Info\n\nThe Palette Ring 11 lineup is largely the same as ACGHK2026, but remaining stock is limited — please note.\n<br>\n<strong>Booth:</strong> A-11\n<br>\n<strong>Dates:</strong> 2026/09/19–20 (Sat–Sun) · The Twins Phase 1 TT SITE, Kai Tak\n<br>\n<strong>Last update:</strong> 2026/09/18",
+                "zh": "## Palette Ring 11 販售物情報\n\nPalette Ring 11 的販售物內容大致是跟 ACGHK2026 時相同，但是整體商品剩餘數量都不多，敬請留意。\n<br>\n<strong>攤位：</strong>A-11\n<br>\n<strong>日期：</strong>2026/09/19–20（六、日）　啟德雙子匯 1 期 TT SITE\n<br>\n<strong>最終更新：</strong> 2026/09/18"
             },
             "langs": {
                 "jp": false,
