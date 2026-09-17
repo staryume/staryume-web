@@ -2815,12 +2815,12 @@ const eventCatalog = {
             "zh": [
                 {
                     "id": "free-paper",
-                    "title": "特別活動 - 任意消費贈送限定紙",
-                    "body": "於 Palette Ring 11 星夢亭攤位，任意消費即可獲贈這次的限定紙一張！<br><br>日時：2026/09/19–20（六、日）<br>場所：Palette Ring 11 A-11「星夢亭」攤位<br><br>每筆消費贈送 1 張。數量有限，送完即止。",
+                    "title": "特別活動 - 任意消費贈送活動限定無料 Free Paper",
+                    "body": "於 Palette Ring 11 星夢亭攤位，任意消費即可獲贈這次的活動限定無料 Free Paper 一張！<br><br>日時：2026/09/19–20（六、日）<br>場所：Palette Ring 11 A-11「星夢亭」攤位<br><br>每筆消費贈送 1 張。數量有限，送完即止。",
                     "images": [
                         {
                             "src": "./blog/20260918/pr11-free-paper.jpg",
-                            "alt": "Palette Ring 11 任意消費限定紙",
+                            "alt": "Palette Ring 11 活動限定無料 Free Paper",
                             "caption": "",
                             "wide": true
                         }
@@ -2830,12 +2830,12 @@ const eventCatalog = {
             "en": [
                 {
                     "id": "free-paper",
-                    "title": "Special — free limited paper with any purchase",
-                    "body": "At the Palette Ring 11 STARYUME booth, any purchase includes one limited paper!<br><br>When: 2026/09/19–20 (Sat–Sun)<br>Where: Palette Ring 11 booth A-11<br><br>One paper per purchase. Limited quantity; while supplies last.",
+                    "title": "Special — event-limited Free Paper with any purchase",
+                    "body": "At the Palette Ring 11 STARYUME booth, any purchase includes one event-limited Free Paper!<br><br>When: 2026/09/19–20 (Sat–Sun)<br>Where: Palette Ring 11 booth A-11<br><br>One Free Paper per purchase. Limited quantity; while supplies last.",
                     "images": [
                         {
                             "src": "./blog/20260918/pr11-free-paper.jpg",
-                            "alt": "Palette Ring 11 free limited paper",
+                            "alt": "Palette Ring 11 event-limited Free Paper",
                             "caption": "",
                             "wide": true
                         }
